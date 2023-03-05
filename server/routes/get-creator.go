@@ -7,23 +7,23 @@ import (
 	"net/http"
 )
 
-type GetCreatorHandler struct {
+type CreatorHandler struct {
 	CreatorService services.ICreatorService
 }
 
-func (g *GetCreatorHandler) GetWithID(c *gin.Context) {
+func (g *CreatorHandler) GetWithID(c *gin.Context) {
 	id := c.Param("id")
 	authID := c.GetString("user")
 
 	// Users may only fetch their own data
 	if id != authID {
-		c.Status(http.StatusUnauthorized)
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	creator, err := g.CreatorService.GetByID(uuid.MustParse(authID))
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 

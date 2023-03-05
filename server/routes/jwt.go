@@ -12,7 +12,7 @@ type JwtHandler struct {
 	JwtService services.IJwtService
 }
 
-func (j *JwtHandler) AuthorizeJWT() gin.HandlerFunc {
+func (j *JwtHandler) JwtGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if len(authHeader) <= len(bearerSchema) {

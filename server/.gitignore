@@ -25,5 +25,3 @@ vendor/
 !/swagger/gitkeep.go
 
 server.git
-
-credentials.json

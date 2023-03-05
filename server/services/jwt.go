@@ -43,5 +43,4 @@ func (service *JwtService) ValidateToken(encodedToken string) (*jwt.Token, error
 		}
 		return []byte(service.SecretKey), nil
 	})
-
 }

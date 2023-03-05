@@ -1,16 +1,26 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/survivorbat/qq.maarten.dev/server"
 	"log"
 	"os"
 )
 
 func main() {
+	_ = godotenv.Load()
+
 	router := gin.Default()
 
-	instance, err := server.NewServer(os.Getenv("DB_CONNECTION_STRING"), os.Getenv("JWT_SECRET"), os.Getenv("AUTH_CREDENTIALS_PATH"), []byte(os.Getenv("AUTH_SECRET")), os.Getenv("AUTH_REDIRECT_URL"))
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"http://localhost:3000", "https://qq.maarten.dev"},
+		AllowMethods:  []string{"GET", "PUT", "PATCH", "Delete"},
+		ExposeHeaders: []string{"Content-Length", "token"},
+	}))
+
+	instance, err := server.NewServer(os.Getenv("DB_CONNECTION_STRING"), os.Getenv("JWT_SECRET"), os.Getenv("AUTH_CLIENT_ID"), os.Getenv("AUTH_SECRET"), os.Getenv("AUTH_REDIRECT_URL"))
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

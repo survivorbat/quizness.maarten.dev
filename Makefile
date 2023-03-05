@@ -19,8 +19,4 @@ dr: ## Run docker containers
 	docker-compose up -d
 
 server: ## Run the server
-	cd server/cmd/qq && \
-		DB_CONNECTION_STRING="host=localhost user=postgres password=rootroot dbname=qq" \
-		AUTH_CREDENTIALS_PATH="../../credentials.json" \
-		JWT_SECRET="abc" \
-		AUTH_REDIRECT_URL="http://localhost:8000/auth" go run .
+	cd server/cmd/qq && go run .

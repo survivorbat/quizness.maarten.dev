@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -10,7 +9,7 @@ func TestJwtService_GenerateToken_ReturnsExpectedToken(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	service := &JwtService{SecretKey: "abc", Issuer: "My Company"}
-	userID := uuid.MustParse("6aacfb41-e478-46ec-857e-11221f2a97fc")
+	userID := "6aacfb41-e478-46ec-857e-11221f2a97fc"
 
 	// Act
 	token, err := service.GenerateToken(userID)
@@ -24,7 +23,7 @@ func TestJwtService_ValidateToken_ReturnsValidOnGoodToken(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	service := &JwtService{SecretKey: "abc", Issuer: "My Company"}
-	userID := uuid.MustParse("6aacfb41-e478-46ec-857e-11221f2a97fc")
+	userID := "6aacfb41-e478-46ec-857e-11221f2a97fc"
 
 	token, _ := service.GenerateToken(userID)
 

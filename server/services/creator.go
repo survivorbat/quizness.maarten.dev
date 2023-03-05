@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"gorm.io/gorm"
 )
@@ -21,6 +22,7 @@ type CreatorService struct {
 func (c *CreatorService) GetOrCreate(authID string) (*domain.Creator, error) {
 	var result *domain.Creator
 	if err := c.Database.FirstOrCreate(&result, map[string]any{"auth_id": authID}).Error; err != nil {
+		logrus.WithError(err).Error("Failed to get or create")
 		return nil, err
 	}
 
@@ -29,7 +31,8 @@ func (c *CreatorService) GetOrCreate(authID string) (*domain.Creator, error) {
 
 func (c *CreatorService) GetByID(id uuid.UUID) (*domain.Creator, error) {
 	var result *domain.Creator
-	if err := c.Database.FirstOrCreate(&result, id).Error; err != nil {
+	if err := c.Database.Find(&result, id).Error; err != nil {
+		logrus.WithError(err).Error("Failed to get by ID")
 		return nil, err
 	}
 

@@ -9,8 +9,8 @@ type Quiz struct {
 	Description string `json:"description"`
 
 	CreatorID uuid.UUID `json:"creatorID"`
-	Creator   *Creator  `json:"creator" gorm:"CreatorID"`
+	Creator   *Creator  `json:"creator" gorm:"foreignKey:CreatorID"`
 
 	Questions []Question `json:"questions,omitempty" gorm:"-"`
-	Games     []*Game    `json:"games"`
+	Games     []*Game    `json:"games" gorm:"foreignKey:QuizID"`
 }

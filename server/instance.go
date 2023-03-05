@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/routes"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
@@ -45,6 +46,7 @@ type Server struct {
 
 func (s *Server) Configure(router *gin.Engine) error {
 	if err := s.database.AutoMigrate(&domain.Game{}, &domain.Quiz{}, &domain.Creator{}, &domain.Player{}); err != nil {
+		logrus.WithError(err).Error("Failed to migrate")
 		return err
 	}
 

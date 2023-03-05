@@ -3,10 +3,10 @@ package domain
 type Creator struct {
 	BaseObject
 
-	NickName string `json:"nickname"`
+	NickName string `json:"nickname" gorm:"unique"`
 
 	// Never expose this
 	AuthID string `json:"-" gorm:"unique"`
 
-	Quizes []*Quiz `json:"quizes" gorm:"foreignKey:CreatorID"`
+	Quizzes []*Quiz `json:"quizzes" gorm:"foreignKey:CreatorID"`
 }

@@ -67,7 +67,7 @@ func (a *TokenHandler) CreateToken(c *gin.Context) {
 		return
 	}
 
-	token, err := a.JwtService.GenerateToken(user.ID)
+	token, err := a.JwtService.GenerateToken(user.ID.String())
 	if err != nil {
 		logrus.WithError(err).Error("Failed to generate token")
 		c.AbortWithStatus(http.StatusInternalServerError)

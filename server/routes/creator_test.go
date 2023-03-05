@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestGetCreatorHandler_GetWithID_ReturnsExpectedData(t *testing.T) {
+func TestCreatorHandler_GetWithID_ReturnsExpectedData(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	creator := &domain.Creator{
@@ -36,6 +36,8 @@ func TestGetCreatorHandler_GetWithID_ReturnsExpectedData(t *testing.T) {
 	// Assert
 	assert.Equal(t, http.StatusOK, writer.Code)
 
+	assert.Equal(t, creator.ID, mockCreatorService.getByIDCalledWith)
+
 	var result *domain.Creator
 	if err := json.Unmarshal(writer.Body.Bytes(), &result); err != nil {
 		t.Fatal(err.Error())
@@ -46,7 +48,7 @@ func TestGetCreatorHandler_GetWithID_ReturnsExpectedData(t *testing.T) {
 	assert.Empty(t, result.AuthID)
 }
 
-func TestGetCreatorHandler_GetWithID_ReturnsErrorOnMismatchingID(t *testing.T) {
+func TestCreatorHandler_GetWithID_ReturnsErrorOnMismatchingID(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	creator := &domain.Creator{
@@ -72,7 +74,7 @@ func TestGetCreatorHandler_GetWithID_ReturnsErrorOnMismatchingID(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, writer.Code)
 }
 
-func TestGetCreatorHandler_GetWithID_ReturnsErrorOnFetchError(t *testing.T) {
+func TestCreatorHandler_GetWithID_ReturnsErrorOnFetchError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	creator := &domain.Creator{

@@ -3,12 +3,12 @@ package services
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 type IJwtService interface {
-	GenerateToken(userID uuid.UUID) (string, error)
+	GenerateToken(userID string) (string, error)
 	ValidateToken(token string) (*jwt.Token, error)
 }
 
@@ -19,10 +19,10 @@ type JwtService struct {
 
 type QQClaims struct {
 	jwt.StandardClaims
-	UserID uuid.UUID `json:"userID"`
+	UserID string `json:"userID"`
 }
 
-func (service *JwtService) GenerateToken(userID uuid.UUID) (string, error) {
+func (service *JwtService) GenerateToken(userID string) (string, error) {
 	claims := &QQClaims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
@@ -39,6 +39,7 @@ func (service *JwtService) GenerateToken(userID uuid.UUID) (string, error) {
 func (service *JwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		if _, isvalid := token.Method.(*jwt.SigningMethodHMAC); !isvalid {
+			logrus.Error("Invalid token")
 			return nil, errors.New("invalid token")
 		}
 		return []byte(service.SecretKey), nil

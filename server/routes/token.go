@@ -29,6 +29,7 @@ type TokenInput struct {
 //	@Accept		json
 //	@Produce	json
 //	@Param		code	body		routes.TokenInput	true	"Your OAuth code"
+//	@Failure	200		{object}	any					"Token in the header"
 //	@Failure	400		{object}	any					"Malformed input"
 //	@Failure	401		{object}	any					"Failed to authenticate you"
 //	@Failure	500		{object}	any					"Internal Server Error"

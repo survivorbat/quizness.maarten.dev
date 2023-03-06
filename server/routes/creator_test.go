@@ -16,7 +16,7 @@ func TestCreatorHandler_GetWithID_ReturnsExpectedData(t *testing.T) {
 	// Arrange
 	creator := &domain.Creator{
 		BaseObject: domain.BaseObject{ID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")},
-		NickName:   "abc",
+		Nickname:   "abc",
 		AuthID:     "def",
 	}
 
@@ -27,7 +27,6 @@ func TestCreatorHandler_GetWithID_ReturnsExpectedData(t *testing.T) {
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
-	context.Params = gin.Params{{Key: "id", Value: creator.ID.String()}}
 	context.Set("user", creator.ID.String())
 
 	// Act
@@ -44,34 +43,8 @@ func TestCreatorHandler_GetWithID_ReturnsExpectedData(t *testing.T) {
 	}
 
 	assert.Equal(t, creator.ID, result.ID)
-	assert.Equal(t, creator.NickName, result.NickName)
+	assert.Equal(t, creator.Nickname, result.Nickname)
 	assert.Empty(t, result.AuthID)
-}
-
-func TestCreatorHandler_GetWithID_ReturnsErrorOnMismatchingID(t *testing.T) {
-	t.Parallel()
-	// Arrange
-	creator := &domain.Creator{
-		BaseObject: domain.BaseObject{ID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")},
-		NickName:   "abc",
-		AuthID:     "def",
-	}
-
-	mockCreatorService := &MockCreatorService{getByIDReturns: creator}
-	handler := &CreatorHandler{
-		CreatorService: mockCreatorService,
-	}
-
-	writer := httptest.NewRecorder()
-	context, _ := gin.CreateTestContext(writer)
-	context.Params = gin.Params{{Key: "id", Value: creator.ID.String()}}
-	context.Set("user", "c3c662ba-b8a4-4805-8109-0af37eb1e516") // Different
-
-	// Act
-	handler.GetWithID(context)
-
-	// Assert
-	assert.Equal(t, http.StatusUnauthorized, writer.Code)
 }
 
 func TestCreatorHandler_GetWithID_ReturnsErrorOnFetchError(t *testing.T) {
@@ -79,7 +52,7 @@ func TestCreatorHandler_GetWithID_ReturnsErrorOnFetchError(t *testing.T) {
 	// Arrange
 	creator := &domain.Creator{
 		BaseObject: domain.BaseObject{ID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")},
-		NickName:   "abc",
+		Nickname:   "abc",
 		AuthID:     "def",
 	}
 

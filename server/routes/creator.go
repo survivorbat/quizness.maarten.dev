@@ -14,24 +14,16 @@ type CreatorHandler struct {
 
 // GetWithID godoc
 //
-//	@Summary	Fetch a creator by ID, only works for your own ID
+//	@Summary	Fetch your account's data
 //	@Tags		Creator
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path		string			true	"Your creator ID"
 //	@Success	200	{object}	domain.Creator	"The creator"
 //	@Failure	500	{object}	any				"Internal Server Error"
-//	@Router		/api/v1/creators/{id} [get]
+//	@Router		/api/v1/creators/self [get]
+//	@Security	JWT
 func (g *CreatorHandler) GetWithID(c *gin.Context) {
-	id := c.Param("id")
 	authID := c.GetString("user")
-
-	// Users may only fetch their own data
-	if id != authID {
-		logrus.Errorf("User is not the authenticated one")
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
 
 	creator, err := g.CreatorService.GetByID(uuid.MustParse(authID))
 	if err != nil {

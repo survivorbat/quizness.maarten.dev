@@ -24,7 +24,10 @@ func TestCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 
 	// Assert
 	assert.NoError(t, err)
+
 	assert.Equal(t, authID, result.AuthID)
+
+	assert.NotEmpty(t, result.Nickname)
 	assert.NotEmpty(t, result.ID)
 }
 
@@ -38,15 +41,23 @@ func TestCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 
 	authID := "23902349"
 
-	database.Create(&domain.Creator{AuthID: authID})
+	creator := &domain.Creator{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")},
+		AuthID:     authID,
+		Nickname:   "existing name",
+	}
+
+	database.Create(creator)
 
 	// Act
 	result, err := service.GetOrCreate(authID)
 
 	// Assert
 	assert.NoError(t, err)
-	assert.Equal(t, authID, result.AuthID)
-	assert.NotEmpty(t, result.ID)
+
+	assert.Equal(t, creator.Nickname, result.Nickname)
+	assert.Equal(t, creator.ID, result.ID)
+	assert.Equal(t, creator.AuthID, result.AuthID)
 }
 
 func TestCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {

@@ -66,10 +66,14 @@ func (s *Server) Configure(router *gin.Engine) error {
 }
 
 func (s *Server) configureServices() {
+	quizService := &services.QuizService{Database: s.database}
 	creatorService := &services.CreatorService{Database: s.database}
 	jwtService := &services.JwtService{SecretKey: s.jwtSecret, Issuer: "QQ"}
+
 	s.authHandler = &routes.TokenHandler{CreatorService: creatorService, JwtService: jwtService, AuthConfig: s.oAuthConfig}
 	s.jwtHandler = &routes.JwtHandler{JwtService: jwtService}
+	s.quizHandler = &routes.QuizHandler{QuizService: quizService}
+	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 }
 
 func (s *Server) configureRoutes(router *gin.Engine) {
@@ -78,7 +82,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	// Guarded routes with JWT
 	apiRoutes := router.Group("/api/v1")
 	apiRoutes.Use(s.jwtHandler.JwtGuard())
-	apiRoutes.GET("/creators/:id", s.creatorHandler.GetWithID)
+	apiRoutes.GET("/creators/self", s.creatorHandler.GetWithID)
 	apiRoutes.GET("/quizzes", s.quizHandler.Get)
 
 	// Swagger

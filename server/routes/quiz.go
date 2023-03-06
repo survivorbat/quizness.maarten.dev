@@ -21,6 +21,7 @@ type QuizHandler struct {
 //	@Success	200	{object}	[]domain.Quiz	"Your quizzes"
 //	@Failure	500	{object}	any				"Internal Server Error"
 //	@Router		/api/v1/quizzes [get]
+//	@Security	JWT
 func (g *QuizHandler) Get(c *gin.Context) {
 	authID := c.GetString("user")
 

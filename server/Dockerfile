@@ -29,7 +29,8 @@ COPY . .
 
 RUN go get
 
-RUN go test $(go list ./... | grep -v 'vendor') \
+RUN swag init --output swagger -g cmd/qq/main.go  \
+ && go test $(go list ./... | grep -v 'vendor') \
  && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/server
 
 ############################

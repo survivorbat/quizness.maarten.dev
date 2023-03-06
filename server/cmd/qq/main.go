@@ -14,9 +14,9 @@ import (
 
 //	@title						QQ
 //	@BasePath					/
-//	@securityDefinitions.apikey	ApiKeyAuth
+//	@securityDefinitions.apikey	JWT
 //	@in							header
-//	@name						token
+//	@name						Authorization
 func main() {
 	_ = godotenv.Load()
 

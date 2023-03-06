@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
@@ -37,6 +38,6 @@ func (j *JwtHandler) JwtGuard() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", token.Claims.(services.QQClaims).UserID)
+		c.Set("user", token.Claims.(jwt.MapClaims)["userID"])
 	}
 }

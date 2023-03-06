@@ -30,18 +30,20 @@ COPY . .
 RUN go get \
  && go install github.com/swaggo/swag/cmd/swag@latest
 
-RUN swag init --output swagger -g cmd/qq/main.go  \
- && go test $(go list ./... | grep -v 'vendor') \
- && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/server
+RUN swag init --output swagger -g cmd/qq/main.go \
+ && go test $(go list ./... | grep -v 'vendor')
+
+WORKDIR $GOPATH/src/package/cmd/qq
+
+RUN GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/server
 
 ############################
 # STEP 2 build a small image
 ############################
 FROM scratch
 
-COPY --from=builder /etc/passwd /etc/group /etc/
-
-# Copy our static executable.
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
 COPY --from=builder /go/bin/server /go/bin/server
 
 # Use an unprivileged user.

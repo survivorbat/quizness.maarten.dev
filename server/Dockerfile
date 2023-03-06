@@ -27,7 +27,8 @@ WORKDIR $GOPATH/src/package
 
 COPY . .
 
-RUN go get
+RUN go get \
+ && go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN swag init --output swagger -g cmd/qq/main.go  \
  && go test $(go list ./... | grep -v 'vendor') \

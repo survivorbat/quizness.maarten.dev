@@ -1,5 +1,6 @@
 import React, {useEffect} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
+import BackendSdk from "../logic/sdk";
 
 function useQuery() {
   const {search} = useLocation();
@@ -7,7 +8,11 @@ function useQuery() {
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-function AuthPage() {
+interface AuthPageProps {
+  sdk: BackendSdk;
+}
+
+function AuthPage({sdk}: AuthPageProps) {
   const query = useQuery();
 
   const navigate = useNavigate();
@@ -19,14 +24,9 @@ function AuthPage() {
       return
     }
 
-    fetch(`http://localhost:8000/api/v1/tokens`, {method: 'post', body: JSON.stringify({code})}).then((result) => {
-      const token = result.headers.get('token')
-
-      if (token) {
-        localStorage.setItem('token', token)
-        navigate("/")
-      }
-    }).catch(console.error);
+    sdk.authenticate(code)
+        .then(() => navigate('/'))
+        .catch(console.error)
   })
 
   return <span>Authenticating...</span>

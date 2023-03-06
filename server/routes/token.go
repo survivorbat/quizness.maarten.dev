@@ -18,12 +18,23 @@ type TokenHandler struct {
 	AuthConfig     *oauth2.Config
 }
 
-type tokenInput struct {
+type TokenInput struct {
 	Code string `json:"code"`
 }
 
+// CreateToken godoc
+//
+//	@Summary	Create a new authentication token using OAuth
+//	@Tags		Token
+//	@Accept		json
+//	@Produce	json
+//	@Param		code	body		routes.TokenInput	true	"Your OAuth code"
+//	@Failure	400		{object}	any					"Malformed input"
+//	@Failure	401		{object}	any					"Failed to authenticate you"
+//	@Failure	500		{object}	any					"Internal Server Error"
+//	@Router		/api/v1/tokens [post]
 func (a *TokenHandler) CreateToken(c *gin.Context) {
-	var input *tokenInput
+	var input *TokenInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		logrus.WithError(err).Error("Failed to bind json")
 		c.AbortWithStatus(http.StatusBadRequest)

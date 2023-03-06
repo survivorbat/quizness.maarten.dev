@@ -12,6 +12,16 @@ type CreatorHandler struct {
 	CreatorService services.ICreatorService
 }
 
+// GetWithID godoc
+//
+//	@Summary	Fetch a creator by ID, only works for your own ID
+//	@Tags		Creator
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string			true	"Your creator ID"
+//	@Success	200	{object}	domain.Creator	"The creator"
+//	@Failure	500	{object}	any				"Internal Server Error"
+//	@Router		/api/v1/creators/{id} [get]
 func (g *CreatorHandler) GetWithID(c *gin.Context) {
 	id := c.Param("id")
 	authID := c.GetString("user")

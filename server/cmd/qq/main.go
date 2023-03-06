@@ -4,15 +4,24 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server"
+	_ "github.com/survivorbat/qq.maarten.dev/server/routes" // Import for swaggo
+	"github.com/toorop/gin-logrus"
 	"log"
 	"os"
 )
 
+//	@title						QQ
+//	@BasePath					/
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						token
 func main() {
 	_ = godotenv.Load()
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(ginlogrus.Logger(logrus.New()), gin.Recovery())
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:  []string{"http://localhost:3000", "https://qq.maarten.dev"},

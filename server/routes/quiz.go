@@ -12,6 +12,15 @@ type QuizHandler struct {
 	QuizService services.IQuizService
 }
 
+// Get godoc
+//
+//	@Summary	Fetch your quizzes
+//	@Tags		Quiz
+//	@Accept		json
+//	@Produce	json
+//	@Success	200	{object}	[]domain.Quiz	"Your quizzes"
+//	@Failure	500	{object}	any				"Internal Server Error"
+//	@Router		/api/v1/quizzes [get]
 func (g *QuizHandler) Get(c *gin.Context) {
 	authID := c.GetString("user")
 

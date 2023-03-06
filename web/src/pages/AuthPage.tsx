@@ -19,14 +19,15 @@ function AuthPage({sdk}: AuthPageProps) {
   const code = query.get('code');
 
   useEffect(() => {
+    // Redirect to the home page if there is no code
     if (!code) {
       navigate("/")
       return
     }
 
     sdk.authenticate(code)
-        .then(() => navigate('/'))
-        .catch(console.error)
+        .then(() => navigate('/creator'))
+        .catch(() => navigate('/'))
   })
 
   return <span>Authenticating...</span>

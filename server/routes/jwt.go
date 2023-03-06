@@ -41,3 +41,27 @@ func (j *JwtHandler) JwtGuard() gin.HandlerFunc {
 		c.Set("user", token.Claims.(jwt.MapClaims)["userID"])
 	}
 }
+
+// Refresh godoc
+//
+//	@Summary	Refresh your authentication token
+//	@Tags		Token
+//	@Accept		json
+//	@Produce	json
+//	@Failure	200		{object}	any					"Token in the header"
+//	@Failure	500	{object}	any				"Internal Server Error"
+//	@Router		/api/v1/tokens [put]
+//	@Security	JWT
+func (j *JwtHandler) Refresh(c *gin.Context) {
+	authID := c.GetString("user")
+
+	token, err := j.JwtService.GenerateToken(authID)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to generate token")
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Header("token", token)
+	c.Status(http.StatusOK)
+}

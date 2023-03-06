@@ -16,8 +16,8 @@ export const getGoogleUrl = () => {
   return `${rootUrl}?${qs.toString()}`;
 };
 
-function Login() {
+function LoginButton() {
   return <a href={getGoogleUrl()}>Login</a>
 }
 
-export default Login;
+export default LoginButton;

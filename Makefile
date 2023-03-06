@@ -23,6 +23,9 @@ server: ## Run the server
 	cd server && swag init --output swagger -g cmd/qq/main.go
 	cd server/cmd/qq && go run .
 
+ui: ## Run the ui
+	cd web && npm start
+
 install: # Install dependencies and tools
 	cd server && go get
 	cd web && npm i

@@ -34,21 +34,21 @@ type TokenInput struct {
 //	@Failure	401		{object}	any					"Failed to authenticate you"
 //	@Failure	500		{object}	any					"Internal Server Error"
 //	@Router		/api/v1/tokens [post]
-func (a *TokenHandler) CreateToken(c *gin.Context) {
+func (t *TokenHandler) CreateToken(c *gin.Context) {
 	var input *TokenInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		logrus.WithError(err).Error("Failed to bind json")
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	tok, err := a.AuthConfig.Exchange(oauth2.NoContext, input.Code)
+	tok, err := t.AuthConfig.Exchange(oauth2.NoContext, input.Code)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to exchange token")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	client := a.AuthConfig.Client(context.TODO(), tok)
+	client := t.AuthConfig.Client(context.TODO(), tok)
 	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
 		logrus.WithError(err).Error("Failed to fetch user info")
@@ -72,14 +72,14 @@ func (a *TokenHandler) CreateToken(c *gin.Context) {
 	}
 
 	// Ensure user exists
-	user, err := a.CreatorService.GetOrCreate(googleUser.Sub)
+	user, err := t.CreatorService.GetOrCreate(googleUser.Sub)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to create or get user")
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	token, err := a.JwtService.GenerateToken(user.ID.String())
+	token, err := t.JwtService.GenerateToken(user.ID.String())
 	if err != nil {
 		logrus.WithError(err).Error("Failed to generate token")
 		c.AbortWithStatus(http.StatusInternalServerError)

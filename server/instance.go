@@ -48,7 +48,7 @@ type Server struct {
 	oAuthConfig *oauth2.Config
 
 	// Handlers
-	authHandler    *routes.TokenHandler
+	tokenHandler   *routes.TokenHandler
 	jwtHandler     *routes.JwtHandler
 	creatorHandler *routes.CreatorHandler
 	quizHandler    *routes.QuizHandler
@@ -70,20 +70,21 @@ func (s *Server) configureServices() {
 	creatorService := &services.CreatorService{Database: s.database}
 	jwtService := &services.JwtService{SecretKey: s.jwtSecret, Issuer: "QQ"}
 
-	s.authHandler = &routes.TokenHandler{CreatorService: creatorService, JwtService: jwtService, AuthConfig: s.oAuthConfig}
+	s.tokenHandler = &routes.TokenHandler{CreatorService: creatorService, JwtService: jwtService, AuthConfig: s.oAuthConfig}
 	s.jwtHandler = &routes.JwtHandler{JwtService: jwtService}
 	s.quizHandler = &routes.QuizHandler{QuizService: quizService}
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 }
 
 func (s *Server) configureRoutes(router *gin.Engine) {
-	router.POST("/api/v1/tokens", s.authHandler.CreateToken)
+	router.POST("/api/v1/tokens", s.tokenHandler.CreateToken)
 
 	// Guarded routes with JWT
 	apiRoutes := router.Group("/api/v1")
 	apiRoutes.Use(s.jwtHandler.JwtGuard())
 	apiRoutes.GET("/creators/self", s.creatorHandler.GetWithID)
 	apiRoutes.GET("/quizzes", s.quizHandler.Get)
+	apiRoutes.PUT("/tokens", s.jwtHandler.Refresh)
 
 	// Swagger
 	url := ginSwagger.URL(swaggerJsonPath)

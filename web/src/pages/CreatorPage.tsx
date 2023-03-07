@@ -4,7 +4,7 @@ interface CreatorPageProps {
   sdk: BackendSdk;
 }
 
-function CreatorPage({}: CreatorPageProps) {
+function CreatorPage(props: CreatorPageProps) {
   return <div>Creator page</div>
 }
 

@@ -26,8 +26,8 @@ function AuthPage({sdk}: AuthPageProps) {
     }
 
     sdk.authenticate(code)
-        .then(() => navigate('/creator'))
-        .catch(() => navigate('/'))
+      .then(() => navigate('/creator'))
+      .catch(() => navigate('/'))
   })
 
   return <span>Authenticating...</span>

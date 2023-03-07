@@ -4,7 +4,7 @@ interface FrontPageProps {
   sdk: BackendSdk;
 }
 
-function FrontPage({}: FrontPageProps) {
+function FrontPage(props: FrontPageProps) {
   return <div>Frontpage</div>
 }
 

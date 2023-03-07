@@ -3,14 +3,13 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import './App.css';
 import FrontPage from "./pages/FrontPage";
 import CreatorPage from "./pages/CreatorPage";
-import LoginButton from "./components/LoginButton";
 import AuthPage from "./pages/AuthPage";
 import BackendSdk from "./logic/sdk";
 import {Grid} from "@mui/material";
 import Header from "./components/Header";
 
 function App() {
-    const [sdk] = useState(new BackendSdk(process.env.REACT_APP_BACKEND_URL as string));
+  const [sdk] = useState(new BackendSdk(process.env.REACT_APP_BACKEND_URL as string));
 
   return (
     <BrowserRouter>

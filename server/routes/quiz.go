@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )
@@ -18,7 +19,7 @@ type QuizHandler struct {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
-//	@Success	200	{object}	[]domain.Quiz	"Your quizzes"
+//	@Success	200	{array}	[]domain.Quiz	"Your quizzes"
 //	@Failure	500	{object}	any				"Internal Server Error"
 //	@Router		/api/v1/quizzes [get]
 //	@Security	JWT
@@ -33,4 +34,45 @@ func (g *QuizHandler) Get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, quizzes)
+}
+
+type QuizInput struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description" binding:"required"`
+}
+
+// Post godoc
+//
+//	@Summary	Create a quiz
+//	@Tags		Quiz
+//	@Accept		json
+//	@Produce	json
+//	@Success	200	{object}	domain.Quiz	"Your quiz"
+//	@Failure	500	{object}	any				"Internal Server Error"
+//	@Router		/api/v1/quizzes [post]
+//	@Security	JWT
+func (g *QuizHandler) Post(c *gin.Context) {
+	authID := c.GetString("user")
+
+	var input *QuizInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logrus.WithError(err).Error("Failed to parse input")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	quiz := &domain.Quiz{
+		Name:        input.Name,
+		Description: input.Description,
+		CreatorID:   uuid.MustParse(authID),
+	}
+
+	err := g.QuizService.Create(quiz)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to get by creator")
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, quiz)
 }

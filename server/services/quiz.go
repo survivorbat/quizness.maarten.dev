@@ -12,6 +12,7 @@ var _ IQuizService = new(QuizService)
 
 type IQuizService interface {
 	GetByCreator(id uuid.UUID) ([]*domain.Quiz, error)
+	Create(quiz *domain.Quiz) error
 }
 
 type QuizService struct {
@@ -26,4 +27,8 @@ func (c *QuizService) GetByCreator(id uuid.UUID) ([]*domain.Quiz, error) {
 	}
 
 	return result, nil
+}
+
+func (c *QuizService) Create(quiz *domain.Quiz) error {
+	return c.Database.Create(quiz).Error
 }

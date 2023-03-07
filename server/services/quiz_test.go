@@ -59,3 +59,41 @@ func TestQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 	assert.Empty(t, result)
 	assert.ErrorContains(t, err, "no such table")
 }
+
+func TestQuizService_Create_CreatesQuiz(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	_ = database.AutoMigrate(&domain.Quiz{})
+
+	service := &QuizService{Database: database}
+
+	// Act
+	err := service.Create(&domain.Quiz{Name: "test"})
+
+	// Assert
+	assert.NoError(t, err)
+
+	var result *domain.Quiz
+	if err := database.First(&result).Error; err != nil {
+		t.Fatal(err.Error())
+	}
+	assert.Equal(t, "test", result.Name)
+}
+
+func TestQuizService_Create_ReturnsDatabaseError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+
+	// By not running this, we're sure it will return an error
+	//_ = database.AutoMigrate(&domain.Quiz{})
+
+	service := &QuizService{Database: database}
+
+	// Act
+	err := service.Create(&domain.Quiz{})
+
+	// Assert
+	assert.ErrorContains(t, err, "no such table")
+}

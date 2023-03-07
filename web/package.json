@@ -26,12 +26,7 @@
     "start": "react-scripts start",
     "build": "env-cmd -f prod.env react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
-  },
-  "devDependencies": {
-    "gh-pages": "^3.2.3"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

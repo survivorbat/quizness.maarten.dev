@@ -14,5 +14,11 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
+
+      - name: Remove .env
+        uses: JesseTG/rm@v1.0.3
+        with:
+          path: .env
+
       - run: npm install
       - run: npm run deploy

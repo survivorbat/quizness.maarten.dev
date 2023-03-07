@@ -27,4 +27,11 @@ jobs:
           git config --global user.email "pipeline"
 
       - run: npm install
-      - run: npm run deploy
+
+      - run: npm run build
+
+      - name: deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build

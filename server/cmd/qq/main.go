@@ -12,11 +12,11 @@ import (
 	"os"
 )
 
-//	@title						QQ
-//	@BasePath					/
-//	@securityDefinitions.apikey	JWT
-//	@in							header
-//	@name						Authorization
+// @title						QQ
+// @BasePath					/
+// @securityDefinitions.apikey	JWT
+// @in							header
+// @name						Authorization
 func main() {
 	_ = godotenv.Load()
 
@@ -29,7 +29,7 @@ func main() {
 		ExposeHeaders: []string{"Content-Length", "token"},
 	}))
 
-	instance, err := server.NewServer(os.Getenv("DB_CONNECTION_STRING"), os.Getenv("JWT_SECRET"), os.Getenv("AUTH_CLIENT_ID"), os.Getenv("AUTH_SECRET"), os.Getenv("AUTH_REDIRECT_URL"))
+	instance, err := server.NewServer(os.Getenv("DB_CONNECTION_STRING"), os.Getenv("JWT_SECRET"), os.Getenv("AUTH_CLIENT_ID"), os.Getenv("AUTH_CLIENT_SECRET"), os.Getenv("AUTH_REDIRECT_URL"))
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

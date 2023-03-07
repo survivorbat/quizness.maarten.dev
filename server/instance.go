@@ -16,11 +16,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	swaggerEndpoint = "/swagger/*any"
-	swaggerJsonPath = "/swagger/doc.json"
-)
-
 func NewServer(connectionString string, jwtSecret string, oAuthID string, oAuthSecret string, authRedirectUrl string) (*Server, error) {
 	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 	if err != nil {
@@ -87,6 +82,6 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	apiRoutes.PUT("/tokens", s.jwtHandler.Refresh)
 
 	// Swagger
-	url := ginSwagger.URL(swaggerJsonPath)
-	router.GET(swaggerEndpoint, ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	url := ginSwagger.URL("/api/swagger/doc.json")
+	router.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 }

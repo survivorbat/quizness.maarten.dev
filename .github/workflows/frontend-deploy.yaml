@@ -21,5 +21,10 @@ jobs:
         with:
           path: .env
 
+      - name: Set git settings
+        run: |
+          git config --global user.name "Pipeline"
+          git config --global user.email "pipeline"
+
       - run: npm install
       - run: npm run deploy

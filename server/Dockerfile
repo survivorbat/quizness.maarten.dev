@@ -44,7 +44,7 @@ FROM scratch
 
 COPY --from=builder /etc/passwd /etc/group /etc/
 COPY --from=builder /go/bin/server /go/bin/server
-COPY --from=builder certs/* /etc/pki/tls/certs/
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/
 
 # Use an unprivileged user.
 USER appuser:appuser

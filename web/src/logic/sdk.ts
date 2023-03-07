@@ -22,6 +22,8 @@ class BackendSdk {
             return true
         }
 
+        localStorage.removeItem('token');
+
         return false;
     }
 

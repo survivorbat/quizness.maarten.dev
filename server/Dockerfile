@@ -9,7 +9,7 @@ RUN apk add --update --no-cache \
     # Git is required for fetching the dependencies.
     git \
     # For CGO_ENABLED=1 we need these gcc and alpine SDK packages
-    gcc alpine-sdk
+    gcc alpine-sdk ca-certificates
 
 ARG UID=10001
 ARG USER=appuser
@@ -42,9 +42,9 @@ RUN GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/s
 ############################
 FROM scratch
 
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
+COPY --from=builder /etc/passwd /etc/group /etc/
 COPY --from=builder /go/bin/server /go/bin/server
+COPY --from=builder certs/* /etc/pki/tls/certs/
 
 # Use an unprivileged user.
 USER appuser:appuser

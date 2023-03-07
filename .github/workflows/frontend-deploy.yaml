@@ -1,0 +1,18 @@
+name: Frontend deploy
+
+on: [push]
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm install
+      - run: npm run deploy

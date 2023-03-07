@@ -1,3 +1,5 @@
+import Creator from "../models/creator";
+
 class BackendSdk {
     // May be empty
     private sdkToken?: string | null;
@@ -39,6 +41,15 @@ class BackendSdk {
 
         this.sdkToken = null;
         localStorage.removeItem('token');
+    }
+
+    async getCreator(): Promise<Creator> {
+        const result = await fetch(`${this.baseUrl}/api/v1/creators/self`, {headers: this.authHeader()});
+        if (!result.ok) {
+            return Promise.reject();
+        }
+
+        return result.json();
     }
 }
 

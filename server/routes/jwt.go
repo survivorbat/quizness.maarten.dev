@@ -48,8 +48,8 @@ func (j *JwtHandler) JwtGuard() gin.HandlerFunc {
 //	@Tags		Token
 //	@Accept		json
 //	@Produce	json
-//	@Failure	200		{object}	any					"Token in the header"
-//	@Failure	500	{object}	any				"Internal Server Error"
+//	@Failure	200	{object}	any	"Token in the header"
+//	@Failure	500	{object}	any	"Internal Server Error"
 //	@Router		/api/v1/tokens [put]
 //	@Security	JWT
 func (j *JwtHandler) Refresh(c *gin.Context) {

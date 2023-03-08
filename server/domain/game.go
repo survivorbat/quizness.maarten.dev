@@ -10,7 +10,7 @@ type Game struct {
 	BaseObject
 
 	QuizID uuid.UUID `json:"quizID"`
-	Quiz   *Quiz     `json:"quiz" gorm:"QuizID"`
+	Quiz   *Quiz     `json:"quiz" gorm:"foreignKey:QuizID"`
 
 	Code        string    `json:"code"`
 	PlayerLimit uint      `json:"limit"`
@@ -21,7 +21,7 @@ type Game struct {
 
 // playerCompare is used in the containsWithKey function
 func playerCompare(p *Player) string {
-	return p.NickName
+	return p.Nickname
 }
 
 // PlayerJoin adds a player to the game, returns an error if a player with the nickname

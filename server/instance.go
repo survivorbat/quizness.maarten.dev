@@ -49,7 +49,13 @@ type Server struct {
 }
 
 func (s *Server) Configure(router *gin.Engine) error {
-	if err := s.database.AutoMigrate(&domain.Game{}, &domain.Quiz{}, &domain.Creator{}, &domain.Player{}); err != nil {
+	if err := s.database.AutoMigrate(
+		&domain.Game{},
+		&domain.Quiz{},
+		&domain.Creator{},
+		&domain.Player{},
+		&domain.QuestionOption{},
+	); err != nil {
 		logrus.WithError(err).Error("Failed to migrate")
 		return err
 	}

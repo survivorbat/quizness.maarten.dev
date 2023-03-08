@@ -8,7 +8,7 @@ import (
 func TestGame_PlayerJoin_AddsPlayer(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	player := &Player{NickName: "abc"}
+	player := &Player{Nickname: "abc"}
 	game := Game{}
 
 	// Act
@@ -21,8 +21,8 @@ func TestGame_PlayerJoin_AddsPlayer(t *testing.T) {
 func TestGame_PlayerJoin_ReturnsErrorOnAlreadyPresent(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	player := &Player{NickName: "abc"}
-	game := Game{Players: []*Player{{NickName: "abc"}}}
+	player := &Player{Nickname: "abc"}
+	game := Game{Players: []*Player{{Nickname: "abc"}}}
 
 	// Act
 	err := game.PlayerJoin(player)
@@ -34,8 +34,8 @@ func TestGame_PlayerJoin_ReturnsErrorOnAlreadyPresent(t *testing.T) {
 func TestGame_PlayerLeave_AddsPlayer(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	player := &Player{NickName: "abc"}
-	game := Game{Players: []*Player{{NickName: "abc"}}}
+	player := &Player{Nickname: "abc"}
+	game := Game{Players: []*Player{{Nickname: "abc"}}}
 
 	// Act
 	err := game.PlayerLeave(player)
@@ -47,7 +47,7 @@ func TestGame_PlayerLeave_AddsPlayer(t *testing.T) {
 func TestGame_PlayerLeave_ReturnsErrorOnAlreadyPresent(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	player := &Player{NickName: "abc"}
+	player := &Player{Nickname: "abc"}
 	game := Game{Players: []*Player{}}
 
 	// Act

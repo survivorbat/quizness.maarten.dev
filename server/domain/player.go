@@ -1,12 +1,21 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+	"github.com/google/uuid"
+)
 
 type Player struct {
 	BaseObject
 
-	NickName string `json:"nickName"`
+	Nickname string `json:"nickname"`
 
 	GameID uuid.UUID `json:"gameID"`
-	Game   *Game     `json:"game" gorm:"GameID"`
+	Game   *Game     `json:"game" gorm:"foreignKey:GameID"`
+}
+
+func (c *Player) GenerateNickname() {
+	prefix := namePrefixes[randomGenerator.Intn(len(namePrefixes))]
+	suffix := nameSuffixes[randomGenerator.Intn(len(nameSuffixes))]
+	c.Nickname = fmt.Sprintf("%s %s", prefix, suffix)
 }

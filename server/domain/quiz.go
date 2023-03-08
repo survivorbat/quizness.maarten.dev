@@ -11,6 +11,6 @@ type Quiz struct {
 	CreatorID uuid.UUID `json:"creatorID"`
 	Creator   *Creator  `json:"creator" gorm:"foreignKey:CreatorID"`
 
-	Questions []Question `json:"questions,omitempty" gorm:"-"`
-	Games     []*Game    `json:"games" gorm:"foreignKey:QuizID"`
+	MultipleChoiceQuestions []*MultipleChoiceQuestion `json:"multipleChoiceQuestions,omitempty" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
+	Games                   []*Game                   `json:"games" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
 }

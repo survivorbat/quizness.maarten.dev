@@ -12,11 +12,11 @@ import (
 	"os"
 )
 
-// @title						QQ
-// @BasePath					/
-// @securityDefinitions.apikey	JWT
-// @in							header
-// @name						Authorization
+//	@title						QQ
+//	@BasePath					/
+//	@securityDefinitions.apikey	JWT
+//	@in							header
+//	@name						Authorization
 func main() {
 	_ = godotenv.Load()
 

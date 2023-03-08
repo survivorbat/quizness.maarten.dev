@@ -7,7 +7,7 @@ import (
 )
 
 type BaseObject struct {
-	ID        uuid.UUID `gorm:"type:uuid" json:"id" example:"00000000-0000-0000-0000-000000000000"`
+	ID        uuid.UUID `gorm:"type:uuid" json:"id" example:"00000000-0000-0000-0000-000000000000"` // desc: The unique uuid generated on database creation
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }

@@ -43,13 +43,18 @@ var (
 		"Fox",
 		"Raccoon",
 		"Gazelle",
-		"Phone",
 		"Deer",
 		"Lemonade",
 		"Joker",
 		"Rabbit",
 		"Zombie",
 		"Skeleton",
+		"Apple",
+		"Pear",
+		"Banana",
+		"Mango",
+		"Lemon",
+		"Typewriter",
 	}
 	randSource      = rand.NewSource(time.Now().Unix())
 	randomGenerator = rand.New(randSource)

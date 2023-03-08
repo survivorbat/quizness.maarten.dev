@@ -7,7 +7,7 @@ type QuestionOption struct {
 	BaseObject
 	MultipleChoiceQuestionID *uuid.UUID `json:"-"`
 
-	TextOption string `json:"textOption"`
+	TextOption string `json:"textOption" example:"Haarlem"` // desc: A textual option for this question
 
 	// Expand for more option types
 	// ImageOption

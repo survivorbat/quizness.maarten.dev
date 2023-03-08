@@ -6,17 +6,20 @@ import (
 	"time"
 )
 
+// Game is an occurrence of a quiz, a quiz can be conducted multiple times
 type Game struct {
 	BaseObject
 
-	QuizID uuid.UUID `json:"quizID"`
-	Quiz   *Quiz     `json:"quiz" gorm:"foreignKey:QuizID"`
+	QuizID uuid.UUID `json:"quizID" example:"00000000-0000-0000-0000-000000000000"`
+	Quiz   *Quiz     `json:"-" gorm:"foreignKey:QuizID"`
 
-	Code        string    `json:"code"`
-	PlayerLimit uint      `json:"limit"`
-	Players     []*Player `json:"players,omitempty" gorm:"foreignKey:GameID"`
-	StartTime   time.Time `json:"startTime"`
-	FinishTime  time.Time `json:"finishTime"`
+	Code        string `json:"code" example:"KO384B"` // desc: The 'join' code for new players
+	PlayerLimit uint   `json:"limit"`                 // desc: The max amount of players that may join this game
+
+	Players []*Player `json:"-" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
+
+	StartTime  time.Time `json:"startTime"`  // desc: The time that this game started
+	FinishTime time.Time `json:"finishTime"` // desc: The time that this game ended
 }
 
 // playerCompare is used in the containsWithKey function
@@ -48,6 +51,25 @@ func (q *Game) PlayerLeave(player *Player) error {
 }
 
 // Start starts the game
-func (q *Game) Start() {
+func (q *Game) Start() error {
+	if !q.StartTime.IsZero() {
+		return errors.New("game has already started")
+	}
+
 	q.StartTime = time.Now()
+	return nil
+}
+
+// Finish ends the game
+func (q *Game) Finish() error {
+	if q.StartTime.IsZero() {
+		return errors.New("game has not started")
+	}
+
+	if !q.FinishTime.IsZero() {
+		return errors.New("game has already finished")
+	}
+
+	q.FinishTime = time.Now()
+	return nil
 }

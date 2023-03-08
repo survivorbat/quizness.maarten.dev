@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
+	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )
@@ -36,11 +37,6 @@ func (g *QuizHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, quizzes)
 }
 
-type QuizInput struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description" binding:"required"`
-}
-
 // Post godoc
 //
 //	@Summary	Create a quiz
@@ -54,7 +50,7 @@ type QuizInput struct {
 func (g *QuizHandler) Post(c *gin.Context) {
 	authID := c.GetString("user")
 
-	var input *QuizInput
+	var input *inputs.QuizInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		logrus.WithError(err).Error("Failed to parse input")
 		c.AbortWithStatus(http.StatusBadRequest)

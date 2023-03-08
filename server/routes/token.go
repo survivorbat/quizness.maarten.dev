@@ -6,6 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"github.com/zalando/gin-oauth2/google"
 	"golang.org/x/oauth2"
@@ -21,10 +22,6 @@ type TokenHandler struct {
 	AuthConfig     *oauth2.Config
 }
 
-type TokenInput struct {
-	Code string `json:"code"`
-}
-
 // CreateToken godoc
 //
 //	@Summary	Create a new authentication token using OAuth
@@ -38,7 +35,7 @@ type TokenInput struct {
 //	@Failure	500		{object}	any					"Internal Server Error"
 //	@Router		/api/v1/tokens [post]
 func (t *TokenHandler) CreateToken(c *gin.Context) {
-	var input *TokenInput
+	var input *inputs.TokenInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		logrus.WithError(err).Error("Failed to bind json")
 		c.AbortWithStatus(http.StatusBadRequest)

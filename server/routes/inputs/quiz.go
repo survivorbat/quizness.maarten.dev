@@ -1,11 +1,11 @@
 package inputs
 
-type QuestionOptionInput struct {
+type QuestionOption struct {
 	Type       string `json:"type"`
 	TextOption string `json:"textOption"`
 }
 
-type QuestionInput struct {
+type Question struct {
 	Title             string `json:"title" binding:"required"`
 	Description       string `json:"description" binding:"required"`
 	DurationInSeconds uint   `json:"durationInSeconds" binding:"required"`
@@ -13,11 +13,11 @@ type QuestionInput struct {
 	Order             uint   `json:"order" binding:"required"`
 	Type              string `json:"type" binding:"required"`
 
-	Options []*QuestionOptionInput `json:"options"`
+	Options []*QuestionOption `json:"options"`
 }
 
-type QuizInput struct {
-	Name        string           `json:"name" binding:"required"`
-	Description string           `json:"description" binding:"required"`
-	Questions   []*QuestionInput `json:"questions"`
+type Quiz struct {
+	Name        string      `json:"name" binding:"required"`
+	Description string      `json:"description" binding:"required"`
+	Questions   []*Question `json:"questions"`
 }

@@ -43,14 +43,14 @@ func (g *QuizHandler) Get(c *gin.Context) {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
-//	@Success	200	{object}	domain.Quiz	"Your quiz"
+//	@Success	200	{object}	inputs.Quiz	"Your quiz"
 //	@Failure	500	{object}	any				"Internal Server Error"
 //	@Router		/api/v1/quizzes [post]
 //	@Security	JWT
 func (g *QuizHandler) Post(c *gin.Context) {
 	authID := c.GetString("user")
 
-	var input *inputs.QuizInput
+	var input *inputs.Quiz
 	if err := c.ShouldBindJSON(&input); err != nil {
 		logrus.WithError(err).Error("Failed to parse input")
 		c.AbortWithStatus(http.StatusBadRequest)

@@ -28,14 +28,14 @@ type TokenHandler struct {
 //	@Tags		Token
 //	@Accept		json
 //	@Produce	json
-//	@Param		code	body		routes.TokenInput	true	"Your OAuth code"
+//	@Param		code	body		inputs.Token	true	"Your OAuth code"
 //	@Failure	200		{object}	any					"Token in the header"
 //	@Failure	400		{object}	any					"Malformed input"
 //	@Failure	401		{object}	any					"Failed to authenticate you"
 //	@Failure	500		{object}	any					"Internal Server Error"
 //	@Router		/api/v1/tokens [post]
 func (t *TokenHandler) CreateToken(c *gin.Context) {
-	var input *inputs.TokenInput
+	var input *inputs.Token
 	if err := c.ShouldBindJSON(&input); err != nil {
 		logrus.WithError(err).Error("Failed to bind json")
 		c.AbortWithStatus(http.StatusBadRequest)

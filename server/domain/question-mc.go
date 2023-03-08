@@ -7,8 +7,7 @@ type MultipleChoiceQuestion struct {
 	BaseQuestion
 
 	// Not exposed for obvious reasons
-	AnswerID uuid.UUID       `json:"-"`
-	Answer   *QuestionOption `json:"-" gorm:"foreignKey:AnswerID;constraint:OnDelete:CASCADE"`
+	AnswerID uuid.UUID `json:"-"`
 
 	Options []*QuestionOption `json:"options" gorm:"foreignKey:MultipleChoiceQuestionID;constraint:OnDelete:CASCADE"`
 }

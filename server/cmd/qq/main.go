@@ -12,11 +12,11 @@ import (
 	"os"
 )
 
-//	@title						QQ
-//	@BasePath					/
-//	@securityDefinitions.apikey	JWT
-//	@in							header
-//	@name						Authorization
+// @title						QQ
+// @BasePath					/
+// @securityDefinitions.apikey	JWT
+// @in							header
+// @name						Authorization
 func main() {
 	_ = godotenv.Load()
 
@@ -25,8 +25,9 @@ func main() {
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:  []string{"http://localhost:3000", "https://qq.maarten.dev"},
-		AllowMethods:  []string{"GET", "PUT", "PATCH", "Delete"},
-		ExposeHeaders: []string{"Content-Length", "token"},
+		AllowMethods:  []string{"GET", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Authorization"},
+		ExposeHeaders: []string{"Content-Length", "Token"},
 	}))
 
 	instance, err := server.NewServer(os.Getenv("DB_CONNECTION_STRING"), os.Getenv("JWT_SECRET"), os.Getenv("AUTH_CLIENT_ID"), os.Getenv("AUTH_CLIENT_SECRET"), os.Getenv("AUTH_REDIRECT_URL"))

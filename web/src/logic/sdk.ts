@@ -1,48 +1,37 @@
 import Creator from "../models/creator";
 
 class BackendSdk {
-  // May be empty
-  private sdkToken?: string | null;
-
-  constructor(private readonly baseUrl: string) {
-    this.sdkToken = localStorage.getItem('token');
+  constructor(private readonly baseUrl: string, private readonly sdkToken: string | null) {
   }
 
   // Code is the OAuth authentication code to exchange with our own backend
-  async authenticate(code: string): Promise<boolean> {
+  async authenticate(code: string): Promise<string> {
     const result = await fetch(`${this.baseUrl}/api/v1/tokens`, {method: 'post', body: JSON.stringify({code})});
 
     const token = result.headers.get('token')
 
     if (token) {
-      localStorage.setItem('token', token)
-      this.sdkToken = token;
-      return true
+      return token
     }
 
-    localStorage.removeItem('token');
-
-    return false;
+    throw new Error('Failed to authenticate');
   }
 
-  async refresh(): Promise<void> {
+  async refresh(): Promise<string> {
     const result = await fetch(`${this.baseUrl}/api/v1/tokens`, {method: 'put', headers: this.authHeader()});
     const token = result.headers.get('token')
 
     if (token) {
-      localStorage.setItem('token', token)
-      this.sdkToken = token;
-      return
+      return token
     }
 
-    this.sdkToken = null;
-    localStorage.removeItem('token');
+    throw new Error('Failed to authenticate');
   }
 
   async getCreator(): Promise<Creator> {
     const result = await fetch(`${this.baseUrl}/api/v1/creators/self`, {headers: this.authHeader()});
     if (!result.ok) {
-      return Promise.reject();
+      throw new Error('Failed to fetch data');
     }
 
     return result.json();

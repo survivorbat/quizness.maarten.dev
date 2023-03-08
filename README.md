@@ -15,4 +15,4 @@ your system.
 2. Start the database using `make dr`
 3. Start the server using `make server`
 4. Start the frontend using `make ui`
-
+5. Visit [localhost:3000](http://localhost:3000)

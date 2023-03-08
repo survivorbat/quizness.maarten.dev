@@ -1,6 +1,5 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import BackendSdk from "../logic/sdk";
 
 function useQuery() {
   const {search} = useLocation();
@@ -9,10 +8,13 @@ function useQuery() {
 }
 
 interface AuthPageProps {
-  sdk: BackendSdk;
+  authenticateFunction: (code: string) => Promise<string>;
+  successCallback: (token: string) => void;
 }
 
-function AuthPage({sdk}: AuthPageProps) {
+function AuthPage({authenticateFunction, successCallback}: AuthPageProps) {
+  const [invalid, setInvalid] = useState(false);
+
   const query = useQuery();
 
   const navigate = useNavigate();
@@ -21,16 +23,17 @@ function AuthPage({sdk}: AuthPageProps) {
   useEffect(() => {
     // Redirect to the home page if there is no code
     if (!code) {
-      navigate("/")
+      setInvalid(true);
       return
     }
 
-    sdk.authenticate(code)
+    authenticateFunction(code)
+      .then(successCallback)
       .then(() => navigate('/creator'))
-      .catch(() => navigate('/'))
+      .catch(() => setInvalid(true));
   })
 
-  return <span>Authenticating...</span>
+  return invalid ? <span>Failed to authenticate you, please try again</span> : <span>Authenticating...</span>;
 }
 
 export default AuthPage;

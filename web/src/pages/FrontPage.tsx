@@ -1,10 +1,4 @@
-import BackendSdk from "../logic/sdk";
-
-interface FrontPageProps {
-  sdk: BackendSdk;
-}
-
-function FrontPage(props: FrontPageProps) {
+function FrontPage() {
   return <div>Frontpage</div>
 }
 

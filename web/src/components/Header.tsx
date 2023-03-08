@@ -3,7 +3,7 @@ import {Grid} from "@mui/material";
 import LoginButton from "./LoginButton";
 
 function Header() {
-  return <Grid xs={12}>
+  return <Grid>
     <LoginButton/>
   </Grid>
 }

@@ -1,11 +1,11 @@
-import BackendSdk from "../logic/sdk";
+import Creator from "../models/creator";
 
 interface CreatorPageProps {
-  sdk: BackendSdk;
+  creator: Creator;
 }
 
 function CreatorPage(props: CreatorPageProps) {
-  return <div>Creator page</div>
+  return <h1>Welcome {props.creator.nickname}</h1>
 }
 
 export default CreatorPage;

@@ -12,7 +12,8 @@ your system.
 ## Getting started
 
 1. Set the `AUTH_CLIENT_SECRET` in your environment
-2. Start the database using `make dr`
-3. Start the server using `make server`
-4. Start the frontend using `make ui`
-5. Visit [localhost:3000](http://localhost:3000)
+2. Install dependencies using `make install`
+3. Start the database using `make dr`
+4. Start the server using `make server`
+5. Start the frontend using `make ui`
+6. Visit [localhost:3000](http://localhost:3000)

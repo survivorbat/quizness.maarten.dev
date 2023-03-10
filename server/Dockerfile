@@ -1,4 +1,6 @@
-FROM golang:alpine AS builder
+ARG VERSION=1.20
+
+FROM golang:${VERSION}-alpine AS builder
 
 # See https://github.com/hadolint/hadolint/wiki/DL4006
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]

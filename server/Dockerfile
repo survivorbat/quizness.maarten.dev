@@ -33,7 +33,7 @@ RUN go get \
  && go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN swag init --output swagger -g cmd/qq/main.go \
- && go test $(go list ./... | grep -v 'vendor')
+ && go test ./... -timeout=60s -parallel=10
 
 WORKDIR $GOPATH/src/package/cmd/qq
 

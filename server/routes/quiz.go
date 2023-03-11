@@ -42,8 +42,9 @@ func (g *QuizHandler) Get(c *gin.Context) {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
-//	@Success	200	{object}	inputs.Quiz	"Your quiz"
-//	@Failure	500	{object}	any			"Internal Server Error"
+//	@Param		input	body		inputs.Quiz	true	"Your quiz"
+//	@Success	200		{object}	inputs.Quiz	"Your quiz"
+//	@Failure	500		{object}	any			"Internal Server Error"
 //	@Router		/api/v1/quizzes [post]
 //	@Security	JWT
 func (g *QuizHandler) Post(c *gin.Context) {
@@ -75,10 +76,11 @@ func (g *QuizHandler) Post(c *gin.Context) {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path		string		true	"ID of the quiz"
-//	@Success	200	{object}	inputs.Quiz	"Your quiz"
-//	@Failure	403	{object}	any			"You can only update your own quizzes"
-//	@Failure	500	{object}	any			"Internal Server Error"
+//	@Param		id		path		string		true	"ID of the quiz"
+//	@Param		input	body		inputs.Quiz	true	"Your quiz"
+//	@Success	200		{object}	inputs.Quiz	"Your quiz"
+//	@Failure	403		{object}	any			"You can only update your own quizzes"
+//	@Failure	500		{object}	any			"Internal Server Error"
 //	@Router		/api/v1/quizzes/{id} [put]
 //	@Security	JWT
 func (g *QuizHandler) Put(c *gin.Context) {

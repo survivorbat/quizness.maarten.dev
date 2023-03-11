@@ -78,7 +78,7 @@ func (g *QuizHandler) Post(c *gin.Context) {
 //	@Param		id	path		string		true	"ID of the quiz"
 //	@Success	200	{object}	inputs.Quiz	"Your quiz"
 //	@Failure	500	{object}	any			"Internal Server Error"
-//	@Router		/api/v1/quizzes/:id [put]
+//	@Router		/api/v1/quizzes/{id} [put]
 //	@Security	JWT
 func (g *QuizHandler) Put(c *gin.Context) {
 	authID := c.GetString("user")

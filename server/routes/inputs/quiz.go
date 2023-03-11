@@ -1,5 +1,10 @@
 package inputs
 
+import (
+	"github.com/google/uuid"
+	"github.com/survivorbat/qq.maarten.dev/server/domain"
+)
+
 type QuestionOption struct {
 	TextOption string `json:"textOption" example:"Rome"` // desc: Only one value must be filled in
 	Answer     bool   `json:"answer" example:"true"`     // desc: Marks this option as the answer, should only be used once
@@ -73,4 +78,44 @@ func (q Quiz) hasValidOrder() bool {
 	}
 
 	return count == control
+}
+
+// NewUuid may be overwritten in tests
+var NewUuid = uuid.New
+
+// ToDomain is tested through the routes test
+
+func (q Quiz) ToDomain() *domain.Quiz {
+	mcQuestions := make([]*domain.MultipleChoiceQuestion, len(q.MultipleChoiceQuestions))
+	for index, mcQuestion := range q.MultipleChoiceQuestions {
+		result := &domain.MultipleChoiceQuestion{
+			BaseQuestion: domain.BaseQuestion{
+				Title:             mcQuestion.Title,
+				Description:       mcQuestion.Description,
+				DurationInSeconds: mcQuestion.DurationInSeconds,
+				Category:          mcQuestion.Category,
+				Order:             mcQuestion.Order,
+			},
+			Options: make([]*domain.QuestionOption, len(mcQuestion.Options)),
+		}
+
+		for index, mcOption := range mcQuestion.Options {
+			result.Options[index] = &domain.QuestionOption{
+				BaseObject: domain.BaseObject{ID: NewUuid()},
+				TextOption: mcOption.TextOption,
+			}
+
+			if mcOption.Answer {
+				result.AnswerID = result.Options[index].ID
+			}
+		}
+
+		mcQuestions[index] = result
+	}
+
+	return &domain.Quiz{
+		Name:                    q.Name,
+		Description:             q.Description,
+		MultipleChoiceQuestions: mcQuestions,
+	}
 }

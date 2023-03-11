@@ -24,7 +24,7 @@ type TokenHandler struct {
 
 // CreateToken godoc
 //
-//	@Summary	Create a new authentication token using OAuth
+//	@Summary	CreateOrUpdate a new authentication token using OAuth
 //	@Tags		Token
 //	@Accept		json
 //	@Produce	json

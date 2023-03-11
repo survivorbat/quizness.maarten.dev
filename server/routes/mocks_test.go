@@ -27,8 +27,8 @@ type MockQuizService struct {
 	getByCreatorReturns      []*domain.Quiz
 	getByCreatorReturnsError error
 
-	createCalledWith *domain.Quiz
-	createReturns    error
+	createOrUpdateCalledWith *domain.Quiz
+	createOrUpdateReturns    error
 
 	getByIdReturns      *domain.Quiz
 	getByIdReturnsError error
@@ -46,9 +46,9 @@ func (m *MockQuizService) GetByID(uuid.UUID) (*domain.Quiz, error) {
 	return m.getByIdReturns, m.getByIdReturnsError
 }
 
-func (m *MockQuizService) Create(quiz *domain.Quiz) error {
-	m.createCalledWith = quiz
-	return m.createReturns
+func (m *MockQuizService) CreateOrUpdate(quiz *domain.Quiz) error {
+	m.createOrUpdateCalledWith = quiz
+	return m.createOrUpdateReturns
 }
 func (m *MockQuizService) Delete(id uuid.UUID) error {
 	m.deleteCalledWith = id

@@ -4,16 +4,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"testing"
 )
 
 func TestCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	_ = database.AutoMigrate(&domain.Creator{})
+	database := getDb(t)
+	autoMigrate(t, database)
 
 	service := &CreatorService{Database: database}
 
@@ -34,8 +32,8 @@ func TestCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 func TestCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	_ = database.AutoMigrate(&domain.Creator{})
+	database := getDb(t)
+	autoMigrate(t, database)
 
 	service := &CreatorService{Database: database}
 
@@ -63,10 +61,10 @@ func TestCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 func TestCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	database := getDb(t)
 
 	// By not running this, we're sure it will return an error
-	//_ = database.AutoMigrate(&domain.Creator{})
+	//autoMigrate(t, database
 
 	service := &CreatorService{Database: database}
 
@@ -83,8 +81,8 @@ func TestCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 func TestCreatorService_GetByID_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	_ = database.AutoMigrate(&domain.Creator{})
+	database := getDb(t)
+	autoMigrate(t, database)
 
 	service := &CreatorService{Database: database}
 
@@ -103,10 +101,10 @@ func TestCreatorService_GetByID_ReturnsUser(t *testing.T) {
 func TestCreatorService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	database := getDb(t)
 
 	// By not running this, we're sure it will return an error
-	//_ = database.AutoMigrate(&domain.Creator{})
+	//autoMigrate(t, database
 
 	service := &CreatorService{Database: database}
 

@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"testing"
 )
@@ -12,14 +11,14 @@ import (
 func TestQuizService_GetByID_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	_ = database.AutoMigrate(&domain.Quiz{}, &domain.Creator{}, &domain.MultipleChoiceQuestion{}, &domain.QuestionOption{})
+	database := getDb(t)
+	autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 
 	creators := []*domain.Creator{
-		{BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")}, AuthID: "a"},
-		{BaseObject: domain.BaseObject{ID: uuid.MustParse("5dff22a7-afc7-4e4b-a63d-9903dedd66bf")}, AuthID: "b"},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")}, Nickname: "a", AuthID: "a"},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("5dff22a7-afc7-4e4b-a63d-9903dedd66bf")}, Nickname: "b", AuthID: "b"},
 	}
 
 	quizzes := []*domain.Quiz{
@@ -41,10 +40,10 @@ func TestQuizService_GetByID_ReturnsUser(t *testing.T) {
 func TestQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	database := getDb(t)
 
 	// By not running this, we're sure it will return an error
-	//_ = database.AutoMigrate(&domain.Quiz{})
+	// autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 
@@ -59,14 +58,14 @@ func TestQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
 func TestQuizService_GetByCreator_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	_ = database.AutoMigrate(&domain.Quiz{}, &domain.Creator{}, &domain.MultipleChoiceQuestion{}, &domain.QuestionOption{})
+	database := getDb(t)
+	autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 
 	creators := []*domain.Creator{
-		{BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")}, AuthID: "a"},
-		{BaseObject: domain.BaseObject{ID: uuid.MustParse("5dff22a7-afc7-4e4b-a63d-9903dedd66bf")}, AuthID: "b"},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")}, Nickname: "a", AuthID: "a"},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("5dff22a7-afc7-4e4b-a63d-9903dedd66bf")}, Nickname: "b", AuthID: "b"},
 	}
 
 	quizzes := []*domain.Quiz{
@@ -92,10 +91,10 @@ func TestQuizService_GetByCreator_ReturnsUser(t *testing.T) {
 func TestQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	database := getDb(t)
 
 	// By not running this, we're sure it will return an error
-	//_ = database.AutoMigrate(&domain.Quiz{})
+	// autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 
@@ -107,16 +106,31 @@ func TestQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 	assert.ErrorContains(t, err, "no such table")
 }
 
-func TestQuizService_Create_CreatesQuiz(t *testing.T) {
+func TestQuizService_CreateOrUpdate_CreatesNewQuiz(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	_ = database.AutoMigrate(&domain.Quiz{})
+	database := getDb(t)
+	autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 
+	quiz := &domain.Quiz{
+		Name:    "test",
+		Creator: &domain.Creator{},
+		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+			{
+				BaseQuestion: domain.BaseQuestion{
+					Title: "abc",
+				},
+				Options: []*domain.QuestionOption{
+					{TextOption: "def"},
+				},
+			},
+		},
+	}
+
 	// Act
-	err := service.Create(&domain.Quiz{Name: "test"})
+	err := service.CreateOrUpdate(quiz)
 
 	// Assert
 	assert.NoError(t, err)
@@ -128,18 +142,76 @@ func TestQuizService_Create_CreatesQuiz(t *testing.T) {
 	assert.Equal(t, "test", result.Name)
 }
 
-func TestQuizService_Create_ReturnsDatabaseError(t *testing.T) {
+func TestQuizService_CreateOrUpdate_UpdatesExisting(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	service := &QuizService{Database: database}
+
+	existing := &domain.Quiz{
+		Name:    "old",
+		Creator: &domain.Creator{Nickname: "abc", AuthID: "def"},
+		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+			{
+				BaseQuestion: domain.BaseQuestion{
+					Title: "abc",
+				},
+				Options: []*domain.QuestionOption{
+					{TextOption: "def"},
+				},
+			},
+		},
+	}
+	if err := database.Create(existing).Error; err != nil {
+		t.Fatal(err)
+	}
+
+	update := &domain.Quiz{
+		BaseObject: domain.BaseObject{ID: existing.ID},
+		Name:       "new",
+		Creator:    &domain.Creator{Nickname: "abc", AuthID: "def"},
+		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+			{
+				BaseQuestion: domain.BaseQuestion{
+					Title: "def",
+				},
+				Options: []*domain.QuestionOption{
+					{TextOption: "abc"},
+				},
+			},
+		},
+	}
+
+	// Act
+	err := service.CreateOrUpdate(update)
+
+	// Assert
+	assert.NoError(t, err)
+
+	var result *domain.Quiz
+	if err := database.Preload("MultipleChoiceQuestions.Options").First(&result).Error; err != nil {
+		t.Fatal(err.Error())
+	}
+
+	assert.Equal(t, "new", result.Name)
+	assert.Equal(t, "def", result.MultipleChoiceQuestions[0].Title)
+	assert.Equal(t, "abc", result.MultipleChoiceQuestions[0].Options[0].TextOption)
+}
+
+func TestQuizService_CreateOrUpdate_ReturnsDatabaseError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
 
 	// By not running this, we're sure it will return an error
-	//_ = database.AutoMigrate(&domain.Quiz{})
+	// autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 
 	// Act
-	err := service.Create(&domain.Quiz{})
+	err := service.CreateOrUpdate(&domain.Quiz{})
 
 	// Assert
 	assert.ErrorContains(t, err, "no such table")
@@ -148,12 +220,26 @@ func TestQuizService_Create_ReturnsDatabaseError(t *testing.T) {
 func TestQuizService_Delete_DeletesQuiz(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	_ = database.AutoMigrate(&domain.Quiz{})
+	database := getDb(t)
+	autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 
-	quiz := &domain.Quiz{Name: "test"}
+	quiz := &domain.Quiz{
+		Name:    "test",
+		Creator: &domain.Creator{},
+		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+			{
+				BaseQuestion: domain.BaseQuestion{
+					Title: "abc",
+				},
+				Options: []*domain.QuestionOption{
+					{TextOption: "def"},
+				},
+			},
+		},
+	}
+
 	if err := database.Create(quiz).Error; err != nil {
 		t.Fatal(err.Error())
 	}
@@ -167,15 +253,27 @@ func TestQuizService_Delete_DeletesQuiz(t *testing.T) {
 	var result *domain.Quiz
 	err = database.First(&result).Error
 	assert.Equal(t, gorm.ErrRecordNotFound, err)
+
+	var questions []*domain.MultipleChoiceQuestion
+	if err := database.Find(&questions).Error; err != nil {
+		t.Fatal(err.Error())
+	}
+	assert.Len(t, questions, 0)
+
+	var options []*domain.QuestionOption
+	if err := database.Find(&options).Error; err != nil {
+		t.Fatal(err.Error())
+	}
+	assert.Len(t, options, 0)
 }
 
 func TestQuizService_Delete_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	database := getDb(t)
 
 	// By not running this, we're sure it will return an error
-	//_ = database.AutoMigrate(&domain.Quiz{})
+	// autoMigrate(t, database)
 
 	service := &QuizService{Database: database}
 

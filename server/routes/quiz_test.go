@@ -126,7 +126,7 @@ func TestQuizHandler_Post_CallsService(t *testing.T) {
 	}
 
 	var newUuidCalls int
-	newUuid = func() uuid.UUID {
+	inputs.NewUuid = func() uuid.UUID {
 		newUuidCalls++
 
 		if len(answerIDs) >= newUuidCalls {
@@ -166,13 +166,13 @@ func TestQuizHandler_Post_CallsService(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expected, quizService.createCalledWith)
+	assert.Equal(t, expected, quizService.createOrUpdateCalledWith)
 }
 
 func TestQuizHandler_Post_ReturnsAnyErrors(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	quizService := &MockQuizService{createReturns: assert.AnError}
+	quizService := &MockQuizService{createOrUpdateReturns: assert.AnError}
 	handler := &QuizHandler{QuizService: quizService}
 
 	input := &inputs.Quiz{
@@ -203,6 +203,213 @@ func TestQuizHandler_Post_ReturnsAnyErrors(t *testing.T) {
 
 	// Act
 	handler.Post(context)
+
+	// Assert
+	assert.Equal(t, http.StatusInternalServerError, writer.Code)
+}
+
+func TestQuizHandler_Put_ReturnsInvalidIDError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	handler := &QuizHandler{}
+
+	input := &inputs.Quiz{}
+	inputJson, _ := json.Marshal(input)
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodPut, "", io.NopCloser(bytes.NewBuffer(inputJson)))
+	context.Params = []gin.Param{{Key: "id", Value: "no"}}
+
+	// Act
+	handler.Put(context)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
+}
+
+func TestQuizHandler_Put_ReturnsForbiddenOnNotMyQuiz(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	quizService := &MockQuizService{
+		getByIdReturns: &domain.Quiz{
+			CreatorID: uuid.MustParse("e3274bf0-b154-4d37-a6fd-878d530025f9"),
+		},
+	}
+	handler := &QuizHandler{QuizService: quizService}
+
+	input := &inputs.Quiz{}
+	inputJson, _ := json.Marshal(input)
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodPut, "", io.NopCloser(bytes.NewBuffer(inputJson)))
+	context.Params = []gin.Param{{Key: "id", Value: "ac1d0e93-b545-48be-bff9-656a933afa04"}}
+
+	// Act
+	handler.Put(context)
+
+	// Assert
+	assert.Equal(t, http.StatusForbidden, writer.Code)
+}
+
+func TestQuizHandler_Put_ReturnsValidationError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	quizService := &MockQuizService{
+		getByIdReturns: &domain.Quiz{
+			CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+		},
+	}
+	handler := &QuizHandler{QuizService: quizService}
+
+	input := &inputs.Quiz{}
+	inputJson, _ := json.Marshal(input)
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodPut, "", io.NopCloser(bytes.NewBuffer(inputJson)))
+	context.Params = []gin.Param{{Key: "id", Value: "ac1d0e93-b545-48be-bff9-656a933afa04"}}
+
+	// Act
+	handler.Put(context)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
+}
+
+func TestQuizHandler_Put_CallsService(t *testing.T) {
+	//t.Parallel() Can't be run in parallel because of the override
+	// Arrange
+	quizService := &MockQuizService{
+		getByIdReturns: &domain.Quiz{
+			CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+		},
+	}
+	handler := &QuizHandler{QuizService: quizService}
+
+	input := &inputs.Quiz{
+		Name:        "My Awesome Quiz",
+		Description: "Best quiz ever",
+		MultipleChoiceQuestions: []*inputs.MultipleChoiceQuestion{
+			{
+				Title:             "What is 2+2",
+				Description:       "Simple math",
+				DurationInSeconds: 15,
+				Category:          "Math",
+				Order:             1,
+				Options: []*inputs.QuestionOption{
+					{TextOption: "20"},
+					{TextOption: "15"},
+					{TextOption: "4", Answer: true},
+					{TextOption: "3"},
+				},
+			},
+		},
+	}
+	inputJson, _ := json.Marshal(input)
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodPut, "", io.NopCloser(bytes.NewBuffer(inputJson)))
+	context.Params = []gin.Param{{Key: "id", Value: "ac1d0e93-b545-48be-bff9-656a933afa04"}}
+
+	answerIDs := []uuid.UUID{
+		uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+		uuid.MustParse("044bc72e-145a-47fb-969c-16577a08c0e4"),
+		uuid.MustParse("76e86314-ce95-4a47-98ce-180dcc724432"),
+		uuid.MustParse("1ccca86d-ecb7-4a3e-8097-0e30a3a404e1"),
+	}
+
+	var newUuidCalls int
+	inputs.NewUuid = func() uuid.UUID {
+		newUuidCalls++
+
+		if len(answerIDs) >= newUuidCalls {
+			return answerIDs[newUuidCalls-1]
+		}
+
+		return uuid.New()
+	}
+
+	// Act
+	handler.Put(context)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, writer.Code)
+
+	expected := &domain.Quiz{
+		BaseObject:  domain.BaseObject{ID: uuid.MustParse("ac1d0e93-b545-48be-bff9-656a933afa04")},
+		Name:        "My Awesome Quiz",
+		Description: "Best quiz ever",
+		CreatorID:   uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+			{
+				BaseQuestion: domain.BaseQuestion{
+					Title:             "What is 2+2",
+					Description:       "Simple math",
+					DurationInSeconds: 15,
+					Category:          "Math",
+					Order:             1,
+				},
+				AnswerID: answerIDs[2],
+				Options: []*domain.QuestionOption{
+					{TextOption: "20", BaseObject: domain.BaseObject{ID: answerIDs[0]}},
+					{TextOption: "15", BaseObject: domain.BaseObject{ID: answerIDs[1]}},
+					{TextOption: "4", BaseObject: domain.BaseObject{ID: answerIDs[2]}},
+					{TextOption: "3", BaseObject: domain.BaseObject{ID: answerIDs[3]}},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, expected, quizService.createOrUpdateCalledWith)
+}
+
+func TestQuizHandler_Put_ReturnsAnyErrors(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	quizService := &MockQuizService{
+		getByIdReturns: &domain.Quiz{
+			CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+		},
+		createOrUpdateReturns: assert.AnError,
+	}
+	handler := &QuizHandler{QuizService: quizService}
+
+	input := &inputs.Quiz{
+		Name:        "My Awesome Quiz",
+		Description: "Best quiz ever",
+		MultipleChoiceQuestions: []*inputs.MultipleChoiceQuestion{
+			{
+				Title:             "What is 2+2",
+				Description:       "Simple math",
+				DurationInSeconds: 15,
+				Category:          "Math",
+				Order:             1,
+				Options: []*inputs.QuestionOption{
+					{TextOption: "20"},
+					{TextOption: "15"},
+					{TextOption: "4", Answer: true},
+					{TextOption: "3"},
+				},
+			},
+		},
+	}
+	inputJson, _ := json.Marshal(input)
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodPut, "", io.NopCloser(bytes.NewBuffer(inputJson)))
+	context.Params = []gin.Param{{Key: "id", Value: "6e074865-0d22-4013-a4ad-ff03e94740e0"}}
+
+	// Act
+	handler.Put(context)
 
 	// Assert
 	assert.Equal(t, http.StatusInternalServerError, writer.Code)

@@ -38,7 +38,7 @@ func (g *QuizHandler) Get(c *gin.Context) {
 
 // Post godoc
 //
-//	@Summary	CreateOrUpdate a quiz
+//	@Summary	Create a quiz
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json

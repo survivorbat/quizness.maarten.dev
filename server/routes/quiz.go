@@ -75,6 +75,7 @@ func (g *QuizHandler) Post(c *gin.Context) {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
+//	@Param		id	path		string		true	"ID of the quiz"
 //	@Success	200	{object}	inputs.Quiz	"Your quiz"
 //	@Failure	500	{object}	any			"Internal Server Error"
 //	@Router		/api/v1/quizzes/:id [put]

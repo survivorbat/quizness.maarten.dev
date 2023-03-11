@@ -77,6 +77,7 @@ func (g *QuizHandler) Post(c *gin.Context) {
 //	@Produce	json
 //	@Param		id	path		string		true	"ID of the quiz"
 //	@Success	200	{object}	inputs.Quiz	"Your quiz"
+//	@Failure	403	{object}	any			"You can only update your own quizzes"
 //	@Failure	500	{object}	any			"Internal Server Error"
 //	@Router		/api/v1/quizzes/{id} [put]
 //	@Security	JWT
@@ -126,6 +127,7 @@ func (g *QuizHandler) Put(c *gin.Context) {
 //	@Produce	json
 //	@Param		id	path		string	true	"ID of the quiz"
 //	@Success	204	{object}	any
+//	@Failure	403	{object}	any	"You can only delete your own quizzes"
 //	@Failure	500	{object}	any	"Internal Server Error"
 //	@Router		/api/v1/quizzes/{id} [delete]
 //	@Security	JWT

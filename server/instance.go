@@ -108,6 +108,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 func (s *Server) configureValidator() {
 	if val, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		val.RegisterStructValidation(inputs.IsValidator, new(inputs.Quiz))
+		val.RegisterStructValidation(inputs.IsValidator, new(inputs.MultipleChoiceQuestion))
 		return
 	}
 

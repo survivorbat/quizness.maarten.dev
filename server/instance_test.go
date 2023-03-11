@@ -139,7 +139,7 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 						Category:          "egh",
 						Order:             0,
 						Options: []*inputs.QuestionOption{
-							{TextOption: "fgh", Answer: true}, {TextOption: "ghi"},
+							{TextOption: "fgh"}, {TextOption: "ghi"},
 							{TextOption: "hij"}, {TextOption: "ijk", Answer: true},
 						},
 					},
@@ -151,7 +151,7 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 						Order:             0,
 						Options: []*inputs.QuestionOption{
 							{TextOption: "fgh", Answer: true}, {TextOption: "ghi"},
-							{TextOption: "hij"}, {TextOption: "ijk", Answer: true},
+							{TextOption: "hij"}, {TextOption: "ijk"},
 						},
 					},
 				},
@@ -165,12 +165,10 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 					{
 						Title:             "cde",
 						Description:       "def",
-						DurationInSeconds: 15,
-						Category:          "egh",
-						Order:             0,
+						DurationInSeconds: 15, Category: "egh",
+						Order: 0,
 						Options: []*inputs.QuestionOption{
-							{TextOption: "fgh"}, {TextOption: "ghi"},
-							{TextOption: "hij", Answer: true}, {TextOption: "ijk"},
+							{TextOption: "hij"}, {TextOption: "ijk"},
 						},
 					},
 				},
@@ -251,7 +249,7 @@ func TestNewServer_PostQuiz_SavesQuiz(t *testing.T) {
 				Category:          "egh",
 				Order:             0,
 				Options: []*inputs.QuestionOption{
-					{TextOption: "fgh"}, {TextOption: "ghi", Answer: true},
+					{TextOption: "fgh"}, {TextOption: "ghi"},
 					{TextOption: "hij", Answer: true}, {TextOption: "ijk"},
 				},
 			},
@@ -323,7 +321,7 @@ func TestNewServer_PutQuiz_SavesNewQuiz(t *testing.T) {
 				Category:          "egh",
 				Order:             0,
 				Options: []*inputs.QuestionOption{
-					{TextOption: "fgh"}, {TextOption: "ghi", Answer: true},
+					{TextOption: "fgh"}, {TextOption: "ghi"},
 					{TextOption: "hij", Answer: true}, {TextOption: "ijk"},
 				},
 			},
@@ -385,8 +383,10 @@ func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 	defer ts.Close()
 
 	old := &domain.Quiz{
+		BaseObject:  domain.BaseObject{ID: uuid.MustParse("3660def9-bd13-4c94-b9cd-d449eef82503")},
 		Name:        "old",
 		Description: "older",
+		Creator:     &domain.Creator{BaseObject: domain.BaseObject{ID: userID}},
 		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
 			{
 				BaseQuestion: domain.BaseQuestion{
@@ -417,7 +417,7 @@ func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 				Order:             0,
 				Options: []*inputs.QuestionOption{
 					{TextOption: "fgh"}, {TextOption: "ghi", Answer: true},
-					{TextOption: "hij", Answer: true}, {TextOption: "ijk"},
+					{TextOption: "hij"}, {TextOption: "ijk"},
 				},
 			},
 		},
@@ -445,7 +445,7 @@ func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 
 	var result *domain.Quiz
-	if err := instance.database.Preload("MultipleChoiceQuestions.Options").Where("id = ?", "3660def9-bd13-4c94-b9cd-d449eef82503").First(&result).Error; err != nil {
+	if err := instance.database.Preload("MultipleChoiceQuestions.Options").Where("id = ?", old.ID).First(&result).Error; err != nil {
 		t.Fatal(err.Error())
 	}
 

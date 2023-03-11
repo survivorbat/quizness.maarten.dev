@@ -15,9 +15,9 @@ type MultipleChoiceQuestion struct {
 	Description       string `json:"description" example:"Subjective, but whatever ;)"`
 	DurationInSeconds uint   `json:"durationInSeconds" binding:"required,min=5,max=60" example:"15"`
 	Category          string `json:"category" binding:"required,min=3" example:"Geography"`
-	Order             uint   `json:"order" binding:"required" example:"0"` // desc: Determines the order of this question in the quiz
+	Order             uint   `json:"order" example:"0"` // desc: Determines the order of this question in the quiz
 
-	Options []*QuestionOption `json:"options" binding:"required,gte=2,lte=4"`
+	Options []*QuestionOption `json:"options" binding:"required,dive,min=2,max=4"`
 }
 
 func (m MultipleChoiceQuestion) hasOneAnswer() bool {
@@ -48,7 +48,7 @@ func (m MultipleChoiceQuestion) IsValid() (bool, any, string, string, string, st
 type Quiz struct {
 	Name                    string                    `json:"name" binding:"required,min=3,max=30" example:"My awesome quiz"`
 	Description             string                    `json:"description" binding:"omitempty,max=250" example:"This is going to be amazing"`
-	MultipleChoiceQuestions []*MultipleChoiceQuestion `json:"multipleChoiceQuestions" binding:"lte=20"`
+	MultipleChoiceQuestions []*MultipleChoiceQuestion `json:"multipleChoiceQuestions" binding:"required,dive,max=20"`
 }
 
 func (q Quiz) IsValid() (bool, any, string, string, string, string) {
@@ -63,6 +63,7 @@ func (q Quiz) IsValid() (bool, any, string, string, string, string) {
 	return false, "", "", "", "", ""
 }
 
+// hasAnyQuestions is preparation for more question types
 func (q Quiz) hasAnyQuestions() bool {
 	return len(q.MultipleChoiceQuestions) > 0
 }

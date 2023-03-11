@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestMultipleChoiceQuestion_HasOneAnswer(t *testing.T) {
+func TestMultipleChoiceQuestion_HasOneAnswer_ReturnsExpectedValue(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
 		input    *MultipleChoiceQuestion

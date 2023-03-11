@@ -118,7 +118,7 @@ func (g *QuizHandler) Put(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, quiz)
+	c.JSON(http.StatusOK, update)
 }
 
 // Delete godoc

@@ -26,7 +26,6 @@ func populateDatabase[T any](t *testing.T, database *gorm.DB, data ...T) {
 }
 
 func TestNewServer_GetQuizzes_ReturnsData(t *testing.T) {
-	t.Parallel()
 	// Arrange
 	databaseOpen = sqlite.Open
 	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
@@ -177,9 +176,7 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 	}
 
 	for name, testData := range tests {
-		testData := testData
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
 			// Arrange
 			databaseOpen = sqlite.Open
 			connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
@@ -221,7 +218,6 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 }
 
 func TestNewServer_PostQuiz_SavesQuiz(t *testing.T) {
-	t.Parallel()
 	// Arrange
 	databaseOpen = sqlite.Open
 	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
@@ -293,7 +289,6 @@ func TestNewServer_PostQuiz_SavesQuiz(t *testing.T) {
 }
 
 func TestNewServer_PutQuiz_SavesNewQuiz(t *testing.T) {
-	t.Parallel()
 	// Arrange
 	databaseOpen = sqlite.Open
 	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
@@ -365,7 +360,6 @@ func TestNewServer_PutQuiz_SavesNewQuiz(t *testing.T) {
 }
 
 func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
-	t.Parallel()
 	// Arrange
 	databaseOpen = sqlite.Open
 	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())

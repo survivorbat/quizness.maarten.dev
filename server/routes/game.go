@@ -21,6 +21,7 @@ type GameHandler struct {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
+//	@Param		id		path		string		true	"ID of the quiz"
 //	@Success	200	{array}		[]domain.Game	"This quiz' games"
 //	@Failure	400	{object}	any				"Invalid uuid"
 //	@Failure	403	{object}	any				"You can only view your own games"
@@ -66,6 +67,7 @@ func (g *GameHandler) Get(c *gin.Context) {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
+//	@Param		id		path		string		true	"ID of the quiz"
 //	@Param		input	body		inputs.Game	true	"Your game"
 //	@Success	200		{object}	domain.Game	"The new game"
 //	@Failure	400		{object}	any			"Invalid uuid"

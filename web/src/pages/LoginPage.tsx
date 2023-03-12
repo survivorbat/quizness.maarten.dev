@@ -7,12 +7,12 @@ function useQuery() {
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-interface AuthPageProps {
+interface LoginPageProps {
   authenticateFunction: (code: string) => Promise<string>;
   successCallback: (token: string) => void;
 }
 
-function AuthPage({authenticateFunction, successCallback}: AuthPageProps) {
+function LoginPage({authenticateFunction, successCallback}: LoginPageProps) {
   const [invalid, setInvalid] = useState(false);
 
   const query = useQuery();
@@ -36,4 +36,4 @@ function AuthPage({authenticateFunction, successCallback}: AuthPageProps) {
   return invalid ? <span>Failed to authenticate you, please try again</span> : <span>Authenticating...</span>;
 }
 
-export default AuthPage;
+export default LoginPage;

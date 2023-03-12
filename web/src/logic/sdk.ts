@@ -1,4 +1,5 @@
 import Creator from "../models/creator";
+import {Quiz} from "../models/quiz";
 
 class BackendSdk {
   constructor(private readonly baseUrl: string, private readonly sdkToken: string | null) {
@@ -30,6 +31,15 @@ class BackendSdk {
 
   async getCreator(): Promise<Creator> {
     const result = await fetch(`${this.baseUrl}/api/v1/creators/self`, {headers: this.authHeader()});
+    if (!result.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    return result.json();
+  }
+
+  async getQuizzes(): Promise<Quiz[]> {
+    const result = await fetch(`${this.baseUrl}/api/v1/quizzes`, {headers: this.authHeader()});
     if (!result.ok) {
       throw new Error('Failed to fetch data');
     }

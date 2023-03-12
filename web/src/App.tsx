@@ -3,11 +3,12 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import './App.css';
 import FrontPage from "./pages/FrontPage";
 import CreatorPage from "./pages/CreatorPage";
-import AuthPage from "./pages/AuthPage";
+import LoginPage from "./pages/LoginPage";
 import BackendSdk from "./logic/sdk";
 import {Grid} from "@mui/material";
 import Header from "./components/Header";
-import Creator from "./models/creator";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LogoutPage from "./pages/LogoutPage";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL as string;
 
@@ -16,19 +17,26 @@ function App() {
 
   const sdk = new BackendSdk(backendUrl, token);
 
-  const authCallback = (token: string) => {
+  const loginCallback = (token: string) => {
     localStorage.setItem('token', token);
     setToken(token);
+  }
+  const logoutCallback = () => {
+    localStorage.removeItem('token');
+    setToken('');
   }
 
   return (
     <BrowserRouter>
       <Grid container>
-        <Header/>
+        <Header authenticated={!!token}/>
         <Routes>
           <Route path="/" element={<FrontPage/>}/>
-          <Route path="/auth" element={<AuthPage successCallback={authCallback} authenticateFunction={(token) => sdk.authenticate(token)}/>}/>
-          <Route path="/creator" element={<CreatorPage creator={{} as Creator}/>}/>
+          <Route path="/login" element={<LoginPage successCallback={loginCallback}
+                                                   authenticateFunction={(token) => sdk.authenticate(token)}/>}/>
+          <Route path="/logout" element={<LogoutPage callback={logoutCallback}/>}/>
+          <Route path="/creator"
+                 element={<ProtectedRoute authenticated={!!token}><CreatorPage sdk={sdk}/></ProtectedRoute>}/>
         </Routes>
       </Grid>
     </BrowserRouter>

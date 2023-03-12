@@ -521,3 +521,67 @@ func TestNewServer_GetGames_ReturnsData(t *testing.T) {
 		assert.Equal(t, quizzes[0].Games[1].Code, result[1].Code)
 	}
 }
+
+func TestNewServer_PostGame_CreatesGame(t *testing.T) {
+	// Arrange
+	databaseOpen = sqlite.Open
+	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
+	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+
+	// Test http server
+	engine := gin.Default()
+	_ = instance.Configure(engine)
+	ts := httptest.NewServer(engine)
+
+	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
+	token, _ := instance.jwtService.GenerateToken(userID.String())
+
+	quizzes := []*domain.Quiz{
+		{
+			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
+			Name:       "def",
+			CreatorID:  userID,
+		},
+	}
+
+	// Populate database
+	populateDatabase(t, instance.database, quizzes...)
+
+	// Close it in the end
+	defer ts.Close()
+
+	input := &inputs.Game{PlayerLimit: 20}
+	inputJson, _ := json.Marshal(input)
+
+	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes/%s/games", ts.URL, quizzes[0].ID.String()))
+	request := &http.Request{
+		Method: http.MethodPost,
+		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
+		URL:    requestUrl,
+		Body:   io.NopCloser(bytes.NewBuffer(inputJson)),
+	}
+
+	// Act
+	response, err := http.DefaultClient.Do(request)
+
+	// Assert
+	assert.NoError(t, err)
+	if !assert.NotNil(t, response) {
+		t.FailNow()
+	}
+
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	var result *domain.Game
+	if err := json.Unmarshal(body, &result); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	assert.Equal(t, input.PlayerLimit, result.PlayerLimit)
+}

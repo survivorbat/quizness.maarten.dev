@@ -3,6 +3,8 @@ package domain
 import (
 	"errors"
 	"github.com/google/uuid"
+	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -14,7 +16,7 @@ type Game struct {
 	Quiz   *Quiz     `json:"-" gorm:"foreignKey:QuizID"`
 
 	Code        string `json:"code" example:"KO384B"` // desc: The 'join' code for new players
-	PlayerLimit uint   `json:"limit"`                 // desc: The max amount of players that may join this game
+	PlayerLimit uint   `json:"playerLimit"`           // desc: The max amount of players that may join this game
 
 	Players []*Player `json:"-" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
 
@@ -50,13 +52,20 @@ func (q *Game) PlayerLeave(player *Player) error {
 	return nil
 }
 
-// Start starts the game
+// Start starts the game and sets the code
 func (q *Game) Start() error {
 	if !q.StartTime.IsZero() {
 		return errors.New("game has already started")
 	}
 
 	q.StartTime = time.Now()
+
+	code := make([]string, 6)
+	for i := range code {
+		code[i] = codeChars[rand.Intn(len(codeChars))]
+	}
+	q.Code = strings.Join(code, "")
+
 	return nil
 }
 

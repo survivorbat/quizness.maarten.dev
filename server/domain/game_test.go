@@ -58,7 +58,7 @@ func TestGame_PlayerLeave_ReturnsErrorOnAlreadyPresent(t *testing.T) {
 	assert.ErrorContains(t, err, "player is not in this game")
 }
 
-func TestGame_Start_SetsStartTime(t *testing.T) {
+func TestGame_Start_SetsStartTimeAndCode(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	game := Game{}
@@ -69,6 +69,7 @@ func TestGame_Start_SetsStartTime(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.False(t, game.StartTime.IsZero())
+	assert.Len(t, game.Code, 6)
 }
 
 func TestGame_Start_ErrorsOnAlreadyStarted(t *testing.T) {

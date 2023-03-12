@@ -12,6 +12,7 @@ var _ GameService = new(DBGameService)
 
 type GameService interface {
 	GetByQuiz(quizID uuid.UUID) ([]*domain.Game, error)
+	Create(game *domain.Game) error
 }
 
 type DBGameService struct {
@@ -27,4 +28,13 @@ func (g *DBGameService) GetByQuiz(quizId uuid.UUID) ([]*domain.Game, error) {
 	}
 
 	return result, nil
+}
+
+func (g *DBGameService) Create(game *domain.Game) error {
+	if err := g.Database.Create(game).Error; err != nil {
+		logrus.WithError(err).Error("Failed to create")
+		return err
+	}
+
+	return nil
 }

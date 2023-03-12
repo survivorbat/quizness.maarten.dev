@@ -26,11 +26,19 @@ type MockGameService struct {
 	getByQuizCalledWith   uuid.UUID
 	getByQuizReturns      []*domain.Game
 	getByQuizReturnsError error
+
+	createCalledWith *domain.Game
+	createReturns    error
 }
 
 func (m *MockGameService) GetByQuiz(id uuid.UUID) ([]*domain.Game, error) {
 	m.getByQuizCalledWith = id
 	return m.getByQuizReturns, m.getByQuizReturnsError
+}
+
+func (m *MockGameService) Create(game *domain.Game) error {
+	m.createCalledWith = game
+	return m.createReturns
 }
 
 type MockQuizService struct {

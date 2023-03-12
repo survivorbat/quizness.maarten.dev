@@ -2,6 +2,7 @@ package domain
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -56,6 +57,7 @@ var (
 		"Lemon",
 		"Typewriter",
 	}
+	codeChars       = strings.Split("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", "")
 	randSource      = rand.NewSource(time.Now().Unix())
 	randomGenerator = rand.New(randSource)
 )

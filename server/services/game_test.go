@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestDBGameService_GetByQuiz_ReturnsExpectedValuesReturnsAnyError(t *testing.T) {
+func TestDBGameService_GetByQuiz_ReturnsAnyError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -29,7 +29,7 @@ func TestDBGameService_GetByQuiz_ReturnsExpectedValuesReturnsAnyError(t *testing
 	assert.ErrorContains(t, err, "no such table")
 }
 
-func TestDBGameService_GetByQuiz_ReturnsAnyError(t *testing.T) {
+func TestDBGameService_GetByQuiz_ReturnsExpectedGames(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -63,4 +63,54 @@ func TestDBGameService_GetByQuiz_ReturnsAnyError(t *testing.T) {
 		assert.Equal(t, games[0].Code, result[0].Code)
 		assert.Equal(t, games[1].Code, result[1].Code)
 	}
+}
+
+func TestDBGameService_Create_ReturnsAnyError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+
+	// By not running this, we're sure it will return an error
+	// autoMigrate(t, database)
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	// Act
+	err := service.Create(&domain.Game{})
+
+	// Assert
+	assert.ErrorContains(t, err, "no such table")
+}
+
+func TestDBGameService_Create_CreatesGame(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	quizId := uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")
+	creator := &domain.Creator{}
+	quiz := &domain.Quiz{BaseObject: domain.BaseObject{ID: quizId}, Creator: creator}
+
+	if err := database.Create(quiz).Error; err != nil {
+		t.Fatal(err)
+	}
+
+	// Act
+	err := service.Create(&domain.Game{Quiz: quiz, PlayerLimit: 20})
+
+	// Assert
+	assert.NoError(t, err)
+
+	var result *domain.Game
+	if err := database.First(&result).Error; err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, uint(20), result.PlayerLimit)
 }

@@ -98,6 +98,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	apiRoutes.GET("/quizzes/:id/games", s.gameHandler.Get)
 
 	apiRoutes.POST("/quizzes", s.quizHandler.Post)
+	apiRoutes.POST("/quizzes/:id/games", s.gameHandler.Post)
 
 	apiRoutes.PUT("/tokens", s.tokenHandler.Refresh)
 	apiRoutes.PUT("/quizzes/:id", s.quizHandler.Put)

@@ -8,13 +8,13 @@ import (
 	"testing"
 )
 
-func TestQuizService_GetByID_ReturnsUser(t *testing.T) {
+func TestDBQuizService_GetByID_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	creators := []*domain.Creator{
 		{BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")}, Nickname: "a", AuthID: "a"},
@@ -37,7 +37,7 @@ func TestQuizService_GetByID_ReturnsUser(t *testing.T) {
 	assert.Equal(t, quizzes[0].ID, result.ID)
 }
 
-func TestQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
+func TestDBQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -45,7 +45,7 @@ func TestQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	// Act
 	result, err := service.GetByID(uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d"))
@@ -55,13 +55,13 @@ func TestQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	assert.ErrorContains(t, err, "no such table")
 }
 
-func TestQuizService_GetByCreator_ReturnsUser(t *testing.T) {
+func TestDBQuizService_GetByCreator_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	creators := []*domain.Creator{
 		{BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")}, Nickname: "a", AuthID: "a"},
@@ -88,7 +88,7 @@ func TestQuizService_GetByCreator_ReturnsUser(t *testing.T) {
 	}
 }
 
-func TestQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
+func TestDBQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -96,7 +96,7 @@ func TestQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	// Act
 	result, err := service.GetByCreator(uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d"))
@@ -106,13 +106,13 @@ func TestQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 	assert.ErrorContains(t, err, "no such table")
 }
 
-func TestQuizService_CreateOrUpdate_CreatesNewQuiz(t *testing.T) {
+func TestDBQuizService_CreateOrUpdate_CreatesNewQuiz(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	quiz := &domain.Quiz{
 		Name:    "test",
@@ -142,13 +142,13 @@ func TestQuizService_CreateOrUpdate_CreatesNewQuiz(t *testing.T) {
 	assert.Equal(t, "test", result.Name)
 }
 
-func TestQuizService_CreateOrUpdate_UpdatesExisting(t *testing.T) {
+func TestDBQuizService_CreateOrUpdate_UpdatesExisting(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	existing := &domain.Quiz{
 		Name:    "old",
@@ -200,7 +200,7 @@ func TestQuizService_CreateOrUpdate_UpdatesExisting(t *testing.T) {
 	assert.Equal(t, "abc", result.MultipleChoiceQuestions[0].Options[0].TextOption)
 }
 
-func TestQuizService_CreateOrUpdate_ReturnsDatabaseError(t *testing.T) {
+func TestDBQuizService_CreateOrUpdate_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -208,7 +208,7 @@ func TestQuizService_CreateOrUpdate_ReturnsDatabaseError(t *testing.T) {
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	// Act
 	err := service.CreateOrUpdate(&domain.Quiz{})
@@ -217,13 +217,13 @@ func TestQuizService_CreateOrUpdate_ReturnsDatabaseError(t *testing.T) {
 	assert.ErrorContains(t, err, "no such table")
 }
 
-func TestQuizService_Delete_DeletesQuiz(t *testing.T) {
+func TestDBQuizService_Delete_DeletesQuiz(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	quiz := &domain.Quiz{
 		Name:    "test",
@@ -267,7 +267,7 @@ func TestQuizService_Delete_DeletesQuiz(t *testing.T) {
 	assert.Len(t, options, 0)
 }
 
-func TestQuizService_Delete_ReturnsDatabaseError(t *testing.T) {
+func TestDBQuizService_Delete_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -275,7 +275,7 @@ func TestQuizService_Delete_ReturnsDatabaseError(t *testing.T) {
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
 
-	service := &QuizService{Database: database}
+	service := &DBQuizService{Database: database}
 
 	// Act
 	err := service.Delete(uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d"))

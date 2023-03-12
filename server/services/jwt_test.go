@@ -5,10 +5,10 @@ import (
 	"testing"
 )
 
-func TestJwtService_GenerateToken_ReturnsExpectedToken(t *testing.T) {
+func TestHMacJwtService_GenerateToken_ReturnsExpectedToken(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	service := &JwtService{SecretKey: "abc", Issuer: "My Company"}
+	service := &HMacJwtService{SecretKey: "abc", Issuer: "My Company"}
 	userID := "6aacfb41-e478-46ec-857e-11221f2a97fc"
 
 	// Act
@@ -19,10 +19,10 @@ func TestJwtService_GenerateToken_ReturnsExpectedToken(t *testing.T) {
 	assert.Contains(t, token, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9")
 }
 
-func TestJwtService_ValidateToken_ReturnsValidOnGoodToken(t *testing.T) {
+func TestHMacJwtService_ValidateToken_ReturnsValidOnGoodToken(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	service := &JwtService{SecretKey: "abc", Issuer: "My Company"}
+	service := &HMacJwtService{SecretKey: "abc", Issuer: "My Company"}
 	userID := "6aacfb41-e478-46ec-857e-11221f2a97fc"
 
 	token, _ := service.GenerateToken(userID)
@@ -35,10 +35,10 @@ func TestJwtService_ValidateToken_ReturnsValidOnGoodToken(t *testing.T) {
 	assert.True(t, result.Valid)
 }
 
-func TestJwtService_ValidateToken_ReturnsInvalidOnBadToken(t *testing.T) {
+func TestHMacJwtService_ValidateToken_ReturnsInvalidOnBadToken(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	service := &JwtService{SecretKey: "abc", Issuer: "My Company"}
+	service := &HMacJwtService{SecretKey: "abc", Issuer: "My Company"}
 
 	// Act
 	result, err := service.ValidateToken("abc")

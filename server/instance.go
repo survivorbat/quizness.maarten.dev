@@ -46,10 +46,11 @@ type Server struct {
 
 	// Configs
 	oAuthConfig *oauth2.Config
-	jwtService  services.IJwtService
+	jwtService  services.JwtService
 
 	// Handlers
 	tokenHandler   *routes.TokenHandler
+	gameHandler    *routes.GameHandler
 	creatorHandler *routes.CreatorHandler
 	quizHandler    *routes.QuizHandler
 }
@@ -73,14 +74,16 @@ func (s *Server) Configure(router *gin.Engine) error {
 }
 
 func (s *Server) configureServices() {
-	quizService := &services.QuizService{Database: s.database}
-	creatorService := &services.CreatorService{Database: s.database}
+	quizService := &services.DBQuizService{Database: s.database}
+	creatorService := &services.DBCreatorService{Database: s.database}
+	gameService := &services.DBGameService{Database: s.database}
 
-	s.jwtService = &services.JwtService{SecretKey: s.jwtSecret, Issuer: "QQ"}
+	s.jwtService = &services.HMacJwtService{SecretKey: s.jwtSecret, Issuer: "QQ"}
 
 	s.tokenHandler = &routes.TokenHandler{CreatorService: creatorService, JwtService: s.jwtService, AuthConfig: s.oAuthConfig}
 	s.quizHandler = &routes.QuizHandler{QuizService: quizService}
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
+	s.gameHandler = &routes.GameHandler{GameService: gameService, QuizService: quizService}
 }
 
 func (s *Server) configureRoutes(router *gin.Engine) {
@@ -92,6 +95,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 
 	apiRoutes.GET("/creators/self", s.creatorHandler.GetWithID)
 	apiRoutes.GET("/quizzes", s.quizHandler.Get)
+	apiRoutes.GET("/quizzes/:id/games", s.gameHandler.Get)
 
 	apiRoutes.POST("/quizzes", s.quizHandler.Post)
 

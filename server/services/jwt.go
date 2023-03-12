@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-type IJwtService interface {
+type JwtService interface {
 	GenerateToken(userID string) (string, error)
 	ValidateToken(token string) (*jwt.Token, error)
 }
 
-type JwtService struct {
+type HMacJwtService struct {
 	SecretKey string
 	Issuer    string
 }
@@ -22,7 +22,7 @@ type QQClaims struct {
 	UserID string `json:"userID"`
 }
 
-func (service *JwtService) GenerateToken(userID string) (string, error) {
+func (service *HMacJwtService) GenerateToken(userID string) (string, error) {
 	claims := &QQClaims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
@@ -36,7 +36,7 @@ func (service *JwtService) GenerateToken(userID string) (string, error) {
 	return token.SignedString([]byte(service.SecretKey))
 }
 
-func (service *JwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
+func (service *HMacJwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		if _, isvalid := token.Method.(*jwt.SigningMethodHMAC); !isvalid {
 			logrus.Error("Invalid token")

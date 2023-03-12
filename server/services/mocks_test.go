@@ -9,7 +9,7 @@ import (
 )
 
 func autoMigrate(t *testing.T, db *gorm.DB) {
-	err := db.AutoMigrate(&domain.Quiz{}, &domain.Creator{}, &domain.MultipleChoiceQuestion{}, &domain.QuestionOption{})
+	err := db.AutoMigrate(&domain.Quiz{}, &domain.Creator{}, &domain.MultipleChoiceQuestion{}, &domain.QuestionOption{}, &domain.Game{}, &domain.Player{})
 	if err != nil {
 		t.Fatal(err.Error())
 	}

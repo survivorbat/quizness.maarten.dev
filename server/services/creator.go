@@ -8,18 +8,18 @@ import (
 )
 
 // Compile-time interface checks
-var _ ICreatorService = new(CreatorService)
+var _ CreatorService = new(DBCreatorService)
 
-type ICreatorService interface {
+type CreatorService interface {
 	GetOrCreate(authID string) (*domain.Creator, error)
 	GetByID(id uuid.UUID) (*domain.Creator, error)
 }
 
-type CreatorService struct {
+type DBCreatorService struct {
 	Database *gorm.DB
 }
 
-func (c *CreatorService) GetOrCreate(authID string) (*domain.Creator, error) {
+func (c *DBCreatorService) GetOrCreate(authID string) (*domain.Creator, error) {
 	result := &domain.Creator{AuthID: authID}
 	result.GenerateNickname()
 
@@ -31,7 +31,7 @@ func (c *CreatorService) GetOrCreate(authID string) (*domain.Creator, error) {
 	return result, nil
 }
 
-func (c *CreatorService) GetByID(id uuid.UUID) (*domain.Creator, error) {
+func (c *DBCreatorService) GetByID(id uuid.UUID) (*domain.Creator, error) {
 	var result *domain.Creator
 	if err := c.Database.Find(&result, id).Error; err != nil {
 		logrus.WithError(err).Error("Failed to get by ID")

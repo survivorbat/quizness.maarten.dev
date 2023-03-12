@@ -8,7 +8,7 @@ import (
 )
 
 type MockCreatorService struct {
-	services.ICreatorService
+	services.CreatorService
 
 	getByIDCalledWith   uuid.UUID
 	getByIDReturns      *domain.Creator
@@ -20,8 +20,21 @@ func (m *MockCreatorService) GetByID(id uuid.UUID) (*domain.Creator, error) {
 	return m.getByIDReturns, m.getByIDReturnsError
 }
 
+type MockGameService struct {
+	services.GameService
+
+	getByQuizCalledWith   uuid.UUID
+	getByQuizReturns      []*domain.Game
+	getByQuizReturnsError error
+}
+
+func (m *MockGameService) GetByQuiz(id uuid.UUID) ([]*domain.Game, error) {
+	m.getByQuizCalledWith = id
+	return m.getByQuizReturns, m.getByQuizReturnsError
+}
+
 type MockQuizService struct {
-	services.IQuizService
+	services.QuizService
 
 	getByCreatorCalledWith   uuid.UUID
 	getByCreatorReturns      []*domain.Quiz
@@ -56,7 +69,7 @@ func (m *MockQuizService) Delete(id uuid.UUID) error {
 }
 
 type MockJwtService struct {
-	services.IJwtService
+	services.JwtService
 
 	validateTokenCalledWith   string
 	validateTokenReturns      *jwt.Token

@@ -10,7 +10,7 @@ import (
 )
 
 type QuizHandler struct {
-	QuizService services.IQuizService
+	QuizService services.QuizService
 }
 
 // Get godoc

@@ -9,7 +9,7 @@ import (
 )
 
 type CreatorHandler struct {
-	CreatorService services.ICreatorService
+	CreatorService services.CreatorService
 }
 
 // GetWithID godoc

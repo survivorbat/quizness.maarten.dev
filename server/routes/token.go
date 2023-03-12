@@ -17,8 +17,8 @@ import (
 const bearerSchema = "Bearer"
 
 type TokenHandler struct {
-	CreatorService services.ICreatorService
-	JwtService     services.IJwtService
+	CreatorService services.CreatorService
+	JwtService     services.JwtService
 	AuthConfig     *oauth2.Config
 }
 

@@ -7,13 +7,13 @@ import (
 	"testing"
 )
 
-func TestCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
+func TestDBCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &CreatorService{Database: database}
+	service := &DBCreatorService{Database: database}
 
 	authID := "23902349"
 
@@ -29,13 +29,13 @@ func TestCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 	assert.NotEmpty(t, result.ID)
 }
 
-func TestCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
+func TestDBCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &CreatorService{Database: database}
+	service := &DBCreatorService{Database: database}
 
 	authID := "23902349"
 
@@ -58,7 +58,7 @@ func TestCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 	assert.Equal(t, creator.AuthID, result.AuthID)
 }
 
-func TestCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
+func TestDBCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -66,7 +66,7 @@ func TestCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 	// By not running this, we're sure it will return an error
 	//autoMigrate(t, database
 
-	service := &CreatorService{Database: database}
+	service := &DBCreatorService{Database: database}
 
 	authID := "23902349"
 
@@ -78,13 +78,13 @@ func TestCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 	assert.ErrorContains(t, err, "no such table")
 }
 
-func TestCreatorService_GetByID_ReturnsUser(t *testing.T) {
+func TestDBCreatorService_GetByID_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
 	autoMigrate(t, database)
 
-	service := &CreatorService{Database: database}
+	service := &DBCreatorService{Database: database}
 
 	creator := &domain.Creator{BaseObject: domain.BaseObject{ID: uuid.MustParse("6aacfb41-e478-46ec-857e-11221f2a97fc")}}
 
@@ -98,7 +98,7 @@ func TestCreatorService_GetByID_ReturnsUser(t *testing.T) {
 	assert.Equal(t, creator.ID, result.ID)
 }
 
-func TestCreatorService_GetByID_ReturnsDatabaseError(t *testing.T) {
+func TestDBCreatorService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)
@@ -106,7 +106,7 @@ func TestCreatorService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	// By not running this, we're sure it will return an error
 	//autoMigrate(t, database
 
-	service := &CreatorService{Database: database}
+	service := &DBCreatorService{Database: database}
 
 	creator := &domain.Creator{BaseObject: domain.BaseObject{ID: uuid.MustParse("6aacfb41-e478-46ec-857e-11221f2a97fc")}}
 

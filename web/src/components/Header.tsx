@@ -11,8 +11,6 @@ interface HeaderProps {
 function Header({authenticated}: HeaderProps) {
   return<>
     <Navbar authenticated={authenticated}/>
-    <Grid>
-    </Grid>
   </>
 }
 

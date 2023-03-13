@@ -25,7 +25,7 @@ function CreatorPage({sdk}: CreatorPageProps) {
     return <span>Loading...</span>
   }
 
-  return <div>
+  return <div className="Creator">
     <h1>Welcome {creator.nickname}</h1>
     <Typography variant="h4"> Your Quizzes</Typography>
 

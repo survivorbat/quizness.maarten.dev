@@ -26,7 +26,7 @@ type GameHandler struct {
 //	@Failure	400	{object}	any				"Invalid uuid"
 //	@Failure	403	{object}	any				"You can only view your own games"
 //	@Failure	500	{object}	any				"Internal Server Error"
-//	@Router		/api/v1/quizzes/:id/games [get]
+//	@Router		/api/v1/quizzes/{id}/games [get]
 //	@Security	JWT
 func (g *GameHandler) Get(c *gin.Context) {
 	authID := c.GetString("user")
@@ -75,7 +75,7 @@ func (g *GameHandler) Get(c *gin.Context) {
 //	@Failure	400		{object}	any			"You already have a game started"
 //	@Failure	403		{object}	any			"You can only create games on your own quiz"
 //	@Failure	500		{object}	any			"Internal Server Error"
-//	@Router		/api/v1/quizzes/:id/games [post]
+//	@Router		/api/v1/quizzes/{id}/games [post]
 //	@Security	JWT
 func (g *GameHandler) Post(c *gin.Context) {
 	authID := c.GetString("user")

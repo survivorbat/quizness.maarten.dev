@@ -34,6 +34,7 @@ func (g *GameHandler) Get(c *gin.Context) {
 
 	quizID, err := uuid.Parse(id)
 	if err != nil {
+		logrus.WithError(err).Error("UUID error")
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -82,6 +83,7 @@ func (g *GameHandler) Post(c *gin.Context) {
 
 	quizID, err := uuid.Parse(id)
 	if err != nil {
+		logrus.WithError(err).Error("UUID error")
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -103,6 +105,7 @@ func (g *GameHandler) Post(c *gin.Context) {
 
 	var input *inputs.Game
 	if err := c.ShouldBindJSON(&input); err != nil {
+		logrus.WithError(err).Error("Validation error")
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}

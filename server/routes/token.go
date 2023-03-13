@@ -37,7 +37,7 @@ type TokenHandler struct {
 func (t *TokenHandler) CreateToken(c *gin.Context) {
 	var input *inputs.Token
 	if err := c.ShouldBindJSON(&input); err != nil {
-		logrus.WithError(err).Error("Failed to bind json")
+		logrus.WithError(err).Error("Validation error")
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 

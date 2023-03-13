@@ -21,7 +21,7 @@ type GameHandler struct {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
-//	@Param		id		path		string		true	"ID of the quiz"
+//	@Param		id	path		string			true	"ID of the quiz"
 //	@Success	200	{array}		[]domain.Game	"This quiz' games"
 //	@Failure	400	{object}	any				"Invalid uuid"
 //	@Failure	403	{object}	any				"You can only view your own games"
@@ -74,6 +74,7 @@ func (g *GameHandler) Get(c *gin.Context) {
 //	@Failure	400		{object}	any			"Invalid uuid"
 //	@Failure	400		{object}	any			"You already have a game started"
 //	@Failure	403		{object}	any			"You can only create games on your own quiz"
+//	@Failure	409		{object}	any			"A game is already in progress"
 //	@Failure	500		{object}	any			"Internal Server Error"
 //	@Router		/api/v1/quizzes/{id}/games [post]
 //	@Security	JWT
@@ -101,7 +102,11 @@ func (g *GameHandler) Post(c *gin.Context) {
 		return
 	}
 
-	// TODO: Add only 1 check
+	if quiz.HasGameInProgress() {
+		logrus.Error("There is already a game in progress")
+		c.AbortWithStatus(http.StatusConflict)
+		return
+	}
 
 	var input *inputs.Game
 	if err := c.ShouldBindJSON(&input); err != nil {

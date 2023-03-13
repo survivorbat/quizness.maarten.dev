@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestGameHandler_Get_ReturnsErrorOnInvalidUUID(t *testing.T) {
@@ -179,6 +180,30 @@ func TestGameHandler_Post_ReturnsErrorOnNotMyQuiz(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusForbidden, writer.Code)
+}
+
+func TestGameHandler_Post_ReturnsErrorOnAlreadyGameInProgress(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	quizService := &MockQuizService{
+		getByIdReturns: &domain.Quiz{
+			CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+			Games:     []*domain.Game{{StartTime: time.Now()}},
+		},
+	}
+	handler := &GameHandler{QuizService: quizService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodPost, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.Post(context)
+
+	// Assert
+	assert.Equal(t, http.StatusConflict, writer.Code)
 }
 
 func TestGameHandler_Post_ReturnsErrorOnValidationErrors(t *testing.T) {

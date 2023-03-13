@@ -24,7 +24,7 @@ type DBQuizService struct {
 
 func (c *DBQuizService) GetByID(id uuid.UUID) (*domain.Quiz, error) {
 	var result *domain.Quiz
-	if err := c.Database.Where("id = ?", id).First(&result).Error; err != nil {
+	if err := c.Database.Preload("Games").Where("id = ?", id).First(&result).Error; err != nil {
 		logrus.WithError(err).Error("Failed to get by id")
 		return nil, err
 	}

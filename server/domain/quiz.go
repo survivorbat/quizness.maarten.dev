@@ -16,3 +16,14 @@ type Quiz struct {
 
 	Games []*Game `json:"-" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
 }
+
+// HasGameInProgress can be used to verify whether a new game can be started
+func (q *Quiz) HasGameInProgress() bool {
+	for _, game := range q.Games {
+		if game.HasStarted() {
+			return true
+		}
+	}
+
+	return false
+}

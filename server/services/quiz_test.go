@@ -22,9 +22,9 @@ func TestDBQuizService_GetByID_ReturnsUser(t *testing.T) {
 	}
 
 	quizzes := []*domain.Quiz{
-		{BaseObject: domain.BaseObject{ID: uuid.MustParse("6aacfb41-e478-46ec-857e-11221f2a97fc")}, Creator: creators[0]},
-		{BaseObject: domain.BaseObject{ID: uuid.MustParse("6b362ab3-f164-4073-82a4-f7c3d2010947")}, Creator: creators[0]},
-		{BaseObject: domain.BaseObject{ID: uuid.MustParse("e7c3d165-0419-4e4d-beb7-45ea4e0e908e")}, Creator: creators[1]},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("6aacfb41-e478-46ec-857e-11221f2a97fc")}, Creator: creators[0], Games: []*domain.Game{{Code: "abc"}}},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("6b362ab3-f164-4073-82a4-f7c3d2010947")}, Creator: creators[0], Games: []*domain.Game{{Code: "def"}}},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("e7c3d165-0419-4e4d-beb7-45ea4e0e908e")}, Creator: creators[1], Games: []*domain.Game{{Code: "ghi"}}},
 	}
 
 	database.CreateInBatches(quizzes, 10)
@@ -35,6 +35,7 @@ func TestDBQuizService_GetByID_ReturnsUser(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, quizzes[0].ID, result.ID)
+	assert.Equal(t, quizzes[0].Games[0].Code, result.Games[0].Code)
 }
 
 func TestDBQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {

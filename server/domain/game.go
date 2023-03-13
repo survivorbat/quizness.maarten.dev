@@ -24,6 +24,11 @@ type Game struct {
 	FinishTime time.Time `json:"finishTime"` // desc: The time that this game ended
 }
 
+// HasStarted returns whether the game has started
+func (g *Game) HasStarted() bool {
+	return !g.StartTime.IsZero() && g.FinishTime.IsZero()
+}
+
 // playerCompare is used in the containsWithKey function
 func playerCompare(p *Player) string {
 	return p.Nickname
@@ -31,54 +36,54 @@ func playerCompare(p *Player) string {
 
 // PlayerJoin adds a player to the game, returns an error if a player with the nickname
 // is already present
-func (q *Game) PlayerJoin(player *Player) error {
-	if _, ok := containsWithKey(player, q.Players, playerCompare); ok {
+func (g *Game) PlayerJoin(player *Player) error {
+	if _, ok := containsWithKey(player, g.Players, playerCompare); ok {
 		return errors.New("player is already in this game")
 	}
 
-	q.Players = append(q.Players, player)
+	g.Players = append(g.Players, player)
 	return nil
 }
 
 // PlayerLeave removes a player from the game, returns an error if the player is not
 // present
-func (q *Game) PlayerLeave(player *Player) error {
-	index, ok := containsWithKey(player, q.Players, playerCompare)
+func (g *Game) PlayerLeave(player *Player) error {
+	index, ok := containsWithKey(player, g.Players, playerCompare)
 	if !ok {
 		return errors.New("player is not in this game")
 	}
 
-	q.Players = append(q.Players[:index], q.Players[index+1:]...)
+	g.Players = append(g.Players[:index], g.Players[index+1:]...)
 	return nil
 }
 
 // Start starts the game and sets the code
-func (q *Game) Start() error {
-	if !q.StartTime.IsZero() {
+func (g *Game) Start() error {
+	if !g.StartTime.IsZero() {
 		return errors.New("game has already started")
 	}
 
-	q.StartTime = time.Now()
+	g.StartTime = time.Now()
 
 	code := make([]string, 6)
 	for i := range code {
 		code[i] = codeChars[rand.Intn(len(codeChars))]
 	}
-	q.Code = strings.Join(code, "")
+	g.Code = strings.Join(code, "")
 
 	return nil
 }
 
 // Finish ends the game
-func (q *Game) Finish() error {
-	if q.StartTime.IsZero() {
+func (g *Game) Finish() error {
+	if g.StartTime.IsZero() {
 		return errors.New("game has not started")
 	}
 
-	if !q.FinishTime.IsZero() {
+	if !g.FinishTime.IsZero() {
 		return errors.New("game has already finished")
 	}
 
-	q.FinishTime = time.Now()
+	g.FinishTime = time.Now()
 	return nil
 }

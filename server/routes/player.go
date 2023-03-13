@@ -139,7 +139,7 @@ func (g *PlayerHandler) Delete(c *gin.Context) {
 	}
 
 	if err := g.PlayerService.Delete(player); err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 

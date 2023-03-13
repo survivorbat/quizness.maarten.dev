@@ -9,6 +9,14 @@ import {Grid} from "@mui/material";
 import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LogoutPage from "./pages/LogoutPage";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL as string;
 
@@ -27,6 +35,7 @@ function App() {
   }
 
   return (
+    <ThemeProvider theme={darkTheme}>
     <BrowserRouter>
       <Grid container>
         <Header authenticated={!!token}/>
@@ -40,6 +49,7 @@ function App() {
         </Routes>
       </Grid>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

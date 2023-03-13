@@ -2,6 +2,9 @@ import BackendSdk from "../logic/sdk";
 import {useEffect, useState} from "react";
 import Creator from "../models/creator";
 import {Quiz} from "../models/quiz";
+import QuizComponent from "../components/QuizComponent";
+import { Typography } from "@mui/material";
+import Grid from "@mui/material/Grid";
 
 interface CreatorPageProps {
   sdk: BackendSdk;
@@ -24,23 +27,15 @@ function CreatorPage({sdk}: CreatorPageProps) {
 
   return <div>
     <h1>Welcome {creator.nickname}</h1>
-    <p>Your quizzes:</p>
-    <table>
-      <thead>
-      <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Questions</th>
-      </tr>
-      </thead>
-      <tbody>
-      {quizzes.map((quiz: Quiz) => <tr>
-        <td>{quiz.id}</td>
-        <td>{quiz.description}</td>
-        <td>{quiz.multipleChoiceQuestions.length}</td>
-      </tr>)}
-      </tbody>
-    </table>
+    <Typography variant="h4"> Your Quizzes</Typography>
+
+      <Grid container spacing={2}>
+      {quizzes.map((quiz: Quiz) => 
+        <Grid item xs={12} sm={6} md={6}>
+          <QuizComponent {...quiz}/>
+        </Grid>
+      )}
+      </Grid>
   </div>
 }
 

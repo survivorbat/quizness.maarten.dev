@@ -767,3 +767,191 @@ func TestNewServer_DeleteGame_DeletesGame(t *testing.T) {
 	var result *domain.Game
 	assert.ErrorContains(t, instance.database.First(&result).Error, "not found")
 }
+
+func TestNewServer_GetPlayers_ReturnsData(t *testing.T) {
+	// Arrange
+	databaseOpen = sqlite.Open
+	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
+	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+
+	// Test http server
+	engine := gin.Default()
+	_ = instance.Configure(engine)
+	ts := httptest.NewServer(engine)
+
+	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
+	token, _ := instance.jwtService.GenerateToken(userID.String())
+
+	quizzes := []*domain.Quiz{
+		{
+			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
+			Name:       "def",
+			CreatorID:  userID,
+			Games: []*domain.Game{{
+				BaseObject: domain.BaseObject{ID: uuid.MustParse("c37077d7-9922-4bea-af99-1968bfec65e0")},
+				Code:       "abc",
+				Players:    []*domain.Player{{Nickname: "A"}, {Nickname: "B"}, {Nickname: "C"}},
+			}},
+		},
+	}
+
+	// Populate database
+	populateDatabase(t, instance.database, quizzes...)
+
+	// Close it in the end
+	defer ts.Close()
+
+	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/games/%s/players", ts.URL, quizzes[0].Games[0].ID.String()))
+	request := &http.Request{
+		Method: http.MethodGet,
+		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
+		URL:    requestUrl,
+	}
+
+	// Act
+	response, err := http.DefaultClient.Do(request)
+
+	// Assert
+	assert.NoError(t, err)
+	if !assert.NotNil(t, response) {
+		t.FailNow()
+	}
+
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	var result []*domain.Player
+	if err := json.Unmarshal(body, &result); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if assert.Len(t, result, 3) {
+		assert.Equal(t, quizzes[0].Games[0].Players[0].Nickname, result[0].Nickname)
+		assert.Equal(t, quizzes[0].Games[0].Players[1].Nickname, result[1].Nickname)
+		assert.Equal(t, quizzes[0].Games[0].Players[2].Nickname, result[2].Nickname)
+	}
+}
+
+func TestNewServer_PostPlayer_AddsPlayerToGame(t *testing.T) {
+	// Arrange
+	databaseOpen = sqlite.Open
+	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
+	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+
+	// Test http server
+	engine := gin.Default()
+	_ = instance.Configure(engine)
+	ts := httptest.NewServer(engine)
+
+	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
+
+	quizzes := []*domain.Quiz{
+		{
+			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
+			Name:       "def",
+			CreatorID:  userID,
+			Games: []*domain.Game{{
+				BaseObject:  domain.BaseObject{ID: uuid.MustParse("c37077d7-9922-4bea-af99-1968bfec65e0")},
+				Code:        "abc",
+				PlayerLimit: 20,
+				StartTime:   time.Now(),
+				Players:     []*domain.Player{{Nickname: "A"}, {Nickname: "B"}, {Nickname: "C"}},
+			}},
+		},
+	}
+
+	// Populate database
+	populateDatabase(t, instance.database, quizzes...)
+
+	// Close it in the end
+	defer ts.Close()
+
+	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/games/%s/players", ts.URL, quizzes[0].Games[0].ID.String()))
+	request := &http.Request{
+		Method: http.MethodPost,
+		URL:    requestUrl,
+	}
+
+	// Act
+	response, err := http.DefaultClient.Do(request)
+
+	// Assert
+	assert.NoError(t, err)
+	if !assert.NotNil(t, response) {
+		t.FailNow()
+	}
+
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	var result *domain.Player
+	if err := json.Unmarshal(body, &result); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	assert.NotEmpty(t, result.Nickname)
+}
+
+func TestNewServer_DeletePlayer_ReturnsSuccess(t *testing.T) {
+	// Arrange
+	databaseOpen = sqlite.Open
+	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
+	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+
+	// Test http server
+	engine := gin.Default()
+	_ = instance.Configure(engine)
+	ts := httptest.NewServer(engine)
+
+	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
+
+	quizzes := []*domain.Quiz{
+		{
+			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
+			Name:       "def",
+			CreatorID:  userID,
+			Games: []*domain.Game{{
+				BaseObject:  domain.BaseObject{ID: uuid.MustParse("c37077d7-9922-4bea-af99-1968bfec65e0")},
+				Code:        "abc",
+				PlayerLimit: 20,
+				StartTime:   time.Now(),
+				Players: []*domain.Player{
+					{BaseObject: domain.BaseObject{ID: uuid.MustParse("c23330d9-3d58-45cd-a49e-8085f4c15439")}, Nickname: "A"},
+				},
+			}},
+		},
+	}
+
+	// Populate database
+	populateDatabase(t, instance.database, quizzes...)
+
+	// Close it in the end
+	defer ts.Close()
+
+	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/players/%s", ts.URL, "c23330d9-3d58-45cd-a49e-8085f4c15439"))
+	request := &http.Request{
+		Method: http.MethodDelete,
+		URL:    requestUrl,
+	}
+
+	// Act
+	response, err := http.DefaultClient.Do(request)
+
+	// Assert
+	assert.NoError(t, err)
+	if !assert.NotNil(t, response) {
+		t.FailNow()
+	}
+
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+}

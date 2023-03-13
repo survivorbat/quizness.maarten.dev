@@ -20,6 +20,39 @@ func (m *MockCreatorService) GetByID(id uuid.UUID) (*domain.Creator, error) {
 	return m.getByIDReturns, m.getByIDReturnsError
 }
 
+type MockPlayerService struct {
+	services.PlayerService
+
+	getByGameCalledWith   uuid.UUID
+	getByGameReturns      []*domain.Player
+	getByGameReturnsError error
+
+	createCalledWith *domain.Player
+	createReturns    error
+
+	getByIdReturns      *domain.Player
+	getByIdReturnsError error
+
+	deleteReturns error
+}
+
+func (m *MockPlayerService) GetByGame(id uuid.UUID) ([]*domain.Player, error) {
+	m.getByGameCalledWith = id
+	return m.getByGameReturns, m.getByGameReturnsError
+}
+func (m *MockPlayerService) GetByID(uuid.UUID) (*domain.Player, error) {
+	return m.getByIdReturns, m.getByIdReturnsError
+}
+
+func (m *MockPlayerService) Delete(*domain.Player) error {
+	return m.deleteReturns
+}
+
+func (m *MockPlayerService) Create(player *domain.Player) error {
+	m.createCalledWith = player
+	return m.createReturns
+}
+
 type MockGameService struct {
 	services.GameService
 

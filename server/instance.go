@@ -79,6 +79,7 @@ func (s *Server) configureServices() {
 	quizService := &services.DBQuizService{Database: s.database}
 	creatorService := &services.DBCreatorService{Database: s.database}
 	gameService := &services.DBGameService{Database: s.database}
+	playerService := &services.DBPlayerService{Database: s.database}
 
 	s.jwtService = &services.HMacJwtService{SecretKey: s.jwtSecret, Issuer: "QQ"}
 
@@ -86,7 +87,7 @@ func (s *Server) configureServices() {
 	s.quizHandler = &routes.QuizHandler{QuizService: quizService}
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 	s.gameHandler = &routes.GameHandler{GameService: gameService, QuizService: quizService}
-	s.playerHandler = &routes.PlayerHandler{}
+	s.playerHandler = &routes.PlayerHandler{PlayerService: playerService, GameService: gameService}
 	s.answerHandler = &routes.AnswerHandler{}
 }
 
@@ -100,6 +101,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	apiRoutes.GET("/creators/self", s.creatorHandler.GetWithID)
 	apiRoutes.GET("/quizzes", s.quizHandler.Get)
 	apiRoutes.GET("/quizzes/:id/games", s.gameHandler.Get)
+	apiRoutes.GET("/games/:id/players", s.playerHandler.Get)
 
 	apiRoutes.POST("/quizzes", s.quizHandler.Post)
 	apiRoutes.POST("/quizzes/:id/games", s.gameHandler.Post)

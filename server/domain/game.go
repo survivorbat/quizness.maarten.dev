@@ -32,34 +32,6 @@ func (g *Game) IsInProgress() bool {
 	return !g.StartTime.IsZero() && g.FinishTime.IsZero()
 }
 
-// playerCompare is used in the containsWithKey function
-func playerCompare(p *Player) string {
-	return p.Nickname
-}
-
-// PlayerJoin adds a player to the game, returns an error if a player with the nickname
-// is already present
-func (g *Game) PlayerJoin(player *Player) error {
-	if _, ok := containsWithKey(player, g.Players, playerCompare); ok {
-		return errors.New("player is already in this game")
-	}
-
-	g.Players = append(g.Players, player)
-	return nil
-}
-
-// PlayerLeave removes a player from the game, returns an error if the player is not
-// present
-func (g *Game) PlayerLeave(player *Player) error {
-	index, ok := containsWithKey(player, g.Players, playerCompare)
-	if !ok {
-		return errors.New("player is not in this game")
-	}
-
-	g.Players = append(g.Players[:index], g.Players[index+1:]...)
-	return nil
-}
-
 // Start starts the game and sets the code
 func (g *Game) Start() error {
 	if !g.StartTime.IsZero() {

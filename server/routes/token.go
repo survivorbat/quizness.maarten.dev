@@ -28,11 +28,11 @@ type TokenHandler struct {
 //	@Tags		Token
 //	@Accept		json
 //	@Produce	json
-//	@Param		code	body		inputs.Token	true	"Your OAuth code"
-//	@Failure	200		{object}	any				"Token in the header"
-//	@Failure	400		{object}	any				"Malformed input"
-//	@Failure	401		{object}	any				"Failed to authenticate you"
-//	@Failure	500		{object}	any				"Internal Server Error"
+//	@Param		code	body	inputs.Token	true	"Your OAuth code"
+//	@Failure	200		"Token in the header"
+//	@Failure	400		"Malformed input"
+//	@Failure	401		"Failed to authenticate you"
+//	@Failure	500		"Internal Server Error"
 //	@Router		/api/v1/tokens [post]
 func (t *TokenHandler) CreateToken(c *gin.Context) {
 	var input *inputs.Token
@@ -124,8 +124,8 @@ func (t *TokenHandler) JwtGuard() gin.HandlerFunc {
 //	@Tags		Token
 //	@Accept		json
 //	@Produce	json
-//	@Failure	200	{object}	any	"Token in the header"
-//	@Failure	500	{object}	any	"Internal Server Error"
+//	@Failure	200	"Token in the header"
+//	@Failure	500	"Internal Server Error"
 //	@Router		/api/v1/tokens [put]
 //	@Security	JWT
 func (t *TokenHandler) Refresh(c *gin.Context) {

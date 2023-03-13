@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestDBQuizService_GetByID_ReturnsUser(t *testing.T) {
+func TestDBQuizService_GetByID_ReturnsExpected(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	database := getDb(t)

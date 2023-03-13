@@ -103,6 +103,8 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	apiRoutes.PUT("/tokens", s.tokenHandler.Refresh)
 	apiRoutes.PUT("/quizzes/:id", s.quizHandler.Put)
 
+	apiRoutes.PATCH("/games/:id", s.gameHandler.Patch)
+
 	apiRoutes.DELETE("/quizzes/:id", s.quizHandler.Delete)
 
 	// Swagger

@@ -19,7 +19,7 @@ type CreatorHandler struct {
 //	@Accept		json
 //	@Produce	json
 //	@Success	200	{object}	domain.Creator	"The creator"
-//	@Failure	500	{object}	any				"Internal Server Error"
+//	@Failure	500	"Internal Server Error"
 //	@Router		/api/v1/creators/self [get]
 //	@Security	JWT
 func (g *CreatorHandler) GetWithID(c *gin.Context) {

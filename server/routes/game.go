@@ -201,7 +201,7 @@ func (g *GameHandler) Patch(c *gin.Context) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		id	path	string	true	"ID of the game"
-//	@Success	200	"The updated game"
+//	@Success	200	"The deleted game"
 //	@Failure	400	"Invalid uuid"
 //	@Failure	403	"You can only delete games in your own quiz"
 //	@Failure	404	"Not found"

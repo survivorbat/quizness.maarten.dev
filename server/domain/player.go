@@ -9,7 +9,7 @@ import (
 type Player struct {
 	BaseObject
 
-	Nickname string `json:"nickname" gorm:"unique" example:"Adorable Beaver"` // desc: Randomly assigned nickname, to avoid naughty words
+	Nickname string `json:"nickname" example:"Adorable Beaver"` // desc: Randomly assigned nickname, to avoid naughty words
 
 	GameID uuid.UUID `json:"gameID" example:"00000000-0000-0000-0000-000000000000"` // desc: The game this player belongs to
 	Game   *Game     `json:"-" gorm:"foreignKey:GameID"`

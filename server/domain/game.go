@@ -18,7 +18,10 @@ type Game struct {
 	Code        string `json:"code" example:"KO384B"` // desc: The 'join' code for new players
 	PlayerLimit uint   `json:"playerLimit"`           // desc: The max amount of players that may join this game
 
-	Players []*Player `json:"-" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
+	CurrentQuestion uuid.UUID `json:"currentQuestion" example:"00000000-0000-0000-0000-000000000000"` // desc: The current question
+
+	Players []*Player     `json:"players" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
+	Answers []*GameAnswer `json:"answers" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
 
 	StartTime  time.Time `json:"startTime"`  // desc: The time that this game started
 	FinishTime time.Time `json:"finishTime"` // desc: The time that this game ended

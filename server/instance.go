@@ -53,6 +53,8 @@ type Server struct {
 	gameHandler    *routes.GameHandler
 	creatorHandler *routes.CreatorHandler
 	quizHandler    *routes.QuizHandler
+	playerHandler  *routes.PlayerHandler
+	answerHandler  *routes.AnswerHandler
 }
 
 func (s *Server) Configure(router *gin.Engine) error {
@@ -84,6 +86,8 @@ func (s *Server) configureServices() {
 	s.quizHandler = &routes.QuizHandler{QuizService: quizService}
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 	s.gameHandler = &routes.GameHandler{GameService: gameService, QuizService: quizService}
+	s.playerHandler = &routes.PlayerHandler{}
+	s.answerHandler = &routes.AnswerHandler{}
 }
 
 func (s *Server) configureRoutes(router *gin.Engine) {
@@ -107,6 +111,12 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 
 	apiRoutes.DELETE("/quizzes/:id", s.quizHandler.Delete)
 	apiRoutes.DELETE("/games/:id", s.gameHandler.Delete)
+
+	// Anonymous routes
+	publicRoutes := router.Group("/api/v1")
+	publicRoutes.PATCH("/games/:id/questions/:question/answers/:player", s.answerHandler.Patch)
+	publicRoutes.POST("/games/:id/players", s.playerHandler.Post)
+	publicRoutes.DELETE("/players/:id", s.playerHandler.Delete)
 
 	// Swagger
 	url := ginSwagger.URL("/api/swagger/doc.json")

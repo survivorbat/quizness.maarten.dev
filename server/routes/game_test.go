@@ -471,3 +471,115 @@ func TestGameHandler_Patch_ReturnsResult(t *testing.T) {
 
 	assert.Equal(t, gameService.getByIdReturns.ID, result.ID)
 }
+
+func TestGameHandler_Delete_ReturnsErrorOnInvalidUUID(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	handler := &GameHandler{}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodDelete, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "no"}}
+
+	// Act
+	handler.Delete(context)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
+}
+
+func TestGameHandler_Delete_ReturnsErrorOnGameNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{getByIdReturnsError: assert.AnError}
+	handler := &GameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodDelete, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.Delete(context)
+
+	// Assert
+	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+
+func TestGameHandler_Delete_ReturnsErrorOnNotMyQuiz(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{
+		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("76afc275-5454-4359-a52b-02693a9c48ba")}},
+	}
+	handler := &GameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodDelete, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.Delete(context)
+
+	// Assert
+	assert.Equal(t, http.StatusForbidden, writer.Code)
+}
+
+func TestGameHandler_Delete_ReturnsGenericDeleteError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{
+		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")}},
+		deleteReturns:  assert.AnError,
+	}
+	handler := &GameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodDelete, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.Delete(context)
+
+	// Assert
+	assert.Equal(t, http.StatusInternalServerError, writer.Code)
+}
+
+func TestGameHandler_Delete_ReturnsResult(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{
+		getByIdReturns: &domain.Game{
+			Quiz: &domain.Quiz{
+				CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+			},
+		},
+	}
+	handler := &GameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodDelete, "https://test.com?action=start", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.Delete(context)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, writer.Code)
+
+	var result *domain.Game
+	if err := json.Unmarshal(writer.Body.Bytes(), &result); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	assert.Equal(t, gameService.getByIdReturns.ID, result.ID)
+}

@@ -194,9 +194,50 @@ func (g *GameHandler) Patch(c *gin.Context) {
 	c.JSON(http.StatusOK, game)
 }
 
-//	@Failure	409	"A game is already in progress"
-//if quiz.HasGameInProgress() {
-//logrus.Error("There is already a game in progress")
-//c.AbortWithStatus(http.StatusConflict)
-//return
-//}
+// Delete godoc
+//
+//	@Summary	Delete a game
+//	@Tags		Game
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path	string	true	"ID of the game"
+//	@Success	200	"The updated game"
+//	@Failure	400	"Invalid uuid"
+//	@Failure	403	"You can only delete games in your own quiz"
+//	@Failure	404	"Not found"
+//	@Failure	409	"This game has started"
+//	@Failure	500	"Internal Server Error"
+//	@Router		/api/v1/games/{id} [delete]
+//	@Security	JWT
+func (g *GameHandler) Delete(c *gin.Context) {
+	authID := c.GetString("user")
+	id := c.Param("id")
+
+	gameID, err := uuid.Parse(id)
+	if err != nil {
+		logrus.WithError(err).Error("UUID error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	game, err := g.GameService.GetByID(gameID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	// Prevent users from deleting other people's games
+	if game.Quiz.CreatorID.String() != authID {
+		logrus.Errorf("Creator is %s not %s", game.Quiz.CreatorID, authID)
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+
+	if err := g.GameService.Delete(game); err != nil {
+		logrus.WithError(err).Error("Failed to delete")
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, game)
+}

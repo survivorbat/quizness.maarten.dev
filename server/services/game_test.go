@@ -281,3 +281,57 @@ func TestDBGameService_Finish_FinishesGame(t *testing.T) {
 	}
 	assert.False(t, result.FinishTime.IsZero())
 }
+
+func TestDBGameService_Delete_ReturnsErrorOnInProgress(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	game := &domain.Game{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")},
+		StartTime:  time.Now(),
+		Quiz: &domain.Quiz{
+			Creator: &domain.Creator{},
+		},
+	}
+	database.Create(game)
+
+	// Act
+	err := service.Delete(game)
+
+	// Assert
+	assert.ErrorContains(t, err, "in progress")
+}
+
+func TestDBGameService_Delete_DeletesCorrectly(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	game := &domain.Game{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")},
+		Quiz: &domain.Quiz{
+			Creator: &domain.Creator{},
+		},
+	}
+	database.Create(game)
+
+	// Act
+	err := service.Delete(game)
+
+	// Assert
+	assert.NoError(t, err)
+
+	var result *domain.Game
+	assert.ErrorContains(t, database.First(&result).Error, "not found")
+}

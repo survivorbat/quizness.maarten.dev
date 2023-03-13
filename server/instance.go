@@ -106,6 +106,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	apiRoutes.PATCH("/games/:id", s.gameHandler.Patch)
 
 	apiRoutes.DELETE("/quizzes/:id", s.quizHandler.Delete)
+	apiRoutes.DELETE("/games/:id", s.gameHandler.Delete)
 
 	// Swagger
 	url := ginSwagger.URL("/api/swagger/doc.json")

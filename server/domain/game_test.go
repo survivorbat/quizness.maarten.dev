@@ -6,36 +6,36 @@ import (
 	"time"
 )
 
-func TestGame_HasStarted_ReturnsTrueOnStarted(t *testing.T) {
+func TestGame_IsInProgress_ReturnsTrueOnStarted(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	game := &Game{StartTime: time.Now()}
 
 	// Act
-	result := game.HasStarted()
+	result := game.IsInProgress()
 
 	// Assert
 	assert.True(t, result)
 }
 
-func TestGame_HasStarted_ReturnsFalseOnNotStarted(t *testing.T) {
+func TestGame_IsInProgress_ReturnsFalseOnNotStarted(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	game := &Game{}
 
 	// Act
-	result := game.HasStarted()
+	result := game.IsInProgress()
 
 	// Assert
 	assert.False(t, result)
 }
-func TestGame_HasStarted_ReturnsFalseOnStartedAndFinished(t *testing.T) {
+func TestGame_IsInProgress_ReturnsFalseOnStartedAndFinished(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	game := &Game{StartTime: time.Now(), FinishTime: time.Now()}
 
 	// Act
-	result := game.HasStarted()
+	result := game.IsInProgress()
 
 	// Assert
 	assert.False(t, result)

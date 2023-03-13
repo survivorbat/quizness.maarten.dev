@@ -20,7 +20,7 @@ type Quiz struct {
 // HasGameInProgress can be used to verify whether a new game can be started
 func (q *Quiz) HasGameInProgress() bool {
 	for _, game := range q.Games {
-		if game.HasStarted() {
+		if game.IsInProgress() {
 			return true
 		}
 	}

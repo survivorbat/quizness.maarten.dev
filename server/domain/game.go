@@ -24,8 +24,8 @@ type Game struct {
 	FinishTime time.Time `json:"finishTime"` // desc: The time that this game ended
 }
 
-// HasStarted returns whether the game has started
-func (g *Game) HasStarted() bool {
+// IsInProgress returns whether the game has started
+func (g *Game) IsInProgress() bool {
 	return !g.StartTime.IsZero() && g.FinishTime.IsZero()
 }
 

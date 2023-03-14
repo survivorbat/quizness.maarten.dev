@@ -91,7 +91,7 @@ func (g *PlayerHandler) Post(c *gin.Context) {
 	}
 
 	// Don't show them it exists
-	if !game.IsInProgress() {
+	if !game.IsOpenForPlayers() {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}

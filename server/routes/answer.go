@@ -2,10 +2,15 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
+	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )
 
 type AnswerHandler struct {
+	GameService services.GameService
 }
 
 // Patch godoc
@@ -26,6 +31,48 @@ type AnswerHandler struct {
 //	@Failure	500			"Internal Server Error"
 //	@Router		/api/v1/games/{id}/questions/{question}/answers/{player} [patch]
 func (g *AnswerHandler) Patch(c *gin.Context) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	gameParam := c.Param("id")
+	gameID, err := uuid.Parse(gameParam)
+	if err != nil {
+		logrus.WithError(err).Error("UUID error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	questionParam := c.Param("question")
+	questionID, err := uuid.Parse(questionParam)
+	if err != nil {
+		logrus.WithError(err).Error("UUID error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	playerParam := c.Param("player")
+	playerID, err := uuid.Parse(playerParam)
+	if err != nil {
+		logrus.WithError(err).Error("UUID error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	game, err := g.GameService.GetByID(gameID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	var input *inputs.Answer
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logrus.WithError(err).Error("Validation error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	if err := g.GameService.AnswerQuestion(game, questionID, playerID, input.OptionID); err != nil {
+		logrus.WithError(err).Error("Answer error")
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	return
 }

@@ -353,6 +353,90 @@ func TestDBGameService_Next_ReturnsErrorIfNotStarted(t *testing.T) {
 	// Assert
 	assert.ErrorContains(t, err, "game is not in progress")
 }
+func TestDBGameService_AnswerQuestion_StartsAnswerQuestionQuestion(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	questionId := uuid.MustParse("c275bf4e-c839-495d-af9c-4f95d8dc05a5")
+	playerId := uuid.MustParse("62750588-5575-4a31-9cdf-2ffed23c7a15")
+	optionId := uuid.MustParse("ecbffee9-c66a-4d33-9cdc-ac0e15da2982")
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	game := &domain.Game{
+		BaseObject:      domain.BaseObject{ID: uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")},
+		StartTime:       time.Now(),
+		Players:         []*domain.Player{{BaseObject: domain.BaseObject{ID: playerId}}, {}},
+		CurrentQuestion: questionId,
+		CurrentDeadline: time.Now().Add(20 * time.Hour),
+		Quiz: &domain.Quiz{
+			Creator: &domain.Creator{},
+			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+				{
+					BaseQuestion: domain.BaseQuestion{
+						BaseObject: domain.BaseObject{ID: questionId},
+						Order:      0,
+					},
+				},
+				{
+					BaseQuestion: domain.BaseQuestion{
+						BaseObject: domain.BaseObject{ID: uuid.MustParse("ce454f0d-9d9c-4e39-bd86-3484a7283eec")},
+						Order:      1,
+					},
+				},
+			},
+		},
+	}
+	database.Create(game)
+
+	// Act
+	err := service.AnswerQuestion(game, questionId, playerId, optionId)
+
+	// Assert
+	assert.NoError(t, err)
+
+	var result *domain.GameAnswer
+	if err := database.First(&result).Error; err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, optionId, result.OptionID)
+	assert.Equal(t, questionId, result.QuestionID)
+	assert.Equal(t, playerId, result.PlayerID)
+	assert.Equal(t, game.ID, result.GameID)
+}
+
+func TestDBGameService_AnswerQuestion_ReturnsErrorIfNotTheCurrentQuestion(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	questionId := uuid.MustParse("c275bf4e-c839-495d-af9c-4f95d8dc05a5")
+	playerId := uuid.MustParse("62750588-5575-4a31-9cdf-2ffed23c7a15")
+	optionId := uuid.MustParse("ecbffee9-c66a-4d33-9cdc-ac0e15da2982")
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	game := &domain.Game{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")},
+		Quiz: &domain.Quiz{
+			Creator: &domain.Creator{},
+		},
+	}
+	database.Create(game)
+
+	// Act
+	err := service.AnswerQuestion(game, questionId, playerId, optionId)
+
+	// Assert
+	assert.ErrorContains(t, err, "not the current question")
+}
 
 func TestDBGameService_Delete_ReturnsErrorOnInProgress(t *testing.T) {
 	t.Parallel()

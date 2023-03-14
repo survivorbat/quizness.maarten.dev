@@ -42,6 +42,54 @@ func TestGame_IsInProgress_ReturnsFalseOnStartedAndFinished(t *testing.T) {
 	assert.False(t, result)
 }
 
+func TestGame_IsOpenForPlayers_ReturnsTrueOnStartedAndNoQuestions(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{StartTime: time.Now()}
+
+	// Act
+	result := game.IsOpenForPlayers()
+
+	// Assert
+	assert.True(t, result)
+}
+
+func TestGame_IsOpenForPlayers_ReturnsFalseOnStartedAndQuestions(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{CurrentQuestion: uuid.MustParse("ae2a9fd4-f861-4c99-a9bd-2bf49e1b1cd8")}
+
+	// Act
+	result := game.IsOpenForPlayers()
+
+	// Assert
+	assert.False(t, result)
+}
+
+func TestGame_IsOpenForPlayers_ReturnsFalseOnNotStarted(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{}
+
+	// Act
+	result := game.IsOpenForPlayers()
+
+	// Assert
+	assert.False(t, result)
+}
+
+func TestGame_IsOpenForPlayers_ReturnsFalseOnStartedAndFinished(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{StartTime: time.Now(), FinishTime: time.Now()}
+
+	// Act
+	result := game.IsOpenForPlayers()
+
+	// Assert
+	assert.False(t, result)
+}
+
 func TestGame_Start_SetsStartTimeAndCode(t *testing.T) {
 	t.Parallel()
 	// Arrange

@@ -64,6 +64,7 @@ func (s *Server) Configure(router *gin.Engine) error {
 		&domain.Creator{},
 		&domain.Player{},
 		&domain.QuestionOption{},
+		&domain.GameAnswer{},
 	); err != nil {
 		logrus.WithError(err).Error("Failed to migrate")
 		return err
@@ -88,7 +89,7 @@ func (s *Server) configureServices() {
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 	s.gameHandler = &routes.GameHandler{GameService: gameService, QuizService: quizService}
 	s.playerHandler = &routes.PlayerHandler{PlayerService: playerService, GameService: gameService}
-	s.answerHandler = &routes.AnswerHandler{}
+	s.answerHandler = &routes.AnswerHandler{GameService: gameService}
 }
 
 func (s *Server) configureRoutes(router *gin.Engine) {
@@ -116,7 +117,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 
 	// Anonymous routes
 	publicRoutes := router.Group("/api/v1")
-	publicRoutes.PATCH("/games/:id/questions/:question/answers/:player", s.answerHandler.Patch)
+	publicRoutes.PATCH("/games/:id/questions/:question/players/:player", s.answerHandler.Patch)
 	publicRoutes.POST("/games/:id/players", s.playerHandler.Post)
 	publicRoutes.DELETE("/players/:id", s.playerHandler.Delete)
 

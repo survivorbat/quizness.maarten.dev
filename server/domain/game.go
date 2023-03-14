@@ -28,9 +28,12 @@ type Game struct {
 	FinishTime time.Time `json:"finishTime"` // desc: The time that this game ended
 }
 
-// IsInProgress returns whether the game has started
 func (g *Game) IsInProgress() bool {
 	return !g.StartTime.IsZero() && g.FinishTime.IsZero()
+}
+
+func (g *Game) IsOpenForPlayers() bool {
+	return !g.StartTime.IsZero() && g.CurrentQuestion == uuid.Nil && g.FinishTime.IsZero()
 }
 
 // Start starts the game and sets the code
@@ -66,7 +69,7 @@ func (g *Game) Next() error {
 	}
 
 	g.CurrentQuestion = nextQuestion.GetBaseQuestion().ID
-	g.CurrentDeadline = time.Now().Add(time.Duration(nextQuestion.GetBaseQuestion().DurationInSeconds))
+	g.CurrentDeadline = time.Now().Add(time.Duration(nextQuestion.GetBaseQuestion().DurationInSeconds) * time.Second)
 
 	return nil
 }

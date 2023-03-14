@@ -26,6 +26,43 @@ func populateDatabase[T any](t *testing.T, database *gorm.DB, data ...T) {
 	}
 }
 
+func performRequest(method string, server string, path string, auth string, body any) (*http.Response, error) {
+	requestUrl, _ := url.Parse(fmt.Sprintf("%s/%s", server, path))
+	request := &http.Request{
+		Method: method,
+		URL:    requestUrl,
+	}
+
+	if auth != "" {
+		request.Header = map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", auth)}}
+	}
+
+	if body != nil {
+		body, _ := json.Marshal(body)
+		request.Body = io.NopCloser(bytes.NewBuffer(body))
+	}
+
+	return http.DefaultClient.Do(request)
+}
+
+func getValue[T any, K any](t *testing.T, res *http.Response, err error, getKey func(T) K) K {
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result T
+	if err := json.Unmarshal(body, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	return getKey(result)
+}
+
 func TestNewServer_GetQuizzes_ReturnsData(t *testing.T) {
 	// Arrange
 	databaseOpen = sqlite.Open
@@ -62,15 +99,8 @@ func TestNewServer_GetQuizzes_ReturnsData(t *testing.T) {
 	// Close it in the end
 	defer ts.Close()
 
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes", ts.URL))
-	request := &http.Request{
-		Method: http.MethodGet,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodGet, ts.URL, "api/v1/quizzes", token, nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -194,18 +224,8 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 			// Close it in the end
 			defer ts.Close()
 
-			inputJson, _ := json.Marshal(testData.input)
-
-			requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes", ts.URL))
-			request := &http.Request{
-				Method: http.MethodPost,
-				Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-				URL:    requestUrl,
-				Body:   io.NopCloser(bytes.NewBuffer(inputJson)),
-			}
-
 			// Act
-			response, err := http.DefaultClient.Do(request)
+			response, err := performRequest(http.MethodPost, ts.URL, "api/v1/quizzes", token, testData.input)
 
 			// Assert
 			assert.NoError(t, err)
@@ -253,18 +273,8 @@ func TestNewServer_PostQuiz_SavesQuiz(t *testing.T) {
 		},
 	}
 
-	inputJson, _ := json.Marshal(input)
-
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes", ts.URL))
-	request := &http.Request{
-		Method: http.MethodPost,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-		Body:   io.NopCloser(bytes.NewBuffer(inputJson)),
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodPost, ts.URL, "api/v1/quizzes", token, input)
 
 	// Assert
 	assert.NoError(t, err)
@@ -324,18 +334,8 @@ func TestNewServer_PutQuiz_SavesNewQuiz(t *testing.T) {
 		},
 	}
 
-	inputJson, _ := json.Marshal(input)
-
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes/3660def9-bd13-4c94-b9cd-d449eef82503", ts.URL))
-	request := &http.Request{
-		Method: http.MethodPut,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-		Body:   io.NopCloser(bytes.NewBuffer(inputJson)),
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodPut, ts.URL, "api/v1/quizzes/3660def9-bd13-4c94-b9cd-d449eef82503", token, input)
 
 	// Assert
 	assert.NoError(t, err)
@@ -418,18 +418,8 @@ func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 		},
 	}
 
-	inputJson, _ := json.Marshal(input)
-
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes/3660def9-bd13-4c94-b9cd-d449eef82503", ts.URL))
-	request := &http.Request{
-		Method: http.MethodPut,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-		Body:   io.NopCloser(bytes.NewBuffer(inputJson)),
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodPut, ts.URL, "api/v1/quizzes/3660def9-bd13-4c94-b9cd-d449eef82503", token, input)
 
 	// Assert
 	assert.NoError(t, err)
@@ -485,18 +475,8 @@ func TestNewServer_GetGames_ReturnsData(t *testing.T) {
 	// Populate database
 	populateDatabase(t, instance.database, quizzes...)
 
-	// Close it in the end
-	defer ts.Close()
-
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes/%s/games", ts.URL, quizzes[0].ID.String()))
-	request := &http.Request{
-		Method: http.MethodGet,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodGet, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -552,18 +532,9 @@ func TestNewServer_PostGame_CreatesGame(t *testing.T) {
 	defer ts.Close()
 
 	input := &inputs.Game{PlayerLimit: 20}
-	inputJson, _ := json.Marshal(input)
-
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/quizzes/%s/games", ts.URL, quizzes[0].ID.String()))
-	request := &http.Request{
-		Method: http.MethodPost,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-		Body:   io.NopCloser(bytes.NewBuffer(inputJson)),
-	}
 
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodPost, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, input)
 
 	// Assert
 	assert.NoError(t, err)
@@ -616,15 +587,8 @@ func TestNewServer_StartGame_StartsGame(t *testing.T) {
 	// Close it in the end
 	defer ts.Close()
 
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/games/%s?action=start", ts.URL, game.ID.String()))
-	request := &http.Request{
-		Method: http.MethodPatch,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodPatch, ts.URL, "api/v1/games/342855cd-332c-4344-955e-a0e63be17f3a?action=start", token, nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -680,15 +644,8 @@ func TestNewServer_FinishGame_FinishesGame(t *testing.T) {
 	// Close it in the end
 	defer ts.Close()
 
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/games/%s?action=finish", ts.URL, game.ID.String()))
-	request := &http.Request{
-		Method: http.MethodPatch,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodPatch, ts.URL, "api/v1/games/342855cd-332c-4344-955e-a0e63be17f3a?action=finish", token, nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -746,15 +703,8 @@ func TestNewServer_DeleteGame_DeletesGame(t *testing.T) {
 	// Close it in the end
 	defer ts.Close()
 
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/games/%s", ts.URL, game.ID.String()))
-	request := &http.Request{
-		Method: http.MethodDelete,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodDelete, ts.URL, "api/v1/games/342855cd-332c-4344-955e-a0e63be17f3a", token, nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -801,15 +751,8 @@ func TestNewServer_GetPlayers_ReturnsData(t *testing.T) {
 	// Close it in the end
 	defer ts.Close()
 
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/games/%s/players", ts.URL, quizzes[0].Games[0].ID.String()))
-	request := &http.Request{
-		Method: http.MethodGet,
-		Header: map[string][]string{"Authorization": {fmt.Sprintf("Bearer %s", token)}},
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodGet, ts.URL, "api/v1/games/c37077d7-9922-4bea-af99-1968bfec65e0/players", token, nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -871,14 +814,8 @@ func TestNewServer_PostPlayer_AddsPlayerToGame(t *testing.T) {
 	// Close it in the end
 	defer ts.Close()
 
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/games/%s/players", ts.URL, quizzes[0].Games[0].ID.String()))
-	request := &http.Request{
-		Method: http.MethodPost,
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodPost, ts.URL, "api/v1/games/c37077d7-9922-4bea-af99-1968bfec65e0/players", "", nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -938,14 +875,8 @@ func TestNewServer_DeletePlayer_ReturnsSuccess(t *testing.T) {
 	// Close it in the end
 	defer ts.Close()
 
-	requestUrl, _ := url.Parse(fmt.Sprintf("%s/api/v1/players/%s", ts.URL, "c23330d9-3d58-45cd-a49e-8085f4c15439"))
-	request := &http.Request{
-		Method: http.MethodDelete,
-		URL:    requestUrl,
-	}
-
 	// Act
-	response, err := http.DefaultClient.Do(request)
+	response, err := performRequest(http.MethodDelete, ts.URL, "api/v1/players/c23330d9-3d58-45cd-a49e-8085f4c15439", "", nil)
 
 	// Assert
 	assert.NoError(t, err)
@@ -954,4 +885,116 @@ func TestNewServer_DeletePlayer_ReturnsSuccess(t *testing.T) {
 	}
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
+}
+
+// This tests:
+// - Create game
+// - Start game
+// - 2 players join
+// - Next question
+// - 2 answers
+// - Nest Question
+// - 2 answers
+// - Finish
+func TestNewServer_GameFlow_Works(t *testing.T) {
+	// Arrange
+	databaseOpen = sqlite.Open
+	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
+	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+
+	// Test http server
+	engine := gin.Default()
+	_ = instance.Configure(engine)
+	ts := httptest.NewServer(engine)
+
+	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
+	token, _ := instance.jwtService.GenerateToken(userID.String())
+
+	quizzes := []*domain.Quiz{
+		{
+			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
+			Name:       "def",
+			CreatorID:  userID,
+			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+				{
+					BaseQuestion: domain.BaseQuestion{
+						BaseObject:        domain.BaseObject{ID: uuid.MustParse("5413ddc1-986c-43cf-8150-3aa3eb1e5f4f")},
+						Order:             0,
+						DurationInSeconds: 15,
+					},
+					Options: []*domain.QuestionOption{
+						{BaseObject: domain.BaseObject{ID: uuid.MustParse("4f95d9ce-a608-4292-b3f6-18b4b7939135")}},
+					},
+				},
+				{
+					BaseQuestion: domain.BaseQuestion{
+						BaseObject:        domain.BaseObject{ID: uuid.MustParse("c847e53b-9dd6-4636-99be-6cf18243d598")},
+						Order:             1,
+						DurationInSeconds: 15,
+					},
+					Options: []*domain.QuestionOption{
+						{BaseObject: domain.BaseObject{ID: uuid.MustParse("7b7a4cdd-622a-4a57-adb4-064ada2bc4fa")}},
+					},
+				},
+			},
+		},
+	}
+
+	// Populate database
+	populateDatabase(t, instance.database, quizzes...)
+
+	// Close it in the end
+	defer ts.Close()
+
+	// Act
+
+	// Create and start
+	gameRes, err := performRequest(http.MethodPost, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, inputs.Game{PlayerLimit: 5})
+	gameID := getValue(t, gameRes, err, func(t domain.Game) uuid.UUID {
+		return t.ID
+	})
+
+	// Create players
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=start", gameID), token, nil)
+	player1Res, _ := performRequest(http.MethodPost, ts.URL, fmt.Sprintf("api/v1/games/%s/players", gameID), "", nil)
+	player1ID := getValue(t, player1Res, err, func(t domain.Player) uuid.UUID {
+		return t.ID
+	})
+
+	player2Res, _ := performRequest(http.MethodPost, ts.URL, fmt.Sprintf("api/v1/games/%s/players", gameID), "", nil)
+	player2ID := getValue(t, player2Res, err, func(t domain.Player) uuid.UUID {
+		return t.ID
+	})
+
+	// Start game
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=next", gameID), token, nil)
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/5413ddc1-986c-43cf-8150-3aa3eb1e5f4f/players/%s", gameID, player1ID), "", map[string]string{"optionID": "4f95d9ce-a608-4292-b3f6-18b4b7939135"})
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/5413ddc1-986c-43cf-8150-3aa3eb1e5f4f/players/%s", gameID, player2ID), "", map[string]string{"optionID": "4f95d9ce-a608-4292-b3f6-18b4b7939135"})
+
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=next", gameID), token, nil)
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/c847e53b-9dd6-4636-99be-6cf18243d598/players/%s", gameID, player1ID), "", map[string]string{"optionID": "7b7a4cdd-622a-4a57-adb4-064ada2bc4fa"})
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/c847e53b-9dd6-4636-99be-6cf18243d598/players/%s", gameID, player2ID), "", map[string]string{"optionID": "7b7a4cdd-622a-4a57-adb4-064ada2bc4fa"})
+
+	// End game
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=finish", gameID), token, nil)
+
+	// Verify
+	res, err := performRequest(http.MethodGet, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, nil)
+
+	// Assert
+	assert.NoError(t, err)
+
+	body, err := io.ReadAll(res.Body)
+
+	var result []*domain.Game
+	if err := json.Unmarshal(body, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	// Check if all the required objects are in there
+	if assert.Len(t, result, 1) {
+		assert.False(t, result[0].FinishTime.IsZero())
+		assert.Len(t, result[0].Players, 2)
+		assert.Len(t, result[0].Answers, 4)
+	}
 }

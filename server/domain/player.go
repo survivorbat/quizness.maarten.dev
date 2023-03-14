@@ -5,6 +5,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type Players []*Player
+
+func (p Players) Contains(playerID uuid.UUID) bool {
+	for _, player := range p {
+		if player.ID == playerID {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Player is a simple anonymous user that joins a game, also gets a random nickname assigned
 type Player struct {
 	BaseObject

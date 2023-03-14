@@ -2,6 +2,18 @@ package domain
 
 import "github.com/google/uuid"
 
+type GameAnswers []*GameAnswer
+
+func (g GameAnswers) Contains(questionID uuid.UUID, playerID uuid.UUID) bool {
+	for _, answer := range g {
+		if answer.QuestionID == questionID && answer.PlayerID == playerID {
+			return true
+		}
+	}
+
+	return false
+}
+
 type GameAnswer struct {
 	BaseObject
 

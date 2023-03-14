@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"errors"
 	"github.com/google/uuid"
 )
 
@@ -20,15 +19,33 @@ type Quiz struct {
 	Games []*Game `json:"-" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
 }
 
-// GetQuestion retrieves a question based on the Order of a question in the list
-func (q *Quiz) GetQuestion(index uint) (Question, error) {
+// GetQuestion retrieves a question based on the Order of a question in the list, will return
+// uuid.Nil if not found
+func (q *Quiz) GetQuestion(order uint) (Question, bool) {
 	for _, question := range q.MultipleChoiceQuestions {
-		if question.Order == index {
-			return question, nil
+		if question.Order == order {
+			return question, true
 		}
 	}
 
-	return nil, errors.New("question not found")
+	return nil, false
+}
+
+func (q *Quiz) GetNextQuestion(current uuid.UUID) (Question, bool) {
+	// If no current is found, take the first one
+	if current == uuid.Nil {
+		return q.GetQuestion(0)
+	}
+
+	var currentQuestion uint
+	for _, question := range q.MultipleChoiceQuestions {
+		if question.ID == current {
+			currentQuestion = question.Order
+			break
+		}
+	}
+
+	return q.GetQuestion(currentQuestion + 1)
 }
 
 // HasGameInProgress can be used to verify whether a new game can be started

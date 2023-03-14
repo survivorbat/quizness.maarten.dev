@@ -16,6 +16,7 @@ type GameService interface {
 	GetByID(gameID uuid.UUID) (*domain.Game, error)
 	Create(game *domain.Game) error
 	Start(game *domain.Game) error
+	Next(game *domain.Game) error
 	Finish(game *domain.Game) error
 	Delete(game *domain.Game) error
 }
@@ -47,6 +48,20 @@ func (g *DBGameService) GetByID(gameID uuid.UUID) (*domain.Game, error) {
 
 func (g *DBGameService) Create(game *domain.Game) error {
 	if err := g.Database.Create(game).Error; err != nil {
+		logrus.WithError(err).Error("Failed to create")
+		return err
+	}
+
+	return nil
+}
+
+func (g *DBGameService) Next(game *domain.Game) error {
+	if err := game.Next(); err != nil {
+		logrus.WithError(err).Error("Failed to start")
+		return err
+	}
+
+	if err := g.Database.Updates(game).Error; err != nil {
 		logrus.WithError(err).Error("Failed to create")
 		return err
 	}

@@ -282,6 +282,78 @@ func TestDBGameService_Finish_FinishesGame(t *testing.T) {
 	assert.False(t, result.FinishTime.IsZero())
 }
 
+func TestDBGameService_Next_StartsNextQuestion(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	game := &domain.Game{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")},
+		StartTime:  time.Now(),
+		Players:    []*domain.Player{{}, {}},
+		Quiz: &domain.Quiz{
+			Creator: &domain.Creator{},
+			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+				{
+					BaseQuestion: domain.BaseQuestion{
+						BaseObject: domain.BaseObject{ID: uuid.MustParse("c275bf4e-c839-495d-af9c-4f95d8dc05a5")},
+						Order:      0,
+					},
+				},
+				{
+					BaseQuestion: domain.BaseQuestion{
+						BaseObject: domain.BaseObject{ID: uuid.MustParse("ce454f0d-9d9c-4e39-bd86-3484a7283eec")},
+						Order:      1,
+					},
+				},
+			},
+		},
+	}
+	database.Create(game)
+
+	// Act
+	err := service.Next(game)
+
+	// Assert
+	assert.NoError(t, err)
+
+	var result *domain.Game
+	if err := database.First(&result).Error; err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, uuid.MustParse("c275bf4e-c839-495d-af9c-4f95d8dc05a5"), result.CurrentQuestion)
+}
+
+func TestDBGameService_Next_ReturnsErrorIfNotStarted(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	service := &DBGameService{
+		Database: database,
+	}
+
+	game := &domain.Game{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")},
+		Quiz: &domain.Quiz{
+			Creator: &domain.Creator{},
+		},
+	}
+	database.Create(game)
+
+	// Act
+	err := service.Next(game)
+
+	// Assert
+	assert.ErrorContains(t, err, "game is not in progress")
+}
+
 func TestDBGameService_Delete_ReturnsErrorOnInProgress(t *testing.T) {
 	t.Parallel()
 	// Arrange

@@ -19,9 +19,10 @@ type Game struct {
 	PlayerLimit uint   `json:"playerLimit"`           // desc: The max amount of players that may join this game
 
 	CurrentQuestion uuid.UUID `json:"currentQuestion" example:"00000000-0000-0000-0000-000000000000"` // desc: The current question
+	CurrentDeadline time.Time `json:"currentDeadline"`                                                // desc: Past this deadline, no answers may be submitted
 
-	Players []*Player     `json:"players" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
-	Answers []*GameAnswer `json:"answers" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
+	Players Players     `json:"players" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
+	Answers GameAnswers `json:"answers" gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE"`
 
 	StartTime  time.Time `json:"startTime"`  // desc: The time that this game started
 	FinishTime time.Time `json:"finishTime"` // desc: The time that this game ended
@@ -49,6 +50,27 @@ func (g *Game) Start() error {
 	return nil
 }
 
+func (g *Game) Next() error {
+	if !g.IsInProgress() {
+		return errors.New("game is not in progress")
+	}
+
+	if len(g.Players) < 2 {
+		return errors.New("can only start with 2 or more players")
+	}
+
+	nextQuestion, ok := g.Quiz.GetNextQuestion(g.CurrentQuestion)
+
+	if !ok {
+		return errors.New("no more questions")
+	}
+
+	g.CurrentQuestion = nextQuestion.GetBaseQuestion().ID
+	g.CurrentDeadline = time.Now().Add(time.Duration(nextQuestion.GetBaseQuestion().DurationInSeconds))
+
+	return nil
+}
+
 // Finish ends the game
 func (g *Game) Finish() error {
 	if g.StartTime.IsZero() {
@@ -61,4 +83,33 @@ func (g *Game) Finish() error {
 
 	g.FinishTime = time.Now()
 	return nil
+}
+
+func (g *Game) AnswerQuestion(player uuid.UUID, question uuid.UUID, optionID uuid.UUID) (*GameAnswer, error) {
+	if g.CurrentQuestion != question {
+		return nil, errors.New("not the current question")
+	}
+
+	if g.CurrentDeadline.Before(time.Now()) {
+		return nil, errors.New("deadline passed")
+	}
+
+	if !g.Players.Contains(player) {
+		return nil, errors.New("player not in game")
+	}
+
+	if g.Answers.Contains(question, player) {
+		return nil, errors.New("player has already submitted an answer")
+	}
+
+	answer := &GameAnswer{
+		PlayerID:   player,
+		GameID:     g.ID,
+		QuestionID: question,
+		OptionID:   optionID,
+	}
+
+	g.Answers = append(g.Answers, answer)
+
+	return answer, nil
 }

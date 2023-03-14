@@ -137,7 +137,6 @@ func (g *GameHandler) Post(c *gin.Context) {
 //	@Failure	404		"Not found"
 //	@Failure	409		"You already have a game started"
 //	@Failure	500		"Internal Server Error"
-//	@Failure	501		"Next is not implemented"
 //	@Router		/api/v1/games/{id} [patch]
 //	@Security	JWT
 func (g *GameHandler) Patch(c *gin.Context) {
@@ -184,8 +183,11 @@ func (g *GameHandler) Patch(c *gin.Context) {
 		}
 
 	case "next":
-		c.AbortWithStatus(http.StatusNotImplemented)
-		return
+		// TODO: Differentiate errors
+		if err := g.GameService.Next(game); err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	default:
 		c.AbortWithStatus(http.StatusBadRequest)
 		return

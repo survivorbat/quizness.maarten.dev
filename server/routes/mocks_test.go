@@ -74,6 +74,9 @@ type MockGameService struct {
 
 	deleteCalledWith *domain.Game
 	deleteReturns    error
+
+	nextCalledWith *domain.Game
+	nextReturns    error
 }
 
 func (m *MockGameService) GetByQuiz(id uuid.UUID) ([]*domain.Game, error) {
@@ -98,6 +101,11 @@ func (m *MockGameService) Delete(game *domain.Game) error {
 func (m *MockGameService) Start(game *domain.Game) error {
 	m.startCalledWith = game
 	return m.startReturns
+}
+
+func (m *MockGameService) Next(game *domain.Game) error {
+	m.nextCalledWith = game
+	return m.nextReturns
 }
 
 func (m *MockGameService) Finish(game *domain.Game) error {

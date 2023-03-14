@@ -341,11 +341,12 @@ func TestGameHandler_Patch_ReturnsErrorInvalidAction(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, writer.Code)
 }
 
-func TestGameHandler_Patch_ReturnsNotImplementedOnNext(t *testing.T) {
+func TestGameHandler_Patch_ReturnsOnNextError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gameService := &MockGameService{
 		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")}},
+		nextReturns:    assert.AnError,
 	}
 	handler := &GameHandler{GameService: gameService}
 
@@ -359,7 +360,7 @@ func TestGameHandler_Patch_ReturnsNotImplementedOnNext(t *testing.T) {
 	handler.Patch(context)
 
 	// Assert
-	assert.Equal(t, http.StatusNotImplemented, writer.Code)
+	assert.Equal(t, http.StatusInternalServerError, writer.Code)
 }
 
 func TestGameHandler_Patch_StartReturnsErrorOnGameAlreadyInProgress(t *testing.T) {

@@ -20,8 +20,8 @@ type PublicGameHandler struct {
 //	@Tags		Game
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path		string								true	"ID of the game"
-//	@Success	200	{object}	domain.OutputMultipleChoiceQuestion	"The current question"
+//	@Param		id	path		string									true	"ID of the game"
+//	@Success	200	{object}	outputs.OutputMultipleChoiceQuestion	"The current question"
 //	@Failure	400	"Invalid uuid"
 //	@Failure	404	"Game not found"
 //	@Failure	404	"Game not active"

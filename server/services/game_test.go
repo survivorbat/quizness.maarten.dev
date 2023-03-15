@@ -205,7 +205,8 @@ func TestDBGameService_Start_StartsGame(t *testing.T) {
 	game := &domain.Game{
 		BaseObject: domain.BaseObject{ID: uuid.MustParse("238fe389-dede-4ee0-b26f-d2b1a65befac")},
 		Quiz: &domain.Quiz{
-			Creator: &domain.Creator{},
+			Creator:                 &domain.Creator{},
+			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{{}, {}},
 		},
 	}
 	database.Create(game)

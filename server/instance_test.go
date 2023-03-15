@@ -563,9 +563,10 @@ func TestNewServer_StartGame_StartsGame(t *testing.T) {
 	game := &domain.Game{
 		BaseObject: domain.BaseObject{ID: uuid.MustParse("342855cd-332c-4344-955e-a0e63be17f3a")},
 		Quiz: &domain.Quiz{
-			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
-			Name:       "def",
-			CreatorID:  userID,
+			BaseObject:              domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
+			Name:                    "def",
+			CreatorID:               userID,
+			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{{}, {}},
 		},
 	}
 
@@ -868,7 +869,7 @@ func TestNewServer_GameFlow_Works(t *testing.T) {
 				BaseQuestion: domain.BaseQuestion{
 					BaseObject:        domain.BaseObject{ID: uuid.MustParse("5413ddc1-986c-43cf-8150-3aa3eb1e5f4f")},
 					Order:             0,
-					DurationInSeconds: 15,
+					DurationInSeconds: 2,
 				},
 				Options: []*domain.QuestionOption{
 					{BaseObject: domain.BaseObject{ID: uuid.MustParse("4f95d9ce-a608-4292-b3f6-18b4b7939135")}},
@@ -878,7 +879,7 @@ func TestNewServer_GameFlow_Works(t *testing.T) {
 				BaseQuestion: domain.BaseQuestion{
 					BaseObject:        domain.BaseObject{ID: uuid.MustParse("c847e53b-9dd6-4636-99be-6cf18243d598")},
 					Order:             1,
-					DurationInSeconds: 15,
+					DurationInSeconds: 2,
 				},
 				Options: []*domain.QuestionOption{
 					{BaseObject: domain.BaseObject{ID: uuid.MustParse("7b7a4cdd-622a-4a57-adb4-064ada2bc4fa")}},
@@ -917,10 +918,16 @@ func TestNewServer_GameFlow_Works(t *testing.T) {
 	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/5413ddc1-986c-43cf-8150-3aa3eb1e5f4f/players/%s", gameID, player1ID), "", map[string]string{"optionID": "4f95d9ce-a608-4292-b3f6-18b4b7939135"})
 	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/5413ddc1-986c-43cf-8150-3aa3eb1e5f4f/players/%s", gameID, player2ID), "", map[string]string{"optionID": "4f95d9ce-a608-4292-b3f6-18b4b7939135"})
 
+	// Wait for deadline
+	time.Sleep(2 * time.Second)
+
 	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=next", gameID), token, nil)
 	question2Res, _ := performRequest(http.MethodGet, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/current", gameID), "", nil)
 	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/c847e53b-9dd6-4636-99be-6cf18243d598/players/%s", gameID, player1ID), "", map[string]string{"optionID": "7b7a4cdd-622a-4a57-adb4-064ada2bc4fa"})
 	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/c847e53b-9dd6-4636-99be-6cf18243d598/players/%s", gameID, player2ID), "", map[string]string{"optionID": "7b7a4cdd-622a-4a57-adb4-064ada2bc4fa"})
+
+	// Wait for deadline
+	time.Sleep(2 * time.Second)
 
 	// End game
 	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=finish", gameID), token, nil)

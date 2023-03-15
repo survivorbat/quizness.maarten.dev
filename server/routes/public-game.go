@@ -5,12 +5,59 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/routes/outputs"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )
 
-type AnswerHandler struct {
+type PublicGameHandler struct {
 	GameService services.GameService
+}
+
+// Get godoc
+//
+//	@Summary	Get the current question
+//	@Tags		Game
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string								true	"ID of the game"
+//	@Success	200	{object}	domain.OutputMultipleChoiceQuestion	"The current question"
+//	@Failure	400	"Invalid uuid"
+//	@Failure	404	"Game not found"
+//	@Failure	404	"Game not active"
+//	@Failure	500	"Internal Server Error"
+//	@Router		/api/v1/games/{id}/questions/current [get]
+func (g *PublicGameHandler) Get(c *gin.Context) {
+	gameParam := c.Param("id")
+	gameID, err := uuid.Parse(gameParam)
+	if err != nil {
+		logrus.WithError(err).Error("UUID error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	game, err := g.GameService.GetByID(gameID)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to fetch game")
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	question, ok := game.GetCurrentQuestion()
+	if !ok {
+		logrus.WithError(err).Error("Failed to fetch question")
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	output, err := outputs.NewPublicQuestion(question)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to create output")
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", output)
 }
 
 // Patch godoc
@@ -30,7 +77,7 @@ type AnswerHandler struct {
 //	@Failure	404			"Question not found"
 //	@Failure	500			"Internal Server Error"
 //	@Router		/api/v1/games/{id}/questions/{question}/answers/{player} [patch]
-func (g *AnswerHandler) Patch(c *gin.Context) {
+func (g *PublicGameHandler) Patch(c *gin.Context) {
 	gameParam := c.Param("id")
 	gameID, err := uuid.Parse(gameParam)
 	if err != nil {
@@ -57,6 +104,7 @@ func (g *AnswerHandler) Patch(c *gin.Context) {
 
 	game, err := g.GameService.GetByID(gameID)
 	if err != nil {
+		logrus.WithError(err).Error("Failed to fetch game")
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -74,5 +122,5 @@ func (g *AnswerHandler) Patch(c *gin.Context) {
 		return
 	}
 
-	return
+	c.Status(http.StatusOK)
 }

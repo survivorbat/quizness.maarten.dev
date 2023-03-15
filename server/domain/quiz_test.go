@@ -53,10 +53,12 @@ func TestQuiz_GetQuestion_ReturnsExpectedValue(t *testing.T) {
 					},
 				},
 			}},
-			expected: BaseQuestion{
-				BaseObject: BaseObject{ID: uuid.MustParse("c5803f9a-a584-409a-9c06-7e66a37a959f")},
-				Title:      "First question!",
-				Order:      0,
+			expected: MultipleChoiceQuestion{
+				BaseQuestion: BaseQuestion{
+					BaseObject: BaseObject{ID: uuid.MustParse("c5803f9a-a584-409a-9c06-7e66a37a959f")},
+					Title:      "First question!",
+					Order:      0,
+				},
 			},
 			index: 0,
 		},
@@ -84,10 +86,12 @@ func TestQuiz_GetQuestion_ReturnsExpectedValue(t *testing.T) {
 					},
 				},
 			}},
-			expected: BaseQuestion{
-				BaseObject: BaseObject{ID: uuid.MustParse("41dbef92-9bdb-4714-8dd8-a6163ad382a7")},
-				Title:      "Second question!",
-				Order:      1,
+			expected: MultipleChoiceQuestion{
+				BaseQuestion: BaseQuestion{
+					BaseObject: BaseObject{ID: uuid.MustParse("41dbef92-9bdb-4714-8dd8-a6163ad382a7")},
+					Title:      "Second question!",
+					Order:      1,
+				},
 			},
 			index: 1,
 		},
@@ -134,10 +138,12 @@ func TestQuiz_GetNextQuestion_ReturnsExpectedValue(t *testing.T) {
 					},
 				},
 			},
-			expected: BaseQuestion{
-				BaseObject: BaseObject{ID: uuid.MustParse("c5803f9a-a584-409a-9c06-7e66a37a959f")},
-				Title:      "First question!",
-				Order:      0,
+			expected: MultipleChoiceQuestion{
+				BaseQuestion: BaseQuestion{
+					BaseObject: BaseObject{ID: uuid.MustParse("c5803f9a-a584-409a-9c06-7e66a37a959f")},
+					Title:      "First question!",
+					Order:      0,
+				},
 			},
 			currentQuestion: uuid.Nil,
 		},
@@ -175,10 +181,12 @@ func TestQuiz_GetNextQuestion_ReturnsExpectedValue(t *testing.T) {
 					},
 				},
 			},
-			expected: BaseQuestion{
-				BaseObject: BaseObject{ID: uuid.MustParse("c5803f9a-a584-409a-9c06-7e66a37a959f")},
-				Title:      "First question!",
-				Order:      1,
+			expected: MultipleChoiceQuestion{
+				BaseQuestion: BaseQuestion{
+					BaseObject: BaseObject{ID: uuid.MustParse("c5803f9a-a584-409a-9c06-7e66a37a959f")},
+					Title:      "First question!",
+					Order:      1,
+				},
 			},
 			currentQuestion: uuid.MustParse("dfd2294f-a2bf-45bf-9522-982b2fd056a6"),
 		},

@@ -39,7 +39,7 @@ func (g *DBGameService) GetByQuiz(quizId uuid.UUID) ([]*domain.Game, error) {
 func (g *DBGameService) GetByID(gameID uuid.UUID) (*domain.Game, error) {
 	var result *domain.Game
 
-	if err := g.Database.Preload("Answers").Preload("Quiz.Games").Preload("Quiz.MultipleChoiceQuestions").Preload("Players").First(&result, gameID).Error; err != nil {
+	if err := g.Database.Preload("Answers").Preload("Quiz.Games").Preload("Quiz.MultipleChoiceQuestions.Options").Preload("Players").First(&result, gameID).Error; err != nil {
 		logrus.WithError(err).Error("Failed to fetch by id")
 		return nil, err
 	}

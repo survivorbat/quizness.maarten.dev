@@ -28,6 +28,21 @@ type Game struct {
 	FinishTime time.Time `json:"finishTime"` // desc: The time that this game ended
 }
 
+func (g *Game) GetCurrentQuestion() (Question, bool) {
+	// Give up quick
+	if g.CurrentQuestion == uuid.Nil {
+		return nil, false
+	}
+
+	for _, question := range g.Quiz.MultipleChoiceQuestions {
+		if question.ID == g.CurrentQuestion {
+			return question, true
+		}
+	}
+
+	return nil, false
+}
+
 func (g *Game) IsInProgress() bool {
 	return !g.StartTime.IsZero() && g.FinishTime.IsZero()
 }

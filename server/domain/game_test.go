@@ -7,6 +7,55 @@ import (
 	"time"
 )
 
+func TestGame_GetCurrentQuestion_ReturnsFalseOnNoCurrent(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{}
+
+	// Act
+	result, ok := game.GetCurrentQuestion()
+
+	// Assert
+	assert.False(t, ok)
+	assert.Nil(t, result)
+}
+
+func TestGame_GetCurrentQuestion_ReturnsFalseOnNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{
+		CurrentQuestion: uuid.MustParse("f4405ee7-f24b-4f73-a418-3b6d46f159fc"),
+		Quiz:            &Quiz{},
+	}
+
+	// Act
+	result, ok := game.GetCurrentQuestion()
+
+	// Assert
+	assert.False(t, ok)
+	assert.Nil(t, result)
+}
+
+func TestGame_GetCurrentQuestion_ReturnsTrueOnFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{
+		CurrentQuestion: uuid.MustParse("f4405ee7-f24b-4f73-a418-3b6d46f159fc"),
+		Quiz: &Quiz{
+			MultipleChoiceQuestions: []*MultipleChoiceQuestion{
+				{BaseQuestion: BaseQuestion{BaseObject: BaseObject{ID: uuid.MustParse("f4405ee7-f24b-4f73-a418-3b6d46f159fc")}}},
+			},
+		},
+	}
+
+	// Act
+	result, ok := game.GetCurrentQuestion()
+
+	// Assert
+	assert.True(t, ok)
+	assert.Equal(t, game.Quiz.MultipleChoiceQuestions[0], result)
+}
+
 func TestGame_IsInProgress_ReturnsTrueOnStarted(t *testing.T) {
 	t.Parallel()
 	// Arrange

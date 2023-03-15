@@ -8,16 +8,123 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/routes/outputs"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestAnswerHandler_Patch_ReturnsErrorOnInvalidGameUUID(t *testing.T) {
+func TestPublicGameHandler_Get_ReturnsErrorOnInvalidGameUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	handler := &AnswerHandler{}
+	handler := &PublicGameHandler{}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "no"}}
+
+	// Act
+	handler.Get(context)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
+}
+
+func TestPublicGameHandler_Get_ReturnsErrorOnGameNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{getByIdReturnsError: assert.AnError}
+	handler := &PublicGameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{
+		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
+	}
+
+	// Act
+	handler.Get(context)
+
+	// Assert
+	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+
+func TestPublicGameHandler_Get_ReturnsErrorOnQuestionNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &domain.Game{Quiz: &domain.Quiz{}}
+	gameService := &MockGameService{getByIdReturns: game}
+	handler := &PublicGameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{
+		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
+	}
+
+	// Act
+	handler.Get(context)
+
+	// Assert
+	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+
+func TestPublicGameHandler_Get_ReturnsQuestion(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	question := &domain.MultipleChoiceQuestion{
+		BaseQuestion: domain.BaseQuestion{BaseObject: domain.BaseObject{ID: uuid.MustParse("78fdb37a-075a-4ed3-ae5f-ffa7d7bca781")}},
+	}
+	game := &domain.Game{
+		CurrentQuestion: question.ID,
+		Quiz: &domain.Quiz{
+			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{question},
+		},
+	}
+	gameService := &MockGameService{getByIdReturns: game}
+	handler := &PublicGameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{
+		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
+	}
+
+	// Act
+	handler.Get(context)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, writer.Code)
+
+	body, err := io.ReadAll(writer.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result *outputs.OutputMultipleChoiceQuestion
+	if err := json.Unmarshal(body, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, question.ID, result.ID)
+	assert.Equal(t, question.Title, result.Title)
+	assert.Equal(t, question.Description, result.Description)
+	assert.Equal(t, question.Order, result.Order)
+	assert.Equal(t, question.Category, result.Category)
+	assert.Equal(t, question.Order, result.Order)
+	assert.Equal(t, question.DurationInSeconds, result.DurationInSeconds)
+	assert.Equal(t, question.Options, result.Options)
+}
+
+func TestPublicGameHandler_Patch_ReturnsErrorOnInvalidGameUUID(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	handler := &PublicGameHandler{}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -31,10 +138,10 @@ func TestAnswerHandler_Patch_ReturnsErrorOnInvalidGameUUID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, writer.Code)
 }
 
-func TestAnswerHandler_Patch_ReturnsErrorOnInvalidQuestionUUID(t *testing.T) {
+func TestPublicGameHandler_Patch_ReturnsErrorOnInvalidQuestionUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	handler := &AnswerHandler{}
+	handler := &PublicGameHandler{}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -50,10 +157,10 @@ func TestAnswerHandler_Patch_ReturnsErrorOnInvalidQuestionUUID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, writer.Code)
 }
 
-func TestAnswerHandler_Patch_ReturnsErrorOnInvalidPlayerUUID(t *testing.T) {
+func TestPublicGameHandler_Patch_ReturnsErrorOnInvalidPlayerUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	handler := &AnswerHandler{}
+	handler := &PublicGameHandler{}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -70,11 +177,11 @@ func TestAnswerHandler_Patch_ReturnsErrorOnInvalidPlayerUUID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, writer.Code)
 }
 
-func TestAnswerHandler_Patch_ReturnsErrorOnGameNotFound(t *testing.T) {
+func TestPublicGameHandler_Patch_ReturnsErrorOnGameNotFound(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gameService := &MockGameService{getByIdReturnsError: assert.AnError}
-	handler := &AnswerHandler{GameService: gameService}
+	handler := &PublicGameHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -92,11 +199,11 @@ func TestAnswerHandler_Patch_ReturnsErrorOnGameNotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, writer.Code)
 }
 
-func TestAnswerHandler_Patch_ReturnsValidationError(t *testing.T) {
+func TestPublicGameHandler_Patch_ReturnsValidationError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gameService := &MockGameService{getByIdReturns: &domain.Game{}}
-	handler := &AnswerHandler{GameService: gameService}
+	handler := &PublicGameHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -114,11 +221,11 @@ func TestAnswerHandler_Patch_ReturnsValidationError(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, writer.Code)
 }
 
-func TestAnswerHandler_Patch_ReturnsGenericError(t *testing.T) {
+func TestPublicGameHandler_Patch_ReturnsGenericError(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gameService := &MockGameService{getByIdReturns: &domain.Game{}, answerReturns: assert.AnError}
-	handler := &AnswerHandler{GameService: gameService}
+	handler := &PublicGameHandler{GameService: gameService}
 
 	input := &inputs.Answer{OptionID: uuid.MustParse("30f9b929-e202-4305-ac30-114875c19cc3")}
 	inputJson, _ := json.Marshal(input)
@@ -139,11 +246,11 @@ func TestAnswerHandler_Patch_ReturnsGenericError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, writer.Code)
 }
 
-func TestAnswerHandler_Patch_ReturnsSuccess(t *testing.T) {
+func TestPublicGameHandler_Patch_ReturnsSuccess(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gameService := &MockGameService{getByIdReturns: &domain.Game{}}
-	handler := &AnswerHandler{GameService: gameService}
+	handler := &PublicGameHandler{GameService: gameService}
 
 	input := &inputs.Answer{OptionID: uuid.MustParse("30f9b929-e202-4305-ac30-114875c19cc3")}
 	inputJson, _ := json.Marshal(input)

@@ -49,12 +49,12 @@ type Server struct {
 	jwtService  services.JwtService
 
 	// Handlers
-	tokenHandler   *routes.TokenHandler
-	gameHandler    *routes.GameHandler
-	creatorHandler *routes.CreatorHandler
-	quizHandler    *routes.QuizHandler
-	playerHandler  *routes.PlayerHandler
-	answerHandler  *routes.AnswerHandler
+	tokenHandler        *routes.TokenHandler
+	gameHandler         *routes.GameHandler
+	creatorHandler      *routes.CreatorHandler
+	quizHandler         *routes.QuizHandler
+	playerHandler       *routes.PlayerHandler
+	publicAnswerHandler *routes.PublicGameHandler
 }
 
 func (s *Server) Configure(router *gin.Engine) error {
@@ -89,7 +89,7 @@ func (s *Server) configureServices() {
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 	s.gameHandler = &routes.GameHandler{GameService: gameService, QuizService: quizService}
 	s.playerHandler = &routes.PlayerHandler{PlayerService: playerService, GameService: gameService}
-	s.answerHandler = &routes.AnswerHandler{GameService: gameService}
+	s.publicAnswerHandler = &routes.PublicGameHandler{GameService: gameService}
 }
 
 func (s *Server) configureRoutes(router *gin.Engine) {
@@ -117,7 +117,8 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 
 	// Anonymous routes
 	publicRoutes := router.Group("/api/v1")
-	publicRoutes.PATCH("/games/:id/questions/:question/players/:player", s.answerHandler.Patch)
+	publicRoutes.GET("/games/:id/questions/current", s.publicAnswerHandler.Get)
+	publicRoutes.PATCH("/games/:id/questions/:question/players/:player", s.publicAnswerHandler.Patch)
 	publicRoutes.POST("/games/:id/players", s.playerHandler.Post)
 	publicRoutes.DELETE("/players/:id", s.playerHandler.Delete)
 

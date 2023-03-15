@@ -4,9 +4,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type QuestionType string
+
+const (
+	TypeMultipleChoice QuestionType = "mc"
+)
+
 // Question is used to pass around questions without a specific type
 type Question interface {
 	GetBaseQuestion() BaseQuestion
+	GetType() QuestionType
 }
 
 // BaseQuestion contains fields that every question should contain, allows us to embed it in other questions

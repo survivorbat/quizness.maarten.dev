@@ -10,3 +10,7 @@ type MultipleChoiceQuestion struct {
 
 	Options []*QuestionOption `json:"options" gorm:"foreignKey:MultipleChoiceQuestionID;constraint:OnDelete:CASCADE"`
 }
+
+func (m MultipleChoiceQuestion) GetType() QuestionType {
+	return TypeMultipleChoice
+}

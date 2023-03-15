@@ -57,6 +57,10 @@ func (g *Game) Start() error {
 		return errors.New("game has already started")
 	}
 
+	if g.Quiz.CountQuestions() == 0 {
+		return errors.New("no questions defined")
+	}
+
 	g.StartTime = time.Now()
 
 	code := make([]string, 6)
@@ -75,6 +79,10 @@ func (g *Game) Next() error {
 
 	if len(g.Players) < 2 {
 		return errors.New("can only start with 2 or more players")
+	}
+
+	if !g.CurrentDeadline.IsZero() && time.Now().Before(g.CurrentDeadline) {
+		return errors.New("deadline has not passed")
 	}
 
 	nextQuestion, ok := g.Quiz.GetNextQuestion(g.CurrentQuestion)
@@ -97,6 +105,10 @@ func (g *Game) Finish() error {
 
 	if !g.FinishTime.IsZero() {
 		return errors.New("game has already finished")
+	}
+
+	if !g.CurrentDeadline.IsZero() && time.Now().Before(g.CurrentDeadline) {
+		return errors.New("deadline has not passed")
 	}
 
 	g.FinishTime = time.Now()

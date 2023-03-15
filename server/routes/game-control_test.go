@@ -18,7 +18,7 @@ import (
 func TestGameHandler_Get_ReturnsErrorOnInvalidUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	handler := &GameHandler{}
+	handler := &GameControlHandler{}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -37,7 +37,7 @@ func TestGameHandler_Get_ReturnsErrorOnQuizNotFound(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	quizService := &MockQuizService{getByIdReturnsError: assert.AnError}
-	handler := &GameHandler{QuizService: quizService}
+	handler := &GameControlHandler{QuizService: quizService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -58,7 +58,7 @@ func TestGameHandler_Get_ReturnsErrorOnNotMyQuiz(t *testing.T) {
 	quizService := &MockQuizService{getByIdReturns: &domain.Quiz{
 		CreatorID: uuid.MustParse("8fdc3e5a-b0a8-4103-af3b-c2f20d91889b"),
 	}}
-	handler := &GameHandler{QuizService: quizService}
+	handler := &GameControlHandler{QuizService: quizService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -80,7 +80,7 @@ func TestGameHandler_Get_ReturnsErrorOnFailedGet(t *testing.T) {
 		CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
 	}}
 	gameService := &MockGameService{getByQuizReturnsError: assert.AnError}
-	handler := &GameHandler{QuizService: quizService, GameService: gameService}
+	handler := &GameControlHandler{QuizService: quizService, GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -102,7 +102,7 @@ func TestGameHandler_Get_ReturnsData(t *testing.T) {
 		CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
 	}}
 	gameService := &MockGameService{getByQuizReturns: []*domain.Game{{Code: "A"}, {Code: "B"}}}
-	handler := &GameHandler{QuizService: quizService, GameService: gameService}
+	handler := &GameControlHandler{QuizService: quizService, GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -127,7 +127,7 @@ func TestGameHandler_Get_ReturnsData(t *testing.T) {
 func TestGameHandler_Post_ReturnsErrorOnInvalidUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	handler := &GameHandler{}
+	handler := &GameControlHandler{}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -146,7 +146,7 @@ func TestGameHandler_Post_ReturnsErrorOnQuizNotFound(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	quizService := &MockQuizService{getByIdReturnsError: assert.AnError}
-	handler := &GameHandler{QuizService: quizService}
+	handler := &GameControlHandler{QuizService: quizService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -167,7 +167,7 @@ func TestGameHandler_Post_ReturnsErrorOnNotMyQuiz(t *testing.T) {
 	quizService := &MockQuizService{getByIdReturns: &domain.Quiz{
 		CreatorID: uuid.MustParse("8fdc3e5a-b0a8-4103-af3b-c2f20d91889b"),
 	}}
-	handler := &GameHandler{QuizService: quizService}
+	handler := &GameControlHandler{QuizService: quizService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -188,7 +188,7 @@ func TestGameHandler_Post_ReturnsErrorOnValidationErrors(t *testing.T) {
 	quizService := &MockQuizService{getByIdReturns: &domain.Quiz{
 		CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
 	}}
-	handler := &GameHandler{QuizService: quizService}
+	handler := &GameControlHandler{QuizService: quizService}
 
 	input := &inputs.Game{PlayerLimit: 0}
 	inputJson, _ := json.Marshal(input)
@@ -212,7 +212,7 @@ func TestGameHandler_Post_ReturnsGenericErrorOnCreate(t *testing.T) {
 		CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
 	}}
 	gameService := &MockGameService{createReturns: assert.AnError}
-	handler := &GameHandler{QuizService: quizService, GameService: gameService}
+	handler := &GameControlHandler{QuizService: quizService, GameService: gameService}
 
 	input := &inputs.Game{PlayerLimit: 2}
 	inputJson, _ := json.Marshal(input)
@@ -237,7 +237,7 @@ func TestGameHandler_Post_ReturnsData(t *testing.T) {
 		CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
 	}}
 	gameService := &MockGameService{}
-	handler := &GameHandler{QuizService: quizService, GameService: gameService}
+	handler := &GameControlHandler{QuizService: quizService, GameService: gameService}
 
 	input := &inputs.Game{PlayerLimit: 2}
 	inputJson, _ := json.Marshal(input)
@@ -265,7 +265,7 @@ func TestGameHandler_Post_ReturnsData(t *testing.T) {
 func TestGameHandler_Patch_ReturnsErrorOnInvalidUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	handler := &GameHandler{}
+	handler := &GameControlHandler{}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -284,7 +284,7 @@ func TestGameHandler_Patch_ReturnsErrorOnGameNotFound(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gameService := &MockGameService{getByIdReturnsError: assert.AnError}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -305,7 +305,7 @@ func TestGameHandler_Patch_ReturnsErrorOnNotMyQuiz(t *testing.T) {
 	gameService := &MockGameService{
 		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("76afc275-5454-4359-a52b-02693a9c48ba")}},
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -326,7 +326,7 @@ func TestGameHandler_Patch_ReturnsErrorInvalidAction(t *testing.T) {
 	gameService := &MockGameService{
 		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")}},
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -348,7 +348,7 @@ func TestGameHandler_Patch_ReturnsOnNextError(t *testing.T) {
 		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")}},
 		nextReturns:    assert.AnError,
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -374,7 +374,7 @@ func TestGameHandler_Patch_StartReturnsErrorOnGameAlreadyInProgress(t *testing.T
 			},
 		},
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -400,7 +400,7 @@ func TestGameHandler_Patch_ReturnsStartError(t *testing.T) {
 		},
 		startReturns: assert.AnError,
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -426,7 +426,7 @@ func TestGameHandler_Patch_ReturnsFinishError(t *testing.T) {
 		},
 		finishReturns: assert.AnError,
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -451,7 +451,7 @@ func TestGameHandler_Patch_ReturnsResult(t *testing.T) {
 			},
 		},
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -476,7 +476,7 @@ func TestGameHandler_Patch_ReturnsResult(t *testing.T) {
 func TestGameHandler_Delete_ReturnsErrorOnInvalidUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	handler := &GameHandler{}
+	handler := &GameControlHandler{}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -495,7 +495,7 @@ func TestGameHandler_Delete_ReturnsErrorOnGameNotFound(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gameService := &MockGameService{getByIdReturnsError: assert.AnError}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -516,7 +516,7 @@ func TestGameHandler_Delete_ReturnsErrorOnNotMyQuiz(t *testing.T) {
 	gameService := &MockGameService{
 		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("76afc275-5454-4359-a52b-02693a9c48ba")}},
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -538,7 +538,7 @@ func TestGameHandler_Delete_ReturnsGenericDeleteError(t *testing.T) {
 		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")}},
 		deleteReturns:  assert.AnError,
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
@@ -563,7 +563,7 @@ func TestGameHandler_Delete_ReturnsResult(t *testing.T) {
 			},
 		},
 	}
-	handler := &GameHandler{GameService: gameService}
+	handler := &GameControlHandler{GameService: gameService}
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)

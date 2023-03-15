@@ -19,6 +19,10 @@ type Quiz struct {
 	Games []*Game `json:"-" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
 }
 
+func (q *Quiz) CountQuestions() int {
+	return len(q.MultipleChoiceQuestions)
+}
+
 // GetQuestion retrieves a question based on the Order of a question in the list, will return
 // uuid.Nil if not found
 func (q *Quiz) GetQuestion(order uint) (Question, bool) {

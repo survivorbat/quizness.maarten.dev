@@ -208,3 +208,15 @@ func TestQuiz_GetNextQuestion_ReturnsExpectedValue(t *testing.T) {
 		})
 	}
 }
+
+func TestQuiz_CountQuestions_ReturnsExpectedCount(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	quiz := &Quiz{MultipleChoiceQuestions: []*MultipleChoiceQuestion{{}, {}}}
+
+	// Act
+	result := quiz.CountQuestions()
+
+	// Assert
+	assert.Equal(t, 2, result)
+}

@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type GameHandler struct {
+type GameControlHandler struct {
 	QuizService services.QuizService
 	GameService services.GameService
 }
@@ -28,7 +28,7 @@ type GameHandler struct {
 //	@Failure	500	"Internal Server Error"
 //	@Router		/api/v1/quizzes/{id}/games [get]
 //	@Security	JWT
-func (g *GameHandler) Get(c *gin.Context) {
+func (g *GameControlHandler) Get(c *gin.Context) {
 	authID := c.GetString("user")
 	id := c.Param("id")
 
@@ -76,7 +76,7 @@ func (g *GameHandler) Get(c *gin.Context) {
 //	@Failure	500		"Internal Server Error"
 //	@Router		/api/v1/quizzes/{id}/games [post]
 //	@Security	JWT
-func (g *GameHandler) Post(c *gin.Context) {
+func (g *GameControlHandler) Post(c *gin.Context) {
 	authID := c.GetString("user")
 	id := c.Param("id")
 
@@ -139,7 +139,7 @@ func (g *GameHandler) Post(c *gin.Context) {
 //	@Failure	500		"Internal Server Error"
 //	@Router		/api/v1/games/{id} [patch]
 //	@Security	JWT
-func (g *GameHandler) Patch(c *gin.Context) {
+func (g *GameControlHandler) Patch(c *gin.Context) {
 	authID := c.GetString("user")
 	id := c.Param("id")
 	action := c.Query("action")
@@ -211,7 +211,7 @@ func (g *GameHandler) Patch(c *gin.Context) {
 //	@Failure	500	"Internal Server Error"
 //	@Router		/api/v1/games/{id} [delete]
 //	@Security	JWT
-func (g *GameHandler) Delete(c *gin.Context) {
+func (g *GameControlHandler) Delete(c *gin.Context) {
 	authID := c.GetString("user")
 	id := c.Param("id")
 

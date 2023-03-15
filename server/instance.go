@@ -49,12 +49,13 @@ type Server struct {
 	jwtService  services.JwtService
 
 	// Handlers
-	tokenHandler        *routes.TokenHandler
-	gameHandler         *routes.GameHandler
-	creatorHandler      *routes.CreatorHandler
-	quizHandler         *routes.QuizHandler
-	playerHandler       *routes.PlayerHandler
-	publicAnswerHandler *routes.PublicGameHandler
+	tokenHandler          *routes.TokenHandler
+	gameControlHandler    *routes.GameControlHandler
+	creatorHandler        *routes.CreatorHandler
+	quizHandler           *routes.QuizHandler
+	playerHandler         *routes.PlayerHandler
+	publicAnswerHandler   *routes.PublicGameHandler
+	gameConnectionHandler *routes.GameConnectionHandler
 }
 
 func (s *Server) Configure(router *gin.Engine) error {
@@ -87,7 +88,8 @@ func (s *Server) configureServices() {
 	s.tokenHandler = &routes.TokenHandler{CreatorService: creatorService, JwtService: s.jwtService, AuthConfig: s.oAuthConfig}
 	s.quizHandler = &routes.QuizHandler{QuizService: quizService}
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
-	s.gameHandler = &routes.GameHandler{GameService: gameService, QuizService: quizService}
+	s.gameControlHandler = &routes.GameControlHandler{GameService: gameService, QuizService: quizService}
+	s.gameConnectionHandler = &routes.GameConnectionHandler{GameService: gameService}
 	s.playerHandler = &routes.PlayerHandler{PlayerService: playerService, GameService: gameService}
 	s.publicAnswerHandler = &routes.PublicGameHandler{GameService: gameService}
 }
@@ -101,23 +103,24 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 
 	apiRoutes.GET("/creators/self", s.creatorHandler.GetWithID)
 	apiRoutes.GET("/quizzes", s.quizHandler.Get)
-	apiRoutes.GET("/quizzes/:id/games", s.gameHandler.Get)
+	apiRoutes.GET("/quizzes/:id/games", s.gameControlHandler.Get)
 	apiRoutes.GET("/games/:id/players", s.playerHandler.Get)
 
 	apiRoutes.POST("/quizzes", s.quizHandler.Post)
-	apiRoutes.POST("/quizzes/:id/games", s.gameHandler.Post)
+	apiRoutes.POST("/quizzes/:id/games", s.gameControlHandler.Post)
 
 	apiRoutes.PUT("/tokens", s.tokenHandler.Refresh)
 	apiRoutes.PUT("/quizzes/:id", s.quizHandler.Put)
 
-	apiRoutes.PATCH("/games/:id", s.gameHandler.Patch)
+	apiRoutes.PATCH("/games/:id", s.gameControlHandler.Patch)
 
 	apiRoutes.DELETE("/quizzes/:id", s.quizHandler.Delete)
-	apiRoutes.DELETE("/games/:id", s.gameHandler.Delete)
+	apiRoutes.DELETE("/games/:id", s.gameControlHandler.Delete)
 
 	// Anonymous routes
 	publicRoutes := router.Group("/api/v1")
 	publicRoutes.GET("/games/:id/questions/current", s.publicAnswerHandler.Get)
+	publicRoutes.GET("/games/:id/players/:player/connection", s.gameConnectionHandler.Get)
 	publicRoutes.PATCH("/games/:id/questions/:question/players/:player", s.publicAnswerHandler.Patch)
 	publicRoutes.POST("/games/:id/players", s.playerHandler.Post)
 	publicRoutes.DELETE("/players/:id", s.playerHandler.Delete)

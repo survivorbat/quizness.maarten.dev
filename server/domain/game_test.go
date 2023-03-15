@@ -142,7 +142,7 @@ func TestGame_IsOpenForPlayers_ReturnsFalseOnStartedAndFinished(t *testing.T) {
 func TestGame_Start_SetsStartTimeAndCode(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	game := Game{}
+	game := Game{Quiz: &Quiz{MultipleChoiceQuestions: []*MultipleChoiceQuestion{{}, {}}}}
 
 	// Act
 	err := game.Start()
@@ -156,7 +156,7 @@ func TestGame_Start_SetsStartTimeAndCode(t *testing.T) {
 func TestGame_Start_ErrorsOnAlreadyStarted(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	game := Game{}
+	game := Game{Quiz: &Quiz{MultipleChoiceQuestions: []*MultipleChoiceQuestion{{}, {}}}}
 
 	_ = game.Start()
 
@@ -167,10 +167,24 @@ func TestGame_Start_ErrorsOnAlreadyStarted(t *testing.T) {
 	assert.ErrorContains(t, err, "game has already started")
 }
 
+func TestGame_Start_ErrorsOnNoQuestions(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := Game{
+		Quiz: &Quiz{},
+	}
+
+	// Act
+	err := game.Start()
+
+	// Assert
+	assert.ErrorContains(t, err, "no questions")
+}
+
 func TestGame_Finish_SetsFinishTime(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	game := Game{StartTime: time.Now()}
+	game := Game{StartTime: time.Now(), CurrentDeadline: time.Now().Add(5 * -time.Hour)}
 
 	// Act
 	err := game.Finish()
@@ -204,6 +218,22 @@ func TestGame_Finish_ErrorsOnAlreadyFinished(t *testing.T) {
 
 	// Assert
 	assert.ErrorContains(t, err, "game has already finished")
+}
+func TestGame_Finish_ErrorsOnDeadlineNotPassed(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := Game{
+		StartTime:       time.Now(),
+		CurrentDeadline: time.Now().Add(5 * time.Hour),
+	}
+
+	_ = game.Finish()
+
+	// Act
+	err := game.Finish()
+
+	// Assert
+	assert.ErrorContains(t, err, "deadline has not passed")
 }
 
 func TestGame_AnswerQuestion_ReturnsErrorOnWrongQuestion(t *testing.T) {
@@ -320,7 +350,7 @@ func TestGame_Next_ReturnsErrorOnNotInProgress(t *testing.T) {
 	assert.ErrorContains(t, err, "game is not in progress")
 }
 
-func TestGame_Next_ReturnsErrorOnNotNoPlayers(t *testing.T) {
+func TestGame_Next_ReturnsErrorOnNoPlayers(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	game := &Game{
@@ -342,14 +372,32 @@ func TestGame_Next_ReturnsErrorOnNoMoreQuestions(t *testing.T) {
 		BaseObject: BaseObject{ID: uuid.MustParse("bd787fed-8a2e-40d3-abf6-6b90fa89f862")},
 		StartTime:  time.Now(),
 		Quiz:       &Quiz{},
-		Players:    Players{{}},
+		Players:    Players{{}, {}},
 	}
 
 	// Act
 	err := game.Next()
 
 	// Assert
-	assert.ErrorContains(t, err, "can only start with 2 or more players")
+	assert.ErrorContains(t, err, "no more questions")
+}
+
+func TestGame_Next_ReturnsErrorOnDeadlineNotPassed(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &Game{
+		BaseObject:      BaseObject{ID: uuid.MustParse("bd787fed-8a2e-40d3-abf6-6b90fa89f862")},
+		StartTime:       time.Now(),
+		CurrentDeadline: time.Now().Add(5 * time.Hour),
+		Quiz:            &Quiz{},
+		Players:         Players{{}, {}},
+	}
+
+	// Act
+	err := game.Next()
+
+	// Assert
+	assert.ErrorContains(t, err, "deadline has not passed")
 }
 
 func TestGame_Next_SetsNextQuestionOnNil(t *testing.T) {

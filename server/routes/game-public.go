@@ -66,15 +66,21 @@ func (g *PublicGameHandler) Get(c *gin.Context) {
 //	@Tags		Game
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path		code				true	"Code of the game"
+//	@Param		code	query		string				true	"Code of the game"
 //	@Success	200	{object}	outputs.OutputGame	"The game ID"
+//	@Failure	403	"Can only be used for filtering on codes"
 //	@Failure	404	"Game not found"
 //	@Failure	500	"Internal Server Error"
-//	@Router		/api/v1/games/{code} [get]
+//	@Router		/api/v1/games [get]
 func (g *PublicGameHandler) GetByCode(c *gin.Context) {
-	gameParam := c.Param("code")
+	code := c.Query("code")
 
-	game, err := g.GameService.GetByCode(gameParam)
+	if code == "" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+
+	game, err := g.GameService.GetByCode(code)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to fetch game")
 		c.AbortWithStatus(http.StatusNotFound)

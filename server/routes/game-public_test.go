@@ -129,16 +129,30 @@ func TestPublicGameHandler_GetByCode_ReturnsErrorOnGameNotFound(t *testing.T) {
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
-	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
-	context.Params = []gin.Param{
-		{Key: "code", Value: "abc"},
-	}
+	context.Request, _ = http.NewRequest(http.MethodGet, "?code=abc", nil)
 
 	// Act
 	handler.GetByCode(context)
 
 	// Assert
 	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+
+func TestPublicGameHandler_GetByCode_ReturnsErrorOnNoCode(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{getByCodeReturnsError: assert.AnError}
+	handler := &PublicGameHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+
+	// Act
+	handler.GetByCode(context)
+
+	// Assert
+	assert.Equal(t, http.StatusForbidden, writer.Code)
 }
 
 func TestPublicGameHandler_GetByCode_ReturnsGameID(t *testing.T) {
@@ -150,10 +164,7 @@ func TestPublicGameHandler_GetByCode_ReturnsGameID(t *testing.T) {
 
 	writer := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(writer)
-	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
-	context.Params = []gin.Param{
-		{Key: "code", Value: "abc"},
-	}
+	context.Request, _ = http.NewRequest(http.MethodGet, "?code=abc", nil)
 
 	// Act
 	handler.GetByCode(context)

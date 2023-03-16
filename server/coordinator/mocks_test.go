@@ -21,6 +21,9 @@ type MockGameService struct {
 	nextCalledWith          *domain.Game
 	nextSetsCurrentQuestion uuid.UUID
 	nextReturns             error
+
+	finishCalledWith *domain.Game
+	finishReturns    error
 }
 
 func (m *MockGameService) GetByID(uuid.UUID) (*domain.Game, error) {
@@ -31,6 +34,11 @@ func (m *MockGameService) Next(game *domain.Game) error {
 	m.nextCalledWith = game
 	game.CurrentQuestion = m.nextSetsCurrentQuestion
 	return m.nextReturns
+}
+
+func (m *MockGameService) Finish(game *domain.Game) error {
+	m.finishCalledWith = game
+	return m.finishReturns
 }
 
 func (m *MockGameService) AnswerQuestion(game *domain.Game, questionID uuid.UUID, playerID uuid.UUID, optionID uuid.UUID) error {

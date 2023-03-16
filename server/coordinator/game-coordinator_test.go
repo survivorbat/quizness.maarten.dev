@@ -6,6 +6,7 @@ import (
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"testing"
+	"time"
 )
 
 type callbackCollection struct {
@@ -276,6 +277,72 @@ func TestLocalGameCoordinator_HandleCreatorMessage_DoesNothingOnNextFailure(t *t
 
 	message := &CreatorMessage{
 		Action: NextQuestionAction,
+	}
+
+	// Act
+	coordinator.HandleCreatorMessage(gameID, message)
+
+	// Assert
+	assert.Nil(t, callbacks.creatorCalledWith)
+	assert.Nil(t, callbacks.playerCalledWith)
+}
+
+func TestLocalGameCoordinator_HandleCreatorMessage_FinishLaunchesBroadcast(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameID := uuid.MustParse("2389b70a-74df-439c-8d5f-cf4f3f9471bd")
+	playerID := uuid.MustParse("ffcdf7eb-0eee-411f-9b3f-2401315cc9e6")
+
+	game := &domain.Game{
+		BaseObject: domain.BaseObject{ID: gameID},
+		StartTime:  time.Now(),
+	}
+
+	gameService := &MockGameService{getByIDReturns: game}
+	coordinator := &LocalGameCoordinator{GameService: gameService}
+	callbacks := new(callbackCollection)
+
+	coordinator.SubscribePlayer(gameID, playerID, callbacks.player)
+	coordinator.SubscribeCreator(gameID, callbacks.creator)
+
+	message := &CreatorMessage{
+		Action: FinishGameAction,
+	}
+
+	// Act
+	coordinator.HandleCreatorMessage(gameID, message)
+
+	// Assert
+	if assert.NotNil(t, callbacks.playerCalledWith) {
+		assert.Equal(t, FinishGameType, callbacks.playerCalledWith.Type)
+	}
+
+	if assert.NotNil(t, callbacks.creatorCalledWith) {
+		assert.Equal(t, FinishGameType, callbacks.creatorCalledWith.Type)
+	}
+}
+
+func TestLocalGameCoordinator_HandleCreatorMessage_DoesNothingOnFinishFailure(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameID := uuid.MustParse("2389b70a-74df-439c-8d5f-cf4f3f9471bd")
+	playerID := uuid.MustParse("ffcdf7eb-0eee-411f-9b3f-2401315cc9e6")
+
+	game := &domain.Game{
+		BaseObject:      domain.BaseObject{ID: gameID},
+		CurrentDeadline: time.Now().Add(time.Hour * 5),
+	}
+
+	gameService := &MockGameService{getByIDReturns: game, finishReturns: assert.AnError}
+
+	coordinator := &LocalGameCoordinator{GameService: gameService}
+	callbacks := new(callbackCollection)
+
+	coordinator.SubscribePlayer(gameID, playerID, callbacks.player)
+	coordinator.SubscribeCreator(gameID, callbacks.creator)
+
+	message := &CreatorMessage{
+		Action: FinishGameAction,
 	}
 
 	// Act

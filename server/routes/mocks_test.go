@@ -79,11 +79,20 @@ type MockGameService struct {
 	nextReturns    error
 
 	answerReturns error
+
+	getByCodeCalledWith   string
+	getByCodeReturns      *domain.Game
+	getByCodeReturnsError error
 }
 
 func (m *MockGameService) GetByQuiz(id uuid.UUID) ([]*domain.Game, error) {
 	m.getByQuizCalledWith = id
 	return m.getByQuizReturns, m.getByQuizReturnsError
+}
+
+func (m *MockGameService) GetByCode(code string) (*domain.Game, error) {
+	m.getByCodeCalledWith = code
+	return m.getByCodeReturns, m.getByCodeReturnsError
 }
 
 func (m *MockGameService) GetByID(_ uuid.UUID) (*domain.Game, error) {

@@ -14,6 +14,8 @@ var _ GameService = new(DBGameService)
 type GameService interface {
 	GetByQuiz(quizID uuid.UUID) ([]*domain.Game, error)
 	GetByID(gameID uuid.UUID) (*domain.Game, error)
+	GetByCode(code string) (*domain.Game, error)
+
 	Create(game *domain.Game) error
 	Start(game *domain.Game) error
 	Next(game *domain.Game) error
@@ -36,10 +38,22 @@ func (g *DBGameService) GetByQuiz(quizId uuid.UUID) ([]*domain.Game, error) {
 
 	return result, nil
 }
+
 func (g *DBGameService) GetByID(gameID uuid.UUID) (*domain.Game, error) {
 	var result *domain.Game
 
 	if err := g.Database.Preload("Answers").Preload("Quiz.Games").Preload("Quiz.MultipleChoiceQuestions.Options").Preload("Players").First(&result, gameID).Error; err != nil {
+		logrus.WithError(err).Error("Failed to fetch by id")
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (g *DBGameService) GetByCode(code string) (*domain.Game, error) {
+	var result *domain.Game
+
+	if err := g.Database.Where("code = ?", code).First(&result).Error; err != nil {
 		logrus.WithError(err).Error("Failed to fetch by id")
 		return nil, err
 	}

@@ -172,6 +172,7 @@ func (g *GameConnectionHandler) GetCreator(c *gin.Context) {
 			logrus.WithError(err).Error("Failed to write JSON")
 		}
 
+		// Quit the game if we're finished
 		if message.Type == coordinator.FinishGameType {
 			finish <- struct{}{}
 		}

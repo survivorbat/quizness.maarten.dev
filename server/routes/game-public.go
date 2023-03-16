@@ -60,6 +60,30 @@ func (g *PublicGameHandler) Get(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", output)
 }
 
+// GetByCode godoc
+//
+//	@Summary	Get a game by its code
+//	@Tags		Game
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		code				true	"Code of the game"
+//	@Success	200	{object}	outputs.OutputGame	"The game ID"
+//	@Failure	404	"Game not found"
+//	@Failure	500	"Internal Server Error"
+//	@Router		/api/v1/games/{code} [get]
+func (g *PublicGameHandler) GetByCode(c *gin.Context) {
+	gameParam := c.Param("code")
+
+	game, err := g.GameService.GetByCode(gameParam)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to fetch game")
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	c.JSON(http.StatusOK, outputs.NewPublicGame(game))
+}
+
 // Patch godoc
 //
 //	@Summary	Answer a question

@@ -116,6 +116,55 @@ func TestDBGameService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	assert.ErrorContains(t, err, "no such table")
 }
 
+func TestDBGameService_GetByCode_ReturnsExpected(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+	autoMigrate(t, database)
+
+	service := &DBGameService{Database: database}
+
+	creator := &domain.Creator{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")},
+		Nickname:   "a",
+		AuthID:     "a",
+	}
+	quiz := &domain.Quiz{Name: "test", Creator: creator}
+
+	games := []*domain.Game{
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("6aacfb41-e478-46ec-857e-11221f2a97fc")}, Quiz: quiz, Code: "A2DFGH"},
+		{BaseObject: domain.BaseObject{ID: uuid.MustParse("9180d979-2de5-4df2-a6ee-07eec2f79d92")}, Quiz: quiz, Code: "920LEK"},
+	}
+
+	database.CreateInBatches(games, 10)
+
+	// Act
+	result, err := service.GetByCode(games[0].Code)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.Equal(t, games[0].ID, result.ID)
+	assert.Equal(t, games[0].Code, result.Code)
+}
+
+func TestDBGameService_GetByCode_ReturnsDatabaseError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	database := getDb(t)
+
+	// By not running this, we're sure it will return an error
+	// autoMigrate(t, database)
+
+	service := &DBGameService{Database: database}
+
+	// Act
+	result, err := service.GetByCode("A2DFGH")
+
+	// Assert
+	assert.Empty(t, result)
+	assert.ErrorContains(t, err, "no such table")
+}
+
 func TestDBGameService_Create_ReturnsAnyError(t *testing.T) {
 	t.Parallel()
 	// Arrange

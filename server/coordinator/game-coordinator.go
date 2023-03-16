@@ -1,8 +1,6 @@
 package coordinator
 
 import (
-	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/go-tsyncmap"
@@ -42,6 +40,18 @@ func (c *LocalGameCoordinator) HandleCreatorMessage(gameID uuid.UUID, message *C
 	}
 
 	switch message.Action {
+	case FinishGameAction:
+		if err := c.GameService.Finish(game); err != nil {
+			logrus.WithError(err).Error("Failed to finish")
+			return
+		}
+
+		broadcast := &BroadcastMessage{
+			Type: FinishGameType,
+		}
+
+		c.broadcast(gameID, broadcast)
+
 	case NextQuestionAction:
 		if err := c.GameService.Next(game); err != nil {
 			logrus.WithError(err).Error("Failed to answer question")
@@ -53,9 +63,7 @@ func (c *LocalGameCoordinator) HandleCreatorMessage(gameID uuid.UUID, message *C
 			QuestionID: game.CurrentQuestion,
 		}
 
-		if err := c.broadcast(gameID, broadcast); err != nil {
-			logrus.WithError(err).Error("Failed to broadcast")
-		}
+		c.broadcast(gameID, broadcast)
 	}
 }
 
@@ -73,39 +81,27 @@ func (c *LocalGameCoordinator) HandlePlayerMessage(gameID uuid.UUID, playerID uu
 			return
 		}
 
-		fmt.Println("yes can do")
-
 		broadcast := &BroadcastMessage{
 			Type:     PlayerAnsweredType,
 			PlayerID: playerID,
 		}
 
-		if err := c.broadcast(gameID, broadcast); err != nil {
-			logrus.WithError(err).Error("Failed to broadcast")
-		}
+		c.broadcast(gameID, broadcast)
 	}
 }
 
-func (c *LocalGameCoordinator) broadcast(game uuid.UUID, message *BroadcastMessage) error {
+// broadcast sends a message to the creator and
+func (c *LocalGameCoordinator) broadcast(game uuid.UUID, message *BroadcastMessage) {
 	result, ok := c.clients.Load(game)
-	if !ok {
-		err := errors.New("game not found")
-		logrus.WithError(err).Error("Game not found in clients, somehow")
-		return err
+	if ok {
+		result.Range(func(_ uuid.UUID, player BroadcastCallback) bool {
+			player(message)
+			return true
+		})
 	}
-
-	result.Range(func(_ uuid.UUID, callback BroadcastCallback) bool {
-		callback(message)
-		return true
-	})
 
 	creator, ok := c.creators.Load(game)
-	if !ok {
-		err := errors.New("game not found")
-		logrus.WithError(err).Error("Game not found in creators, somehow")
-		return err
+	if ok {
+		creator(message)
 	}
-
-	creator(message)
-	return nil
 }

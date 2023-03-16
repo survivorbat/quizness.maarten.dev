@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )

@@ -20,8 +20,8 @@ type PlayerHandler struct {
 //	@Tags		Player
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path	string			true	"ID of the game"
-//	@Success	200	{array}	[]domain.Player	"This game's players"
+//	@Param		id	path		string			true	"ID of the game"
+//	@Success	200	{object}	[]domain.Player	"This game's players"
 //	@Failure	400	"Invalid uuid"
 //	@Failure	403	"You can only view your own game's players"
 //	@Failure	500	"Internal Server Error"

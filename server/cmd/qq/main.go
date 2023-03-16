@@ -24,7 +24,7 @@ func main() {
 	router.Use(ginlogrus.Logger(logrus.New()), gin.Recovery())
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:  []string{"http://localhost:3000", "https://qq.maarten.dev"},
+		AllowOrigins:  []string{os.Getenv("CORS_ALLOW_ORIGIN")},
 		AllowMethods:  []string{"GET", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:  []string{"Authorization"},
 		ExposeHeaders: []string{"Content-Length", "Token"},

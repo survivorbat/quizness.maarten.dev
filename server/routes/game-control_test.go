@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
-	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"io"
 	"net/http"
 	"net/http/httptest"

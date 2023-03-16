@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
-	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/routes/outputs"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

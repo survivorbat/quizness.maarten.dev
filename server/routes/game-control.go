@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
-	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )
@@ -89,6 +89,7 @@ func (g *GameControlHandler) Post(c *gin.Context) {
 
 	quiz, err := g.QuizService.GetByID(quizID)
 	if err != nil {
+		logrus.WithError(err).Error("Fetch error")
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -153,6 +154,7 @@ func (g *GameControlHandler) Patch(c *gin.Context) {
 
 	game, err := g.GameService.GetByID(gameID)
 	if err != nil {
+		logrus.WithError(err).Error("Fetch error")
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -167,17 +169,20 @@ func (g *GameControlHandler) Patch(c *gin.Context) {
 	switch action {
 	case "start":
 		if game.Quiz.HasGameInProgress() {
+			logrus.WithError(err).Error("Another game is already in progress")
 			c.AbortWithStatus(http.StatusConflict)
 			return
 		}
 
 		if err := g.GameService.Start(game); err != nil {
+			logrus.WithError(err).Error("Can not start game")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
 	case "finish":
 		if err := g.GameService.Finish(game); err != nil {
+			logrus.WithError(err).Error("Can not finish game")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -185,10 +190,12 @@ func (g *GameControlHandler) Patch(c *gin.Context) {
 	case "next":
 		// TODO: Differentiate errors
 		if err := g.GameService.Next(game); err != nil {
+			logrus.WithError(err).Error("Can not next game")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 	default:
+		logrus.Errorf("Unknown action %s", action)
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}

@@ -120,7 +120,7 @@ func (g *Game) AnswerQuestion(player uuid.UUID, question uuid.UUID, optionID uui
 		return nil, errors.New("not the current question")
 	}
 
-	if g.CurrentDeadline.Before(time.Now()) {
+	if time.Now().After(g.CurrentDeadline) {
 		return nil, errors.New("deadline passed")
 	}
 

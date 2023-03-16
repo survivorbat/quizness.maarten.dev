@@ -100,7 +100,7 @@ func (g *DBGameService) Finish(game *domain.Game) error {
 func (g *DBGameService) AnswerQuestion(game *domain.Game, questionID uuid.UUID, playerID uuid.UUID, optionID uuid.UUID) error {
 	answer, err := game.AnswerQuestion(playerID, questionID, optionID)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to create answer")
+		logrus.WithError(err).Error("Failed to answer")
 		return err
 	}
 

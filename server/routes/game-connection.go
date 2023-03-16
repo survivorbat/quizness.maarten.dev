@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+	"github.com/survivorbat/qq.maarten.dev/server/coordinator"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )
@@ -17,6 +18,7 @@ var upgrader = websocket.Upgrader{
 
 type GameConnectionHandler struct {
 	GameService services.GameService
+	Coordinator coordinator.GameCoordinator
 }
 
 // Get godoc
@@ -29,6 +31,7 @@ type GameConnectionHandler struct {
 //	@Param		player	path	string	true	"ID of the player"
 //	@Success	200		"An established connection"
 //	@Failure	400		"Invalid uuid"
+//	@Failure	400		"Invalid websocket headers"
 //	@Failure	403		"Player is not in game"
 //	@Failure	404		"Game not found"
 //	@Failure	404		"Game is not open for joining"
@@ -64,6 +67,7 @@ func (g *GameConnectionHandler) Get(c *gin.Context) {
 		return
 	}
 
+	logrus.Infof("Opening websocket for player %s in game %s", playerID, gameID)
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logrus.WithError(err).Error("Game can not be joined")
@@ -73,14 +77,44 @@ func (g *GameConnectionHandler) Get(c *gin.Context) {
 
 	defer ws.Close()
 
-	for {
-		mt, message, err := ws.ReadMessage()
-		if err != nil {
-			logrus.WithError(err).Error("Failed to read")
-			break
+	finish := make(chan struct{})
+
+	g.Coordinator.SubscribePlayer(gameID, playerID, func(message *coordinator.BroadcastMessage) {
+		if err := ws.WriteJSON(message); err != nil {
+			logrus.WithError(err).Error("Failed to write JSON")
 		}
 
-		logrus.Info(mt, message)
+		if message.Type == coordinator.FinishGameType {
+			finish <- struct{}{}
+		}
+	})
+
+	for {
+		select {
+		default:
+			var result *coordinator.PlayerMessage
+			if err := ws.ReadJSON(&result); err != nil {
+				logrus.WithError(err).Error("Failed connection")
+				break
+			}
+
+			if err := result.Parse(); err != nil {
+				logrus.WithError(err).Error("Failed to parse message")
+				return
+			}
+
+			if ok := result.IsValid(); !ok {
+				logrus.Error("Invalid message")
+				return
+			}
+
+			logrus.Infof("Got message for game %s from player %s", gameID, playerID)
+			g.Coordinator.HandlePlayerMessage(gameID, playerID, result)
+
+		// If the game is over, stop
+		case <-finish:
+			break
+		}
 	}
 }
 
@@ -93,6 +127,7 @@ func (g *GameConnectionHandler) Get(c *gin.Context) {
 //	@Param		id	path	string	true	"ID of the game"
 //	@Success	200	"An established connection"
 //	@Failure	400	"Invalid uuid"
+//	@Failure	400	"Invalid websocket headers"
 //	@Failure	403	"Not your game"
 //	@Failure	404	"Game not found"
 //	@Failure	404	"Game is not started"
@@ -129,15 +164,34 @@ func (g *GameConnectionHandler) GetCreator(c *gin.Context) {
 		return
 	}
 
-	defer ws.Close()
+	finish := make(chan struct{})
 
-	for {
-		mt, message, err := ws.ReadMessage()
-		if err != nil {
-			logrus.WithError(err).Error("Failed to read")
-			break
+	logrus.Infof("Opening websocket for creator %s in game %s", authID, gameID)
+	g.Coordinator.SubscribeCreator(gameID, func(message *coordinator.BroadcastMessage) {
+		if err := ws.WriteJSON(message); err != nil {
+			logrus.WithError(err).Error("Failed to write JSON")
 		}
 
-		logrus.Info(mt, message)
+		if message.Type == coordinator.FinishGameType {
+			finish <- struct{}{}
+		}
+	})
+
+	for {
+		select {
+		default:
+			var result *coordinator.CreatorMessage
+			if err := ws.ReadJSON(&result); err != nil {
+				logrus.WithError(err).Error("Failed connection")
+				break
+			}
+
+			logrus.Infof("Got message for game %s from creator %s", gameID, authID)
+			g.Coordinator.HandleCreatorMessage(gameID, result)
+
+		// If the game is over, stop
+		case <-finish:
+			break
+		}
 	}
 }

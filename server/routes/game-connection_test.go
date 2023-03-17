@@ -90,6 +90,55 @@ func TestGameConnectionHandler_Get_ReturnsErrorOnPlayerNotInGame(t *testing.T) {
 	assert.Equal(t, http.StatusForbidden, writer.Code)
 }
 
+func TestGameConnectionHandler_Get_ReturnsErrorOnPlayerNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	playerID := uuid.MustParse("3ad4afb5-91af-4243-b06f-40089db9a63a")
+	game := &domain.Game{Players: []*domain.Player{{BaseObject: domain.BaseObject{ID: playerID}}}}
+
+	playerService := &MockPlayerService{getByIdReturnsError: assert.AnError}
+	gameService := &MockGameService{getByIdReturns: game}
+	handler := &GameConnectionHandler{GameService: gameService, PlayerService: playerService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{
+		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
+		{Key: "player", Value: playerID.String()},
+	}
+
+	// Act
+	handler.Get(context)
+
+	// Assert
+	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+func TestGameConnectionHandler_Get_ReturnsErrorOnSocketHeadersNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	playerID := uuid.MustParse("3ad4afb5-91af-4243-b06f-40089db9a63a")
+	game := &domain.Game{Players: []*domain.Player{{BaseObject: domain.BaseObject{ID: playerID}}}}
+
+	playerService := &MockPlayerService{}
+	gameService := &MockGameService{getByIdReturns: game}
+	handler := &GameConnectionHandler{GameService: gameService, PlayerService: playerService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{
+		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
+		{Key: "player", Value: playerID.String()},
+	}
+
+	// Act
+	handler.Get(context)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
+}
+
 func TestGameConnectionHandler_GetCreator_ReturnsErrorOnInvalidGameUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -120,7 +169,6 @@ func TestGameConnectionHandler_GetCreator_ReturnsErrorOnGameNotFound(t *testing.
 	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
 	context.Params = []gin.Param{
 		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
-		{Key: "player", Value: "3ad4afb5-91af-4243-b06f-40089db9a63a"},
 	}
 
 	// Act
@@ -143,7 +191,6 @@ func TestGameConnectionHandler_GetCreator_ReturnsErrorOnDifferentCreator(t *test
 	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
 	context.Params = []gin.Param{
 		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
-		{Key: "player", Value: "3ad4afb5-91af-4243-b06f-40089db9a63a"},
 	}
 
 	// Act
@@ -151,4 +198,60 @@ func TestGameConnectionHandler_GetCreator_ReturnsErrorOnDifferentCreator(t *test
 
 	// Assert
 	assert.Equal(t, http.StatusForbidden, writer.Code)
+}
+
+func TestGameConnectionHandler_GetCreator_ReturnsErrorOnCreatorNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &domain.Game{
+		Quiz: &domain.Quiz{
+			CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+		},
+	}
+
+	creatorService := &MockCreatorService{getByIDReturnsError: assert.AnError}
+	gameService := &MockGameService{getByIdReturns: game}
+	handler := &GameConnectionHandler{GameService: gameService, CreatorService: creatorService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{
+		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
+	}
+
+	// Act
+	handler.GetCreator(context)
+
+	// Assert
+	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+
+func TestGameConnectionHandler_GetCreator_ReturnsErrorOnSocketWrongHeaders(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	game := &domain.Game{
+		Quiz: &domain.Quiz{
+			CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
+		},
+	}
+
+	creatorService := &MockCreatorService{getByIDReturns: &domain.Creator{}}
+	gameService := &MockGameService{getByIdReturns: game}
+	handler := &GameConnectionHandler{GameService: gameService, CreatorService: creatorService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{
+		{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"},
+	}
+
+	// Act
+	handler.GetCreator(context)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
 }

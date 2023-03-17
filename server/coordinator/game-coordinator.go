@@ -4,32 +4,67 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/go-tsyncmap"
+	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 )
+
+// Compile-time interface checks
+var _ GameCoordinator = new(LocalGameCoordinator)
 
 type BroadcastCallback func(*BroadcastMessage)
 
 type GameCoordinator interface {
-	SubscribePlayer(gameID uuid.UUID, playerID uuid.UUID, callback BroadcastCallback)
-	SubscribeCreator(gameID uuid.UUID, callback BroadcastCallback)
+	SubscribePlayer(gameID uuid.UUID, player *domain.Player, callback BroadcastCallback)
+	SubscribeCreator(gameID uuid.UUID, creator *domain.Creator, callback BroadcastCallback)
+
+	UnsubscribePlayer(gameID uuid.UUID, player *domain.Player)
+	UnsubscribeCreator(gameID uuid.UUID)
 
 	HandlePlayerMessage(game uuid.UUID, player uuid.UUID, message *PlayerMessage)
 	HandleCreatorMessage(game uuid.UUID, message *CreatorMessage)
 }
 
+// creatorInfo is a container for the creator and their callback
+type creatorInfo struct {
+	callback BroadcastCallback
+	creator  *domain.Creator
+}
+
+// LocalGameCoordinator coordinates a running game
 type LocalGameCoordinator struct {
+	// GameService is used to manipulate games
 	GameService services.GameService
-	creators    tsyncmap.Map[uuid.UUID, BroadcastCallback]
-	clients     tsyncmap.Map[uuid.UUID, *tsyncmap.Map[uuid.UUID, BroadcastCallback]]
+
+	// creators is a mapping of game ids with creatorInfo
+	creators tsyncmap.Map[uuid.UUID, creatorInfo]
+
+	// clients is a list of games with connected players and callbacks
+	clients tsyncmap.Map[uuid.UUID, *tsyncmap.Map[*domain.Player, BroadcastCallback]]
 }
 
-func (c *LocalGameCoordinator) SubscribePlayer(gameID uuid.UUID, playerID uuid.UUID, callback BroadcastCallback) {
-	value, _ := c.clients.LoadOrStore(gameID, &tsyncmap.Map[uuid.UUID, BroadcastCallback]{})
-	value.Store(playerID, callback)
+func (c *LocalGameCoordinator) SubscribePlayer(gameID uuid.UUID, player *domain.Player, callback BroadcastCallback) {
+	value, _ := c.clients.LoadOrStore(gameID, &tsyncmap.Map[*domain.Player, BroadcastCallback]{})
+	value.Store(player, callback)
+	c.broadcastParticipants(gameID)
 }
 
-func (c *LocalGameCoordinator) SubscribeCreator(gameID uuid.UUID, callback BroadcastCallback) {
-	c.creators.Store(gameID, callback)
+func (c *LocalGameCoordinator) SubscribeCreator(gameID uuid.UUID, creator *domain.Creator, callback BroadcastCallback) {
+	c.creators.Store(gameID, creatorInfo{creator: creator, callback: callback})
+	c.broadcastParticipants(gameID)
+}
+
+func (c *LocalGameCoordinator) UnsubscribePlayer(gameID uuid.UUID, player *domain.Player) {
+	value, ok := c.clients.Load(gameID)
+	if ok {
+		value.Delete(player)
+	}
+
+	c.broadcastParticipants(gameID)
+}
+
+func (c *LocalGameCoordinator) UnsubscribeCreator(gameID uuid.UUID) {
+	c.creators.Delete(gameID)
+	c.broadcastParticipants(gameID)
 }
 
 func (c *LocalGameCoordinator) HandleCreatorMessage(gameID uuid.UUID, message *CreatorMessage) {
@@ -59,15 +94,17 @@ func (c *LocalGameCoordinator) HandleCreatorMessage(gameID uuid.UUID, message *C
 		}
 
 		broadcast := &BroadcastMessage{
-			Type:       NextQuestionType,
-			QuestionID: game.CurrentQuestion,
+			Type: NextQuestionType,
+			NextQuestionContent: &nextQuestionContent{
+				QuestionID: game.CurrentQuestion,
+			},
 		}
 
 		c.broadcast(gameID, broadcast)
 	}
 }
 
-func (c *LocalGameCoordinator) HandlePlayerMessage(gameID uuid.UUID, playerID uuid.UUID, message *PlayerMessage) {
+func (c *LocalGameCoordinator) HandlePlayerMessage(gameID uuid.UUID, player uuid.UUID, message *PlayerMessage) {
 	game, err := c.GameService.GetByID(gameID)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to get game")
@@ -76,32 +113,68 @@ func (c *LocalGameCoordinator) HandlePlayerMessage(gameID uuid.UUID, playerID uu
 
 	switch message.Action {
 	case AnswerAction:
-		if err := c.GameService.AnswerQuestion(game, game.CurrentQuestion, playerID, message.Answer.OptionID); err != nil {
+		if err := c.GameService.AnswerQuestion(game, game.CurrentQuestion, player, message.Answer.OptionID); err != nil {
 			logrus.WithError(err).Error("Failed to answer question")
 			return
 		}
 
 		broadcast := &BroadcastMessage{
-			Type:     PlayerAnsweredType,
-			PlayerID: playerID,
+			Type:                  PlayerAnsweredType,
+			PlayerAnsweredContent: &playerAnsweredContent{PlayerID: player},
 		}
 
 		c.broadcast(gameID, broadcast)
 	}
 }
 
-// broadcast sends a message to the creator and
-func (c *LocalGameCoordinator) broadcast(game uuid.UUID, message *BroadcastMessage) {
+func (c *LocalGameCoordinator) broadcastParticipants(game uuid.UUID) {
+	message := &BroadcastMessage{
+		Type: ParticipantsType,
+		ParticipantsContent: &participantsContent{
+			Players: []*participant{},
+		},
+	}
+
+	creator, ok := c.creators.Load(game)
+	if ok {
+		message.ParticipantsContent.Creator = &participant{ID: creator.creator.ID, Nickname: creator.creator.Nickname}
+	}
+
 	result, ok := c.clients.Load(game)
 	if ok {
-		result.Range(func(_ uuid.UUID, player BroadcastCallback) bool {
-			player(message)
+		result.Range(func(player *domain.Player, broadcast BroadcastCallback) bool {
+			message.ParticipantsContent.Players = append(message.ParticipantsContent.Players, &participant{
+				ID:       player.ID,
+				Nickname: player.Nickname,
+			})
+			return true
+		})
+	}
+
+	c.broadcast(game, message)
+}
+
+// broadcast sends a message to the creator and
+func (c *LocalGameCoordinator) broadcast(game uuid.UUID, message *BroadcastMessage) {
+	var (
+		playerCount      int
+		creatorAvailable bool
+	)
+
+	result, ok := c.clients.Load(game)
+	if ok {
+		result.Range(func(player *domain.Player, broadcast BroadcastCallback) bool {
+			broadcast(message)
+			playerCount++
 			return true
 		})
 	}
 
 	creator, ok := c.creators.Load(game)
 	if ok {
-		creator(message)
+		creator.callback(message)
+		creatorAvailable = true
 	}
+
+	logrus.Infof("Broadcast to %d players and creator (%t): %#v", playerCount, creatorAvailable, message)
 }

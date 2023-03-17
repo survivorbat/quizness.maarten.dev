@@ -92,9 +92,14 @@ func (s *Server) configureServices() {
 	s.quizHandler = &routes.QuizHandler{QuizService: quizService}
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 	s.gameControlHandler = &routes.GameControlHandler{GameService: gameService, QuizService: quizService}
-	s.gameConnectionHandler = &routes.GameConnectionHandler{GameService: gameService, Coordinator: gameCoordinator}
 	s.playerHandler = &routes.PlayerHandler{PlayerService: playerService, GameService: gameService}
 	s.publicAnswerHandler = &routes.PublicGameHandler{GameService: gameService}
+	s.gameConnectionHandler = &routes.GameConnectionHandler{
+		GameService:    gameService,
+		PlayerService:  playerService,
+		CreatorService: creatorService,
+		Coordinator:    gameCoordinator,
+	}
 }
 
 func (s *Server) configureRoutes(router *gin.Engine) {
@@ -126,7 +131,6 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	publicRoutes.GET("/games", s.publicAnswerHandler.GetByCode)
 	publicRoutes.GET("/games/:id/questions/current", s.publicAnswerHandler.Get)
 	publicRoutes.GET("/games/:id/players/:player/connection", s.gameConnectionHandler.Get)
-	publicRoutes.PATCH("/games/:id/questions/:question/players/:player", s.publicAnswerHandler.Patch)
 	publicRoutes.POST("/games/:id/players", s.playerHandler.Post)
 	publicRoutes.DELETE("/players/:id", s.playerHandler.Delete)
 

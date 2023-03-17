@@ -8,8 +8,6 @@ import (
 func TestPlayerAction_IsValid_ReturnsExpectedValue(t *testing.T) {
 	t.Parallel()
 	tests := map[PlayerAction]bool{
-		JoinAction:   true,
-		LeaveAction:  true,
 		AnswerAction: true,
 		"no":         false,
 	}

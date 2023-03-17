@@ -2,13 +2,11 @@ package coordinator
 
 type PlayerAction string
 
-const JoinAction PlayerAction = "join"
 const AnswerAction PlayerAction = "answer"
-const LeaveAction PlayerAction = "leave"
 
 func (c PlayerAction) IsValid() bool {
 	switch c {
-	case JoinAction, AnswerAction, LeaveAction:
+	case AnswerAction:
 		return true
 	default:
 		return false

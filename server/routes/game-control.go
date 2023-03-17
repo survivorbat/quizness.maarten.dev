@@ -129,7 +129,7 @@ func (g *GameControlHandler) Post(c *gin.Context) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		id		path		string		true	"ID of the game"
-//	@Param		action	query		string		true	"Action to perform"	Enums(start, finish, next)
+//	@Param		action	query		string		true	"Action to perform"	Enums(start)
 //	@Success	200		{object}	domain.Game	"The updated game"
 //	@Failure	400		"Invalid uuid"
 //	@Failure	400		"Game is not in a valid state"
@@ -176,21 +176,6 @@ func (g *GameControlHandler) Patch(c *gin.Context) {
 
 		if err := g.GameService.Start(game); err != nil {
 			logrus.WithError(err).Error("Can not start game")
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-	case "finish":
-		if err := g.GameService.Finish(game); err != nil {
-			logrus.WithError(err).Error("Can not finish game")
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-	case "next":
-		// TODO: Differentiate errors
-		if err := g.GameService.Next(game); err != nil {
-			logrus.WithError(err).Error("Can not next game")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}

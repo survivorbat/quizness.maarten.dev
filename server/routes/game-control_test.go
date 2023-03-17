@@ -341,28 +341,6 @@ func TestGameHandler_Patch_ReturnsErrorInvalidAction(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, writer.Code)
 }
 
-func TestGameHandler_Patch_ReturnsOnNextError(t *testing.T) {
-	t.Parallel()
-	// Arrange
-	gameService := &MockGameService{
-		getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")}},
-		nextReturns:    assert.AnError,
-	}
-	handler := &GameControlHandler{GameService: gameService}
-
-	writer := httptest.NewRecorder()
-	context, _ := gin.CreateTestContext(writer)
-	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
-	context.Request, _ = http.NewRequest(http.MethodPatch, "https://test.com?action=next", nil)
-	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
-
-	// Act
-	handler.Patch(context)
-
-	// Assert
-	assert.Equal(t, http.StatusInternalServerError, writer.Code)
-}
-
 func TestGameHandler_Patch_StartReturnsErrorOnGameAlreadyInProgress(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -406,32 +384,6 @@ func TestGameHandler_Patch_ReturnsStartError(t *testing.T) {
 	context, _ := gin.CreateTestContext(writer)
 	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
 	context.Request, _ = http.NewRequest(http.MethodPatch, "https://test.com?action=start", nil)
-	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
-
-	// Act
-	handler.Patch(context)
-
-	// Assert
-	assert.Equal(t, http.StatusInternalServerError, writer.Code)
-}
-
-func TestGameHandler_Patch_ReturnsFinishError(t *testing.T) {
-	t.Parallel()
-	// Arrange
-	gameService := &MockGameService{
-		getByIdReturns: &domain.Game{
-			Quiz: &domain.Quiz{
-				CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58"),
-			},
-		},
-		finishReturns: assert.AnError,
-	}
-	handler := &GameControlHandler{GameService: gameService}
-
-	writer := httptest.NewRecorder()
-	context, _ := gin.CreateTestContext(writer)
-	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
-	context.Request, _ = http.NewRequest(http.MethodPatch, "https://test.com?action=finish", nil)
 	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
 
 	// Act

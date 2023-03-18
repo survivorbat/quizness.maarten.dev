@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"github.com/survivorbat/qq.maarten.dev/server/coordinator"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"gorm.io/driver/sqlite"
@@ -15,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -787,7 +790,7 @@ func TestNewServer_DeletePlayer_ReturnsSuccess(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 }
 
-// This tests: TODO: Figure out how  to test websockets
+// This tests:
 // - Create game
 // - Start game
 // - 2 players join
@@ -796,114 +799,132 @@ func TestNewServer_DeletePlayer_ReturnsSuccess(t *testing.T) {
 // - Nest Question
 // - 2 answers
 // - Finish
-//func TestNewServer_GameFlow_Works(t *testing.T) {
-//	// Arrange
-//	databaseOpen = sqlite.Open
-//	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-//	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
-//
-//	// Test http server
-//	engine := gin.Default()
-//	_ = instance.Configure(engine)
-//	ts := httptest.NewServer(engine)
-//
-//	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
-//	token, _ := instance.jwtService.GenerateToken(userID.String())
-//
-//	quiz := &domain.Quiz{
-//		BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
-//		Name:       "def",
-//		CreatorID:  userID,
-//		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
-//			{
-//				BaseQuestion: domain.BaseQuestion{
-//					BaseObject:        domain.BaseObject{ID: uuid.MustParse("5413ddc1-986c-43cf-8150-3aa3eb1e5f4f")},
-//					Order:             0,
-//					DurationInSeconds: 2,
-//				},
-//				Options: []*domain.QuestionOption{
-//					{BaseObject: domain.BaseObject{ID: uuid.MustParse("4f95d9ce-a608-4292-b3f6-18b4b7939135")}},
-//				},
-//			},
-//			{
-//				BaseQuestion: domain.BaseQuestion{
-//					BaseObject:        domain.BaseObject{ID: uuid.MustParse("c847e53b-9dd6-4636-99be-6cf18243d598")},
-//					Order:             1,
-//					DurationInSeconds: 2,
-//				},
-//				Options: []*domain.QuestionOption{
-//					{BaseObject: domain.BaseObject{ID: uuid.MustParse("7b7a4cdd-622a-4a57-adb4-064ada2bc4fa")}},
-//				},
-//			},
-//		},
-//	}
-//
-//	// Populate database
-//	populateDatabase(t, instance.database, quiz)
-//
-//	// Close it in the end
-//	defer ts.Close()
-//
-//	// Act
-//	gameRes, err := performRequest(http.MethodPost, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, inputs.Game{PlayerLimit: 5})
-//	gameID := getValue(t, gameRes, err, func(t domain.Game) uuid.UUID {
-//		return t.ID
-//	})
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=start", gameID), token, nil)
-//
-//	// Create players
-//	player1Res, _ := performRequest(http.MethodPost, ts.URL, fmt.Sprintf("api/v1/games/%s/players", gameID), "", nil)
-//	player1ID := getValue(t, player1Res, err, func(t domain.Player) uuid.UUID {
-//		return t.ID
-//	})
-//
-//	player2Res, _ := performRequest(http.MethodPost, ts.URL, fmt.Sprintf("api/v1/games/%s/players", gameID), "", nil)
-//	player2ID := getValue(t, player2Res, err, func(t domain.Player) uuid.UUID {
-//		return t.ID
-//	})
-//
-//	// Play game
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=next", gameID), token, nil)
-//	question1Res, _ := performRequest(http.MethodGet, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/current", gameID), "", nil)
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/5413ddc1-986c-43cf-8150-3aa3eb1e5f4f/players/%s", gameID, player1ID), "", map[string]string{"optionID": "4f95d9ce-a608-4292-b3f6-18b4b7939135"})
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/5413ddc1-986c-43cf-8150-3aa3eb1e5f4f/players/%s", gameID, player2ID), "", map[string]string{"optionID": "4f95d9ce-a608-4292-b3f6-18b4b7939135"})
-//
-//	// Wait for deadline
-//	time.Sleep(2 * time.Second)
-//
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=next", gameID), token, nil)
-//	question2Res, _ := performRequest(http.MethodGet, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/current", gameID), "", nil)
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/c847e53b-9dd6-4636-99be-6cf18243d598/players/%s", gameID, player1ID), "", map[string]string{"optionID": "7b7a4cdd-622a-4a57-adb4-064ada2bc4fa"})
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s/questions/c847e53b-9dd6-4636-99be-6cf18243d598/players/%s", gameID, player2ID), "", map[string]string{"optionID": "7b7a4cdd-622a-4a57-adb4-064ada2bc4fa"})
-//
-//	// Wait for deadline
-//	time.Sleep(2 * time.Second)
-//
-//	// End game
-//	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=finish", gameID), token, nil)
-//
-//	// Verify
-//	res, err := performRequest(http.MethodGet, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, nil)
-//
-//	// Assert
-//	assert.NoError(t, err)
-//
-//	// Check intermediate calls
-//	question1 := readAndUnmarshal[*outputs.OutputMultipleChoiceQuestion](t, question1Res, nil)
-//	assert.Equal(t, question1.Title, quiz.MultipleChoiceQuestions[0].Title)
-//	assert.Equal(t, question1.Options[0].TextOption, quiz.MultipleChoiceQuestions[0].Options[0].TextOption)
-//
-//	question2 := readAndUnmarshal[*outputs.OutputMultipleChoiceQuestion](t, question2Res, nil)
-//	assert.Equal(t, question2.Title, quiz.MultipleChoiceQuestions[1].Title)
-//	assert.Equal(t, question2.Options[0].TextOption, quiz.MultipleChoiceQuestions[1].Options[0].TextOption)
-//
-//	// Check final result
-//	result := readAndUnmarshal[[]*domain.Game](t, res, err)
-//
-//	// Check if all the required objects are in there
-//	if assert.Len(t, result, 1) {
-//		assert.False(t, result[0].FinishTime.IsZero())
-//		assert.Len(t, result[0].Players, 2)
-//		assert.Len(t, result[0].Answers, 4)
-//	}
-//}
+func TestNewServer_GameFlow_Works(t *testing.T) {
+	// Arrange
+	databaseOpen = sqlite.Open
+	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
+	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+
+	// Make sure we don't get locked errors in sqlite
+	db, _ := instance.database.DB()
+	db.SetMaxOpenConns(1)
+
+	// Test http server
+	engine := gin.Default()
+	_ = instance.Configure(engine)
+	ts := httptest.NewServer(engine)
+
+	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
+	token, _ := instance.jwtService.GenerateToken(userID.String())
+
+	quiz := &domain.Quiz{
+		BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
+		Name:       "def",
+		CreatorID:  userID,
+		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
+			{
+				BaseQuestion: domain.BaseQuestion{
+					BaseObject:        domain.BaseObject{ID: uuid.MustParse("5413ddc1-986c-43cf-8150-3aa3eb1e5f4f")},
+					Order:             0,
+					DurationInSeconds: 4,
+				},
+				Options: []*domain.QuestionOption{
+					{BaseObject: domain.BaseObject{ID: uuid.MustParse("4f95d9ce-a608-4292-b3f6-18b4b7939135")}},
+				},
+			},
+			{
+				BaseQuestion: domain.BaseQuestion{
+					BaseObject:        domain.BaseObject{ID: uuid.MustParse("c847e53b-9dd6-4636-99be-6cf18243d598")},
+					Order:             1,
+					DurationInSeconds: 4,
+				},
+				Options: []*domain.QuestionOption{
+					{BaseObject: domain.BaseObject{ID: uuid.MustParse("7b7a4cdd-622a-4a57-adb4-064ada2bc4fa")}},
+				},
+			},
+		},
+	}
+
+	// Populate database
+	populateDatabase(t, instance.database, quiz)
+
+	// Close it in the end
+	defer ts.Close()
+
+	// Act
+	gameRes, err := performRequest(http.MethodPost, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, inputs.Game{PlayerLimit: 5})
+	gameID := getValue(t, gameRes, err, func(t domain.Game) uuid.UUID {
+		return t.ID
+	})
+	_, _ = performRequest(http.MethodPatch, ts.URL, fmt.Sprintf("api/v1/games/%s?action=start", gameID), token, nil)
+
+	creatorUrl := fmt.Sprintf("ws%s/api/v1/games/%s/connection", strings.TrimPrefix(ts.URL, "http"), gameID)
+	creatorSocket, _, creatorErr := websocket.DefaultDialer.Dial(creatorUrl, http.Header{"Authorization": []string{"Bearer " + token}})
+
+	// Player 1 connection
+	player1Res, _ := performRequest(http.MethodPost, ts.URL, fmt.Sprintf("api/v1/games/%s/players", gameID), "", nil)
+	player1ID := getValue(t, player1Res, err, func(t domain.Player) uuid.UUID {
+		return t.ID
+	})
+	player1Url := fmt.Sprintf("ws%s/api/v1/games/%s/players/%s/connection", strings.TrimPrefix(ts.URL, "http"), gameID, player1ID)
+	player1Socket, _, p1Err := websocket.DefaultDialer.Dial(player1Url, nil)
+
+	// Player 2 connection
+	player2Res, _ := performRequest(http.MethodPost, ts.URL, fmt.Sprintf("api/v1/games/%s/players", gameID), "", nil)
+	player2ID := getValue(t, player2Res, err, func(t domain.Player) uuid.UUID {
+		return t.ID
+	})
+	player2Url := fmt.Sprintf("ws%s/api/v1/games/%s/players/%s/connection", strings.TrimPrefix(ts.URL, "http"), gameID, player2ID)
+	player2Socket, _, p2Err := websocket.DefaultDialer.Dial(player2Url, nil)
+
+	if p1Err != nil || p2Err != nil || creatorErr != nil {
+		t.Fatal(p1Err, p2Err, creatorErr)
+	}
+	defer creatorSocket.Close()
+	defer player1Socket.Close()
+	defer player2Socket.Close()
+
+	// Play game
+	_ = creatorSocket.WriteJSON(&coordinator.CreatorMessage{Action: coordinator.NextQuestionAction})
+
+	// Wait a second to propagate
+	time.Sleep(500 * time.Millisecond)
+
+	_ = player1Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"4f95d9ce-a608-4292-b3f6-18b4b7939135\"}")})
+	_ = player2Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"4f95d9ce-a608-4292-b3f6-18b4b7939135\"}")})
+
+	// Deadline
+	time.Sleep(4 * time.Second)
+
+	_ = creatorSocket.WriteJSON(&coordinator.CreatorMessage{Action: coordinator.NextQuestionAction})
+
+	// Wait a second to propagate
+	time.Sleep(500 * time.Millisecond)
+
+	_ = player1Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"7b7a4cdd-622a-4a57-adb4-064ada2bc4fa\"}")})
+	_ = player2Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"7b7a4cdd-622a-4a57-adb4-064ada2bc4fa\"}")})
+
+	// Deadline
+	time.Sleep(4 * time.Second)
+
+	_ = creatorSocket.WriteJSON(&coordinator.CreatorMessage{Action: coordinator.FinishGameAction})
+
+	// Wait a second to propagate
+	time.Sleep(1 * time.Second)
+
+	// Verify
+	res, err := performRequest(http.MethodGet, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, nil)
+
+	// Assert
+	assert.NoError(t, err)
+
+	// Check final result
+	result := readAndUnmarshal[[]*domain.Game](t, res, err)
+
+	// Check if all the required objects are in there
+	if assert.Len(t, result, 1) {
+		assert.False(t, result[0].FinishTime.IsZero())
+		assert.Len(t, result[0].Players, 2)
+		assert.Len(t, result[0].Answers, 4)
+	}
+}

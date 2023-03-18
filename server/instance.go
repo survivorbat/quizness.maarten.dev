@@ -129,7 +129,6 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	// Anonymous routes
 	publicRoutes := router.Group("/api/v1")
 	publicRoutes.GET("/games", s.publicAnswerHandler.GetByCode)
-	publicRoutes.GET("/games/:id/questions/current", s.publicAnswerHandler.Get)
 	publicRoutes.GET("/games/:id/players/:player/connection", s.gameConnectionHandler.Get)
 	publicRoutes.POST("/games/:id/players", s.playerHandler.Post)
 	publicRoutes.DELETE("/players/:id", s.playerHandler.Delete)

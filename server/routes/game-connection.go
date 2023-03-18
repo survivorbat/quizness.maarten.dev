@@ -97,7 +97,6 @@ func (g *GameConnectionHandler) Get(c *gin.Context) {
 	}()
 
 	g.Coordinator.SubscribePlayer(gameID, player, func(message *coordinator.BroadcastMessage) {
-		logrus.Infof("Broadcasting: %#v", message)
 		if err := ws.WriteJSON(message); err != nil {
 			logrus.WithError(err).Error("Failed to write JSON")
 		}
@@ -203,7 +202,6 @@ func (g *GameConnectionHandler) GetCreator(c *gin.Context) {
 
 	logrus.Infof("Opening websocket for creator %s in game %s", authID, gameID)
 	g.Coordinator.SubscribeCreator(gameID, creator, func(message *coordinator.BroadcastMessage) {
-		logrus.Infof("Broadcasting: %#v", message)
 		if err := ws.WriteJSON(message); err != nil {
 			logrus.WithError(err).Error("Failed to write JSON")
 		}

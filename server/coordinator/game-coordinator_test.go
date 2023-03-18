@@ -28,7 +28,17 @@ func TestLocalGameCoordinator_SubscribePlayer_AddsClientAndBroadcasts(t *testing
 	gameID := uuid.MustParse("2389b70a-74df-439c-8d5f-cf4f3f9471bd")
 	playerID := uuid.MustParse("ffcdf7eb-0eee-411f-9b3f-2401315cc9e6")
 
-	coordinator := &LocalGameCoordinator{}
+	game := &domain.Game{
+		BaseObject:      domain.BaseObject{ID: gameID},
+		CurrentQuestion: uuid.MustParse("ffcdf7eb-0eee-411f-9b3f-2401315cc9e6"),
+		CurrentDeadline: time.Now().Add(5 * time.Hour),
+	}
+
+	coordinator := &LocalGameCoordinator{
+		GameService: &MockGameService{
+			getByIDReturns: game,
+		},
+	}
 	callbacks := new(callbackCollection)
 
 	player := &domain.Player{
@@ -53,8 +63,10 @@ func TestLocalGameCoordinator_SubscribePlayer_AddsClientAndBroadcasts(t *testing
 	assert.NotNil(t, result)
 
 	if assert.Len(t, callbacks.playerCalledWith, 1) {
-		assert.Equal(t, player.ID, callbacks.playerCalledWith[0].ParticipantsContent.Players[0].ID)
-		assert.Equal(t, player.Nickname, callbacks.playerCalledWith[0].ParticipantsContent.Players[0].Nickname)
+		assert.Equal(t, player.ID, callbacks.playerCalledWith[0].StateContent.Players[0].ID)
+		assert.Equal(t, player.Nickname, callbacks.playerCalledWith[0].StateContent.Players[0].Nickname)
+		assert.Equal(t, game.CurrentQuestion, callbacks.playerCalledWith[0].StateContent.CurrentQuestion)
+		assert.Equal(t, game.CurrentDeadline, callbacks.playerCalledWith[0].StateContent.CurrentDeadline)
 	}
 
 }
@@ -65,7 +77,17 @@ func TestLocalGameCoordinator_UnsubscribePlayer_RemovesClientAndBroadcasts(t *te
 	player1ID := uuid.MustParse("ffcdf7eb-0eee-411f-9b3f-2401315cc9e6")
 	player2ID := uuid.MustParse("14eeb8e1-4db9-4177-bf47-ae80a22b2ff9")
 
-	coordinator := &LocalGameCoordinator{}
+	game := &domain.Game{
+		BaseObject:      domain.BaseObject{ID: gameID},
+		CurrentQuestion: uuid.MustParse("ffcdf7eb-0eee-411f-9b3f-2401315cc9e6"),
+		CurrentDeadline: time.Now().Add(5 * time.Hour),
+	}
+
+	coordinator := &LocalGameCoordinator{
+		GameService: &MockGameService{
+			getByIDReturns: game,
+		},
+	}
 	callbacks := new(callbackCollection)
 
 	player1 := &domain.Player{
@@ -94,7 +116,7 @@ func TestLocalGameCoordinator_UnsubscribePlayer_RemovesClientAndBroadcasts(t *te
 
 	if assert.Len(t, callbacks.playerCalledWith, 4) {
 		// Only one player should be left
-		assert.Len(t, callbacks.playerCalledWith[3].ParticipantsContent.Players, 1)
+		assert.Len(t, callbacks.playerCalledWith[3].StateContent.Players, 1)
 	}
 }
 
@@ -104,7 +126,17 @@ func TestLocalGameCoordinator_SubscribeCreator_AddsClient(t *testing.T) {
 	creatorID := uuid.MustParse("f8f9cf51-31d7-4a6b-a1fc-63f5e750e16a")
 	gameID := uuid.MustParse("2389b70a-74df-439c-8d5f-cf4f3f9471bd")
 
-	coordinator := &LocalGameCoordinator{}
+	game := &domain.Game{
+		BaseObject:      domain.BaseObject{ID: gameID},
+		CurrentQuestion: uuid.MustParse("ffcdf7eb-0eee-411f-9b3f-2401315cc9e6"),
+		CurrentDeadline: time.Now().Add(5 * time.Hour),
+	}
+
+	coordinator := &LocalGameCoordinator{
+		GameService: &MockGameService{
+			getByIDReturns: game,
+		},
+	}
 	callbacks := new(callbackCollection)
 
 	creator := &domain.Creator{
@@ -124,8 +156,8 @@ func TestLocalGameCoordinator_SubscribeCreator_AddsClient(t *testing.T) {
 	assert.NotNil(t, item)
 
 	if assert.Len(t, callbacks.creatorCalledWith, 1) {
-		assert.Equal(t, creator.ID, callbacks.creatorCalledWith[0].ParticipantsContent.Creator.ID)
-		assert.Equal(t, creator.Nickname, callbacks.creatorCalledWith[0].ParticipantsContent.Creator.Nickname)
+		assert.Equal(t, creator.ID, callbacks.creatorCalledWith[0].StateContent.Creator.ID)
+		assert.Equal(t, creator.Nickname, callbacks.creatorCalledWith[0].StateContent.Creator.Nickname)
 	}
 }
 
@@ -136,7 +168,11 @@ func TestLocalGameCoordinator_UnsubscribeCreator_RemovesClient(t *testing.T) {
 	gameID := uuid.MustParse("2389b70a-74df-439c-8d5f-cf4f3f9471bd")
 	playerID := uuid.MustParse("4b629c20-9100-46c8-a08c-69bcd19e7043")
 
-	coordinator := &LocalGameCoordinator{}
+	coordinator := &LocalGameCoordinator{
+		GameService: &MockGameService{
+			getByIDReturns: &domain.Game{BaseObject: domain.BaseObject{ID: gameID}},
+		},
+	}
 	callbacks := new(callbackCollection)
 
 	creator := &domain.Creator{
@@ -161,7 +197,7 @@ func TestLocalGameCoordinator_UnsubscribeCreator_RemovesClient(t *testing.T) {
 
 	if assert.Len(t, callbacks.playerCalledWith, 2) {
 		// Should no longer contain the creator
-		assert.Nil(t, callbacks.playerCalledWith[1].ParticipantsContent.Creator)
+		assert.Nil(t, callbacks.playerCalledWith[1].StateContent.Creator)
 	}
 }
 
@@ -248,8 +284,8 @@ func TestLocalGameCoordinator_HandlePlayerMessage_DoesNothingOnGameNotFound(t *t
 	assert.Empty(t, gameService.answerQuestionCalledWithQuestion)
 	assert.Empty(t, gameService.answerQuestionCalledWithOption)
 
-	assert.Len(t, callbacks.playerCalledWith, 1)
-	assert.Len(t, callbacks.creatorCalledWith, 2)
+	assert.Len(t, callbacks.playerCalledWith, 0)
+	assert.Len(t, callbacks.creatorCalledWith, 0)
 }
 
 func TestLocalGameCoordinator_HandlePlayerMessage_DoesNothingOnAnswerFailure(t *testing.T) {
@@ -368,8 +404,8 @@ func TestLocalGameCoordinator_HandleCreatorMessage_DoesNothingOnGameNotFound(t *
 	assert.Empty(t, gameService.answerQuestionCalledWithQuestion)
 	assert.Empty(t, gameService.answerQuestionCalledWithOption)
 
-	assert.Len(t, callbacks.playerCalledWith, 1)
-	assert.Len(t, callbacks.creatorCalledWith, 2)
+	assert.Len(t, callbacks.playerCalledWith, 0)
+	assert.Len(t, callbacks.creatorCalledWith, 0)
 }
 
 func TestLocalGameCoordinator_HandleCreatorMessage_DoesNothingOnNextFailure(t *testing.T) {

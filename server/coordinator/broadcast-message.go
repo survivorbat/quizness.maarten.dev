@@ -2,6 +2,7 @@ package coordinator
 
 import (
 	"github.com/google/uuid"
+	"time"
 )
 
 type BroadcastType string
@@ -15,8 +16,8 @@ const FinishGameType BroadcastType = "finish"
 // PlayerAnsweredType is used to indicate another player answered a question
 const PlayerAnsweredType BroadcastType = "answered"
 
-// ParticipantsType is used to broadcast the current participants and the creator
-const ParticipantsType BroadcastType = "participants"
+// StateType is used to broadcast the current participants and the creator
+const StateType BroadcastType = "state"
 
 type BroadcastMessage struct {
 	Type BroadcastType `json:"type"`
@@ -27,13 +28,15 @@ type BroadcastMessage struct {
 	// PlayerAnsweredType
 	PlayerAnsweredContent *playerAnsweredContent `json:"playerAnsweredContent,omitempty"`
 
-	// ParticipantsType type
-	ParticipantsContent *participantsContent `json:"participantsContent,omitempty"`
+	// StateType type
+	StateContent *stateContent `json:"stateContent,omitempty"`
 }
 
-type participantsContent struct {
-	Creator *participant   `json:"creator"`
-	Players []*participant `json:"players"`
+type stateContent struct {
+	Creator         *participant   `json:"creator"`
+	Players         []*participant `json:"players"`
+	CurrentQuestion uuid.UUID      `json:"currentQuestion"`
+	CurrentDeadline time.Time      `json:"currentDeadline"`
 }
 
 type participant struct {

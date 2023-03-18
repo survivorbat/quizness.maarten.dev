@@ -3,8 +3,10 @@ package routes
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/survivorbat/qq.maarten.dev/server/coordinator"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
+	"sync"
 )
 
 type MockCreatorService struct {
@@ -174,4 +176,82 @@ type MockJwtService struct {
 func (m *MockJwtService) ValidateToken(token string) (*jwt.Token, error) {
 	m.validateTokenCalledWith = token
 	return m.validateTokenReturns, m.validateTokenReturnsError
+}
+
+type MockCoordinator struct {
+	coordinator.GameCoordinator
+
+	subscribeCreatorCallbackCalledWithGame    uuid.UUID
+	subscribeCreatorCallbackCalledWithCreator *domain.Creator
+	subscribeCreatorCallbackReturns           *coordinator.BroadcastMessage
+
+	handleCreatorMessageWaitGroup         sync.WaitGroup
+	handleCreatorMessagePanicsWith        any
+	handleCreatorMessageCalledWithGame    uuid.UUID
+	handleCreatorMessageCalledWithMessage *coordinator.CreatorMessage
+
+	unsubscribeCreatorCalledWithGame uuid.UUID
+
+	subscribePlayerCallbackCalledWithGame   uuid.UUID
+	subscribePlayerCallbackCalledWithPlayer *domain.Player
+	subscribePlayerCallbackReturns          *coordinator.BroadcastMessage
+
+	unsubscribePlayerCalledWithGame   uuid.UUID
+	unsubscribePlayerCalledWithPlayer *domain.Player
+
+	handlePlayerMessageWaitGroup         sync.WaitGroup
+	handlePlayerMessageCalledWithGame    uuid.UUID
+	handlePlayerMessageCalledWithPlayer  uuid.UUID
+	handlePlayerMessageCalledWithMessage *coordinator.PlayerMessage
+	handlePlayerMessagePanicsWith        any
+}
+
+func (m *MockCoordinator) SubscribeCreator(gameID uuid.UUID, creator *domain.Creator, callback coordinator.BroadcastCallback) {
+	m.subscribeCreatorCallbackCalledWithGame = gameID
+	m.subscribeCreatorCallbackCalledWithCreator = creator
+
+	if m.subscribeCreatorCallbackReturns != nil {
+		callback(m.subscribeCreatorCallbackReturns)
+	}
+}
+
+func (m *MockCoordinator) SubscribePlayer(gameID uuid.UUID, player *domain.Player, callback coordinator.BroadcastCallback) {
+	m.subscribePlayerCallbackCalledWithGame = gameID
+	m.subscribePlayerCallbackCalledWithPlayer = player
+
+	if m.subscribePlayerCallbackReturns != nil {
+		callback(m.subscribePlayerCallbackReturns)
+	}
+}
+
+func (m *MockCoordinator) UnsubscribeCreator(gameId uuid.UUID) {
+	m.unsubscribeCreatorCalledWithGame = gameId
+}
+
+func (m *MockCoordinator) UnsubscribePlayer(gameId uuid.UUID, player *domain.Player) {
+	m.unsubscribePlayerCalledWithGame = gameId
+	m.unsubscribePlayerCalledWithPlayer = player
+}
+
+func (m *MockCoordinator) HandleCreatorMessage(gameID uuid.UUID, action *coordinator.CreatorMessage) {
+	defer m.handleCreatorMessageWaitGroup.Done()
+
+	m.handleCreatorMessageCalledWithGame = gameID
+	m.handleCreatorMessageCalledWithMessage = action
+
+	if m.handleCreatorMessagePanicsWith != nil {
+		panic(m.handleCreatorMessagePanicsWith)
+	}
+}
+
+func (m *MockCoordinator) HandlePlayerMessage(gameID uuid.UUID, playerID uuid.UUID, action *coordinator.PlayerMessage) {
+	defer m.handlePlayerMessageWaitGroup.Done()
+
+	m.handlePlayerMessageCalledWithGame = gameID
+	m.handlePlayerMessageCalledWithPlayer = playerID
+	m.handlePlayerMessageCalledWithMessage = action
+
+	if m.handlePlayerMessagePanicsWith != nil {
+		panic(m.handlePlayerMessagePanicsWith)
+	}
 }

@@ -89,11 +89,15 @@ func (g *GameConnectionHandler) Get(c *gin.Context) {
 	finish := make(chan struct{})
 
 	defer func() {
-		recover()
+		if err := recover(); err != nil {
+			logrus.Errorf("Had to recover from a panic: %v", err)
+		}
+
 		g.Coordinator.UnsubscribePlayer(gameID, player)
 	}()
 
 	g.Coordinator.SubscribePlayer(gameID, player, func(message *coordinator.BroadcastMessage) {
+		logrus.Infof("Broadcasting: %#v", message)
 		if err := ws.WriteJSON(message); err != nil {
 			logrus.WithError(err).Error("Failed to write JSON")
 		}
@@ -190,12 +194,16 @@ func (g *GameConnectionHandler) GetCreator(c *gin.Context) {
 	finish := make(chan struct{})
 
 	defer func() {
-		recover()
+		if err := recover(); err != nil {
+			logrus.Errorf("Had to recover from a panic: %v", err)
+		}
+
 		g.Coordinator.UnsubscribeCreator(gameID)
 	}()
 
 	logrus.Infof("Opening websocket for creator %s in game %s", authID, gameID)
 	g.Coordinator.SubscribeCreator(gameID, creator, func(message *coordinator.BroadcastMessage) {
+		logrus.Infof("Broadcasting: %#v", message)
 		if err := ws.WriteJSON(message); err != nil {
 			logrus.WithError(err).Error("Failed to write JSON")
 		}

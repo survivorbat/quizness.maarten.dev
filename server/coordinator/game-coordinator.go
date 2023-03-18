@@ -45,12 +45,12 @@ type LocalGameCoordinator struct {
 func (c *LocalGameCoordinator) SubscribePlayer(gameID uuid.UUID, player *domain.Player, callback BroadcastCallback) {
 	value, _ := c.clients.LoadOrStore(gameID, &tsyncmap.Map[*domain.Player, BroadcastCallback]{})
 	value.Store(player, callback)
-	c.broadcastParticipants(gameID)
+	c.broadcastState(gameID)
 }
 
 func (c *LocalGameCoordinator) SubscribeCreator(gameID uuid.UUID, creator *domain.Creator, callback BroadcastCallback) {
 	c.creators.Store(gameID, creatorInfo{creator: creator, callback: callback})
-	c.broadcastParticipants(gameID)
+	c.broadcastState(gameID)
 }
 
 func (c *LocalGameCoordinator) UnsubscribePlayer(gameID uuid.UUID, player *domain.Player) {
@@ -59,12 +59,12 @@ func (c *LocalGameCoordinator) UnsubscribePlayer(gameID uuid.UUID, player *domai
 		value.Delete(player)
 	}
 
-	c.broadcastParticipants(gameID)
+	c.broadcastState(gameID)
 }
 
 func (c *LocalGameCoordinator) UnsubscribeCreator(gameID uuid.UUID) {
 	c.creators.Delete(gameID)
-	c.broadcastParticipants(gameID)
+	c.broadcastState(gameID)
 }
 
 func (c *LocalGameCoordinator) HandleCreatorMessage(gameID uuid.UUID, message *CreatorMessage) {
@@ -127,23 +127,31 @@ func (c *LocalGameCoordinator) HandlePlayerMessage(gameID uuid.UUID, player uuid
 	}
 }
 
-func (c *LocalGameCoordinator) broadcastParticipants(game uuid.UUID) {
+func (c *LocalGameCoordinator) broadcastState(gameID uuid.UUID) {
+	game, err := c.GameService.GetByID(gameID)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to get game")
+		return
+	}
+
 	message := &BroadcastMessage{
-		Type: ParticipantsType,
-		ParticipantsContent: &participantsContent{
-			Players: []*participant{},
+		Type: StateType,
+		StateContent: &stateContent{
+			Players:         []*participant{},
+			CurrentQuestion: game.CurrentQuestion,
+			CurrentDeadline: game.CurrentDeadline,
 		},
 	}
 
-	creator, ok := c.creators.Load(game)
+	creator, ok := c.creators.Load(gameID)
 	if ok {
-		message.ParticipantsContent.Creator = &participant{ID: creator.creator.ID, Nickname: creator.creator.Nickname}
+		message.StateContent.Creator = &participant{ID: creator.creator.ID, Nickname: creator.creator.Nickname}
 	}
 
-	result, ok := c.clients.Load(game)
+	result, ok := c.clients.Load(gameID)
 	if ok {
 		result.Range(func(player *domain.Player, broadcast BroadcastCallback) bool {
-			message.ParticipantsContent.Players = append(message.ParticipantsContent.Players, &participant{
+			message.StateContent.Players = append(message.StateContent.Players, &participant{
 				ID:       player.ID,
 				Nickname: player.Nickname,
 			})
@@ -151,7 +159,7 @@ func (c *LocalGameCoordinator) broadcastParticipants(game uuid.UUID) {
 		})
 	}
 
-	c.broadcast(game, message)
+	c.broadcast(gameID, message)
 }
 
 // broadcast sends a message to the creator and

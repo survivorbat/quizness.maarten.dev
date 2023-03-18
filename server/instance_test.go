@@ -890,23 +890,27 @@ func TestNewServer_GameFlow_Works(t *testing.T) {
 	// Wait a second to propagate
 	time.Sleep(500 * time.Millisecond)
 
+	// Answer questions
 	_ = player1Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"4f95d9ce-a608-4292-b3f6-18b4b7939135\"}")})
 	_ = player2Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"4f95d9ce-a608-4292-b3f6-18b4b7939135\"}")})
 
 	// Deadline
 	time.Sleep(4 * time.Second)
 
+	// Next question
 	_ = creatorSocket.WriteJSON(&coordinator.CreatorMessage{Action: coordinator.NextQuestionAction})
 
 	// Wait a second to propagate
 	time.Sleep(500 * time.Millisecond)
 
+	// Answer questions
 	_ = player1Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"7b7a4cdd-622a-4a57-adb4-064ada2bc4fa\"}")})
 	_ = player2Socket.WriteJSON(&coordinator.PlayerMessage{Action: coordinator.AnswerAction, Content: json.RawMessage("{\"optionID\": \"7b7a4cdd-622a-4a57-adb4-064ada2bc4fa\"}")})
 
 	// Deadline
 	time.Sleep(4 * time.Second)
 
+	// Finish the game
 	_ = creatorSocket.WriteJSON(&coordinator.CreatorMessage{Action: coordinator.FinishGameAction})
 
 	// Wait a second to propagate

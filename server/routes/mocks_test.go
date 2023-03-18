@@ -190,12 +190,14 @@ type MockCoordinator struct {
 	handleCreatorMessageCalledWithGame    uuid.UUID
 	handleCreatorMessageCalledWithMessage *coordinator.CreatorMessage
 
+	unsubscribeCreatorWaitGroup      sync.WaitGroup
 	unsubscribeCreatorCalledWithGame uuid.UUID
 
 	subscribePlayerCallbackCalledWithGame   uuid.UUID
 	subscribePlayerCallbackCalledWithPlayer *domain.Player
 	subscribePlayerCallbackReturns          *coordinator.BroadcastMessage
 
+	unsubscribePlayerWaitGroup        sync.WaitGroup
 	unsubscribePlayerCalledWithGame   uuid.UUID
 	unsubscribePlayerCalledWithPlayer *domain.Player
 
@@ -225,10 +227,12 @@ func (m *MockCoordinator) SubscribePlayer(gameID uuid.UUID, player *domain.Playe
 }
 
 func (m *MockCoordinator) UnsubscribeCreator(gameId uuid.UUID) {
+	defer m.unsubscribeCreatorWaitGroup.Done()
 	m.unsubscribeCreatorCalledWithGame = gameId
 }
 
 func (m *MockCoordinator) UnsubscribePlayer(gameId uuid.UUID, player *domain.Player) {
+	defer m.unsubscribePlayerWaitGroup.Done()
 	m.unsubscribePlayerCalledWithGame = gameId
 	m.unsubscribePlayerCalledWithPlayer = player
 }

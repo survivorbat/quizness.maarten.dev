@@ -362,6 +362,8 @@ func TestGameConnectionHandler_Get_CallsUnsubscribeOnPanic(t *testing.T) {
 
 	coord := &MockCoordinator{handlePlayerMessagePanicsWith: "abc"}
 	coord.handlePlayerMessageWaitGroup.Add(1)
+	coord.unsubscribePlayerWaitGroup.Add(1)
+
 	playerService := &MockPlayerService{getByIdReturns: game.Players[0]}
 	gameService := &MockGameService{getByIdReturns: game}
 	handler := &GameConnectionHandler{GameService: gameService, PlayerService: playerService, Coordinator: coord}
@@ -389,7 +391,7 @@ func TestGameConnectionHandler_Get_CallsUnsubscribeOnPanic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	coord.handlePlayerMessageWaitGroup.Wait()
+	coord.unsubscribePlayerWaitGroup.Wait()
 
 	assert.Equal(t, game.ID, coord.unsubscribePlayerCalledWithGame)
 }
@@ -507,6 +509,7 @@ func TestGameConnectionHandler_GetCreator_PanicCallsUnsubscribe(t *testing.T) {
 
 	coord := &MockCoordinator{handleCreatorMessagePanicsWith: "test"}
 	coord.handleCreatorMessageWaitGroup.Add(1)
+	coord.unsubscribeCreatorWaitGroup.Add(1)
 
 	creatorService := &MockCreatorService{getByIDReturns: &domain.Creator{}}
 	gameService := &MockGameService{getByIdReturns: game}
@@ -539,7 +542,7 @@ func TestGameConnectionHandler_GetCreator_PanicCallsUnsubscribe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	coord.handleCreatorMessageWaitGroup.Wait()
+	coord.unsubscribeCreatorWaitGroup.Wait()
 
 	assert.Equal(t, game.ID, coord.unsubscribeCreatorCalledWithGame)
 }

@@ -9,13 +9,13 @@ import {Grid} from "@mui/material";
 import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LogoutPage from "./pages/LogoutPage";
-
-const backendUrl = process.env.REACT_APP_BACKEND_URL as string;
+import PlayerWSTestPage from "./pages/PlayerWSTestPage";
+import CreatorWSTestPage from "./pages/CreatorWSTestPage";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const sdk = new BackendSdk(backendUrl, token);
+  const sdk = new BackendSdk(token);
 
   const loginCallback = (token: string) => {
     localStorage.setItem('token', token);
@@ -37,6 +37,11 @@ function App() {
           <Route path="/logout" element={<LogoutPage callback={logoutCallback}/>}/>
           <Route path="/creator"
                  element={<ProtectedRoute authenticated={!!token}><CreatorPage sdk={sdk}/></ProtectedRoute>}/>
+
+          <Route path="/creator-test"
+                 element={<ProtectedRoute authenticated={!!token}><CreatorWSTestPage sdk={sdk}/></ProtectedRoute>}/>
+          <Route path="/player-test"
+                 element={<ProtectedRoute authenticated={!!token}><PlayerWSTestPage sdk={sdk}/></ProtectedRoute>}/>
         </Routes>
       </Grid>
     </BrowserRouter>

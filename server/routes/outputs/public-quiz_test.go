@@ -1,7 +1,6 @@
 package outputs
 
 import (
-	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
@@ -30,6 +29,6 @@ func TestNewPublicQuiz_ReturnsExpectedOutput(t *testing.T) {
 
 	if assert.Len(t, quiz.MultipleChoiceQuestions, 1) {
 		expected, _ := NewPublicQuestion(quiz.MultipleChoiceQuestions[0])
-		assert.Equal(t, json.RawMessage(expected), result.MultipleChoiceQuestions[0])
+		assert.Equal(t, expected, result.MultipleChoiceQuestions[0])
 	}
 }

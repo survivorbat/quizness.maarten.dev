@@ -35,13 +35,13 @@ function App() {
           <Route path="/login" element={<LoginPage successCallback={loginCallback}
                                                    authenticateFunction={(token) => sdk.authenticate(token)}/>}/>
           <Route path="/logout" element={<LogoutPage callback={logoutCallback}/>}/>
+          <Route path="/games/:game/players/:player" element={<PlayerWSTestPage sdk={sdk}/>}/>
+
           <Route path="/creator"
                  element={<ProtectedRoute authenticated={!!token}><CreatorPage sdk={sdk}/></ProtectedRoute>}/>
 
-          <Route path="/creator-test"
+          <Route path="/games/:game"
                  element={<ProtectedRoute authenticated={!!token}><CreatorWSTestPage sdk={sdk}/></ProtectedRoute>}/>
-          <Route path="/player-test"
-                 element={<ProtectedRoute authenticated={!!token}><PlayerWSTestPage sdk={sdk}/></ProtectedRoute>}/>
         </Routes>
       </Grid>
     </BrowserRouter>

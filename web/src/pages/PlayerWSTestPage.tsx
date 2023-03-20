@@ -2,12 +2,15 @@ import BackendSdk from "../logic/sdk";
 import {useEffect, useState} from "react";
 import {BroadcastParticipant, BroadcastState} from "../models/broadcast-message";
 import PlayerGameClient, {GameCallbacks} from "../logic/player-game-client";
+import {useParams} from "react-router-dom";
 
 interface PlayerWSTestPageProps {
   sdk: BackendSdk;
 }
 
 function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
+  const {player, game} = useParams();
+
   const [client, setClient] = useState(undefined as PlayerGameClient | undefined);
   const [players, setPlayers] = useState([] as BroadcastParticipant[]);
   const [creator, setCreator] = useState({} as BroadcastParticipant);
@@ -24,7 +27,7 @@ function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
       error: console.error,
     }
 
-    const playerClient = sdk.getPlayerClient(prompt('game ID')!, prompt('player ID')!, callbacks);
+    const playerClient = sdk.getPlayerClient(game!, player!, callbacks);
     playerClient.connect();
     setClient(playerClient);
 

@@ -35,7 +35,7 @@ function CreatorPage({sdk}: CreatorPageProps) {
       </thead>
       <tbody>
       {quizzes.map((quiz: Quiz) => <tr>
-        <td>{quiz.id}</td>
+        <td>{quiz.name}</td>
         <td>{quiz.description}</td>
         <td>{quiz.multipleChoiceQuestions.length}</td>
       </tr>)}

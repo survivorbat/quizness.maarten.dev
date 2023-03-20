@@ -3,12 +3,15 @@ import {useEffect, useState} from "react";
 import CreatorGameClient from "../logic/creator-game-client";
 import {GameCallbacks} from "../logic/player-game-client";
 import {BroadcastParticipant, BroadcastState} from "../models/broadcast-message";
+import {useParams} from "react-router-dom";
 
 interface CreatorWSTestPageProps {
   sdk: BackendSdk;
 }
 
 function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
+  const {game} = useParams();
+
   const [client, setClient] = useState(undefined as CreatorGameClient | undefined);
   const [players, setPlayers] = useState([] as BroadcastParticipant[]);
   const [creator, setCreator] = useState({} as BroadcastParticipant);
@@ -25,7 +28,7 @@ function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
       error: console.error,
     }
 
-    const creatorClient = sdk.getCreatorClient(prompt('gameID')!, callbacks);
+    const creatorClient = sdk.getCreatorClient(game!, callbacks);
     setClient(creatorClient);
     creatorClient.connect();
 

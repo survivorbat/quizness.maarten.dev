@@ -93,6 +93,11 @@ func (t *TokenHandler) CreateToken(c *gin.Context) {
 func (t *TokenHandler) JwtGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
+
+		if authHeader == "" {
+			authHeader = c.GetHeader("Sec-Websocket-Protocol")
+		}
+
 		if len(authHeader) <= len(bearerSchema) {
 			logrus.Error("Authorization header is wrong")
 			c.AbortWithStatus(http.StatusUnauthorized)

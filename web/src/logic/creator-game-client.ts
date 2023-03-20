@@ -1,4 +1,4 @@
-import {BroadcastMessage, BroadcastState} from "../models/broadcast-message";
+import {BroadcastMessage} from "../models/broadcast-message";
 import {baseSocketUrl} from "./constants";
 import {GameCallbacks} from "./player-game-client";
 
@@ -13,11 +13,13 @@ export default class CreatorGameClient {
       throw new Error("already connected");
     }
 
-    this.socket = new WebSocket(`${baseSocketUrl}/api/v1/games/${this.gameID}/connection`);
-    this.socket.onmessage = this.socket.onmessage = ((event: MessageEvent<BroadcastMessage>) => {
-      switch (event.data.type) {
+    this.socket = new WebSocket(`${baseSocketUrl}/api/v1/games/${this.gameID}/connection`, [`Bearer_${this.token}`]);
+    this.socket.onmessage = ((event: MessageEvent<string>) => {
+      const message: BroadcastMessage = JSON.parse(event.data);
+
+      switch (message.type) {
         case 'state':
-          this.callbacks.state(event.data.stateContent);
+          this.callbacks.state(message.stateContent);
       }
     });
     this.socket.onclose = this.callbacks.close

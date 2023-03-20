@@ -183,7 +183,16 @@ func (g *GameConnectionHandler) GetCreator(c *gin.Context) {
 		return
 	}
 
-	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	// creatorUpgrader allows us to put the subprotocol as the authentication header, it's required
+	// because the browser verifies the response
+	creatorUpgrader := websocket.Upgrader{
+		Subprotocols: []string{c.GetHeader("Sec-Websocket-Protocol")},
+		CheckOrigin: func(*http.Request) bool {
+			return true
+		},
+	}
+
+	ws, err := creatorUpgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logrus.WithError(err).Error("Game can not be joined")
 		c.AbortWithStatus(http.StatusBadRequest)

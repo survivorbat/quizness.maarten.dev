@@ -55,7 +55,7 @@ type Server struct {
 	creatorHandler        *routes.CreatorHandler
 	quizHandler           *routes.QuizHandler
 	playerHandler         *routes.PlayerHandler
-	publicAnswerHandler   *routes.PublicGameHandler
+	publicGameHandler     *routes.PublicGameHandler
 	gameConnectionHandler *routes.GameConnectionHandler
 }
 
@@ -93,7 +93,7 @@ func (s *Server) configureServices() {
 	s.creatorHandler = &routes.CreatorHandler{CreatorService: creatorService}
 	s.gameControlHandler = &routes.GameControlHandler{GameService: gameService, QuizService: quizService}
 	s.playerHandler = &routes.PlayerHandler{PlayerService: playerService, GameService: gameService}
-	s.publicAnswerHandler = &routes.PublicGameHandler{GameService: gameService}
+	s.publicGameHandler = &routes.PublicGameHandler{GameService: gameService}
 	s.gameConnectionHandler = &routes.GameConnectionHandler{
 		GameService:    gameService,
 		PlayerService:  playerService,
@@ -128,7 +128,8 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 
 	// Anonymous routes
 	publicRoutes := router.Group("/api/v1")
-	publicRoutes.GET("/games", s.publicAnswerHandler.GetByCode)
+	publicRoutes.GET("/games", s.publicGameHandler.GetByCode)
+	publicRoutes.GET("/games/:id/quiz", s.publicGameHandler.GetQuiz)
 	publicRoutes.GET("/games/:id/players/:player/connection", s.gameConnectionHandler.Get)
 	publicRoutes.POST("/games/:id/players", s.playerHandler.Post)
 	publicRoutes.DELETE("/players/:id", s.playerHandler.Delete)

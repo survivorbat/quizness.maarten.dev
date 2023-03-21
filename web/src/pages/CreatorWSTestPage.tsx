@@ -4,6 +4,7 @@ import CreatorGameClient from "../logic/creator-game-client";
 import {GameCallbacks} from "../logic/player-game-client";
 import {BroadcastParticipant, BroadcastState} from "../models/broadcast-message";
 import {useParams} from "react-router-dom";
+import {Quiz} from "../models/quiz";
 
 interface CreatorWSTestPageProps {
   sdk: BackendSdk;
@@ -15,12 +16,15 @@ function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
   const [client, setClient] = useState(undefined as CreatorGameClient | undefined);
   const [players, setPlayers] = useState([] as BroadcastParticipant[]);
   const [creator, setCreator] = useState({} as BroadcastParticipant);
+  const [quiz, setQuiz] = useState({} as Quiz);
+  const [currentQuestion, setCurrentQuestion] = useState('00000000-0000-0000-0000-000000000000');
 
   useEffect(() => {
     const callbacks: GameCallbacks = {
       state(state: BroadcastState) {
         setPlayers(state.players);
         setCreator(state.creator);
+        setCurrentQuestion(state.currentQuestion);
       },
       close() {
         alert('disconnected');
@@ -32,14 +36,21 @@ function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
     setClient(creatorClient);
     creatorClient.connect();
 
+    sdk.getQuizByGame(game!).then(setQuiz);
+
     return () => {
       creatorClient.close();
     }
   }, []);
 
+  const question = quiz?.multipleChoiceQuestions?.find((q) => q.id === currentQuestion);
+
   return <div>
-    Players: {players.map((player) => player.nickname)} <br/>
-    Creator: {creator.nickname}
+    <p>Quiz: {quiz.name}</p>
+    <p>Players: {players.map((player) => player.nickname).join(', ')}</p>
+    <p>Creator: {creator.nickname}</p>
+    <p>Current question: {question?.title}</p>
+    <button onClick={() => client?.next()}>Next Question</button>
   </div>
 }
 

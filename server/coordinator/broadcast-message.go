@@ -7,9 +7,6 @@ import (
 
 type BroadcastType string
 
-// NextQuestionType is used to progress the game
-const NextQuestionType BroadcastType = "next"
-
 // FinishGameType is used to end a current game
 const FinishGameType BroadcastType = "finish"
 
@@ -21,9 +18,6 @@ const StateType BroadcastType = "state"
 
 type BroadcastMessage struct {
 	Type BroadcastType `json:"type"`
-
-	// NextQuestionType type
-	NextQuestionContent *nextQuestionContent `json:"nextQuestionContent,omitempty"`
 
 	// PlayerAnsweredType
 	PlayerAnsweredContent *playerAnsweredContent `json:"playerAnsweredContent,omitempty"`
@@ -46,8 +40,4 @@ type participant struct {
 
 type playerAnsweredContent struct {
 	PlayerID uuid.UUID `json:"playerID"`
-}
-
-type nextQuestionContent struct {
-	QuestionID uuid.UUID `json:"questionID"`
 }

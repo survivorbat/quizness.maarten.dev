@@ -50,6 +50,15 @@ class BackendSdk {
     return result.json();
   }
 
+  async getQuizByGame(game: string): Promise<Quiz> {
+    const result = await fetch(`${baseUrl}/api/v1/games/${game}/quiz`, {headers: this.authHeader()});
+    if (!result.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    return result.json();
+  }
+
   getCreatorClient(game: string, callbacks: GameCallbacks): CreatorGameClient {
     return new CreatorGameClient(this.sdkToken!, game, callbacks);
   }

@@ -33,6 +33,10 @@ export default class PlayerGameClient {
     this.socket.onclose = this.callbacks.close
   }
 
+  answer(option: string) {
+    this.socket!.send(JSON.stringify({action: 'answer', content: {optionID: option}}))
+  }
+
   close() {
     this.socket?.close();
   }

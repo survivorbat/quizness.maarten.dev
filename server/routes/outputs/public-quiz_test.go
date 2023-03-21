@@ -28,7 +28,15 @@ func TestNewPublicQuiz_ReturnsExpectedOutput(t *testing.T) {
 	assert.Equal(t, quiz.Description, result.Description)
 
 	if assert.Len(t, quiz.MultipleChoiceQuestions, 1) {
-		expected, _ := NewPublicQuestion(quiz.MultipleChoiceQuestions[0])
+		expected := &OutputMultipleChoiceQuestion{
+			ID:                quiz.MultipleChoiceQuestions[0].ID,
+			Title:             quiz.MultipleChoiceQuestions[0].Title,
+			Description:       quiz.MultipleChoiceQuestions[0].Description,
+			DurationInSeconds: quiz.MultipleChoiceQuestions[0].DurationInSeconds,
+			Category:          quiz.MultipleChoiceQuestions[0].Category,
+			Order:             quiz.MultipleChoiceQuestions[0].Order,
+			Options:           quiz.MultipleChoiceQuestions[0].Options,
+		}
 		assert.Equal(t, expected, result.MultipleChoiceQuestions[0])
 	}
 }

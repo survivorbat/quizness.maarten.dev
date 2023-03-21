@@ -10,11 +10,19 @@ func NewPublicQuiz(quiz *domain.Quiz) *OutputQuiz {
 		ID:                      quiz.ID,
 		Name:                    quiz.Name,
 		Description:             quiz.Description,
-		MultipleChoiceQuestions: make([][]byte, len(quiz.MultipleChoiceQuestions)),
+		MultipleChoiceQuestions: make([]*OutputMultipleChoiceQuestion, len(quiz.MultipleChoiceQuestions)),
 	}
 
 	for index, mc := range quiz.MultipleChoiceQuestions {
-		result.MultipleChoiceQuestions[index], _ = NewPublicQuestion(mc)
+		result.MultipleChoiceQuestions[index] = &OutputMultipleChoiceQuestion{
+			ID:                mc.ID,
+			Title:             mc.Title,
+			Description:       mc.Description,
+			DurationInSeconds: mc.DurationInSeconds,
+			Category:          mc.Category,
+			Order:             mc.Order,
+			Options:           mc.Options,
+		}
 	}
 
 	return result
@@ -26,5 +34,5 @@ type OutputQuiz struct {
 	Name        string `json:"name" example:"Daniel's funky quiz'"`     // desc: Can be anything
 	Description string `json:"description" example:"My first attempt!"` // desc: Ditto
 
-	MultipleChoiceQuestions [][]byte `json:"multipleChoiceQuestions,omitempty"`
+	MultipleChoiceQuestions []*OutputMultipleChoiceQuestion `json:"multipleChoiceQuestions,omitempty"`
 }

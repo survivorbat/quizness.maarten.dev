@@ -93,14 +93,8 @@ func (c *LocalGameCoordinator) HandleCreatorMessage(gameID uuid.UUID, message *C
 			return
 		}
 
-		broadcast := &BroadcastMessage{
-			Type: NextQuestionType,
-			NextQuestionContent: &nextQuestionContent{
-				QuestionID: game.CurrentQuestion,
-			},
-		}
-
-		c.broadcast(gameID, broadcast)
+		// Broadcast the new state
+		c.broadcastState(game.ID)
 	}
 }
 

@@ -363,13 +363,13 @@ func TestLocalGameCoordinator_HandleCreatorMessage_NextLaunchesBroadcast(t *test
 
 	// Assert
 	if assert.Len(t, callbacks.playerCalledWith, 2) {
-		assert.Equal(t, questionID, callbacks.playerCalledWith[1].NextQuestionContent.QuestionID)
-		assert.Equal(t, NextQuestionType, callbacks.playerCalledWith[1].Type)
+		assert.Equal(t, questionID, callbacks.playerCalledWith[1].StateContent.CurrentQuestion)
+		assert.Equal(t, StateType, callbacks.playerCalledWith[1].Type)
 	}
 
 	if assert.Len(t, callbacks.creatorCalledWith, 3) {
-		assert.Equal(t, questionID, callbacks.creatorCalledWith[2].NextQuestionContent.QuestionID)
-		assert.Equal(t, NextQuestionType, callbacks.creatorCalledWith[2].Type)
+		assert.Equal(t, questionID, callbacks.creatorCalledWith[2].StateContent.CurrentQuestion)
+		assert.Equal(t, StateType, callbacks.creatorCalledWith[2].Type)
 	}
 }
 

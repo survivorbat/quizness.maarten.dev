@@ -52,8 +52,12 @@ function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
 
   return <div>
     <p>Quiz: {quiz.name}</p>
-    <PlayerList players={players}/>
-    <ParticipantDot participant={creator}/>
+    <p>
+      Players: <PlayerList players={players}/>
+    </p>
+    <p>
+      Creator: <ParticipantDot participant={creator}/>
+    </p>
     <p>Current question: {question?.title}</p>
     {question?.options.map((o) => <button key={o.id} onClick={() => pickAnswer(o.id)}>{o.textOption}</button>)}
   </div>

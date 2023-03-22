@@ -51,7 +51,7 @@ func (g *PublicGameHandler) GetByCode(c *gin.Context) {
 //	@Produce	json
 //	@Param		code	query		string				true	"ID of the game"
 //	@Success	200		{object}	outputs.OutputQuiz	"The game ID"
-//	@Failure	400	"Invalid uuid"
+//	@Failure	400		"Invalid uuid"
 //	@Failure	404		"Game is not active"
 //	@Failure	404		"Game not found"
 //	@Failure	500		"Internal Server Error"

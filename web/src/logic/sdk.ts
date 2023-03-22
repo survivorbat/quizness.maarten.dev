@@ -67,7 +67,7 @@ class BackendSdk {
     throw new Error('Game not found');
   }
 
-  async getGameByCode(code: string): Promise<Game[]> {
+  async getGameByCode(code: string): Promise<Game> {
     const result = await fetch(`${baseUrl}/api/v1/games?code=${code}`);
     if (!result.ok) {
       throw new Error('Failed to fetch data');

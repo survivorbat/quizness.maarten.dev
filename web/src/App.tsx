@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LogoutPage from "./pages/LogoutPage";
 import PlayerWSTestPage from "./pages/PlayerWSTestPage";
 import CreatorWSTestPage from "./pages/CreatorWSTestPage";
+import Player from "./models/player";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -26,12 +27,21 @@ function App() {
     setToken('');
   }
 
+  const joinGame = async (code: string): Promise<Player | null> => {
+    try {
+      const {id} = await sdk.getGameByCode(code);
+      return await sdk.createPlayer(id);
+    } catch {
+      return null
+    }
+  }
+
   return (
     <BrowserRouter>
       <Grid container>
         <Header authenticated={!!token}/>
         <Routes>
-          <Route path="/" element={<FrontPage/>}/>
+          <Route path="/" element={<FrontPage codeSubmitCallback={joinGame}/>}/>
           <Route path="/login" element={<LoginPage successCallback={loginCallback}
                                                    authenticateFunction={(token) => sdk.authenticate(token)}/>}/>
           <Route path="/logout" element={<LogoutPage callback={logoutCallback}/>}/>

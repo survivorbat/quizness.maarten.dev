@@ -12,11 +12,9 @@ function CreatorPage({sdk}: CreatorPageProps) {
   const [quizzes, setQuizzes] = useState(undefined as Quiz[] | undefined)
 
   useEffect(() => {
-    if (!creator || !quizzes) {
-      sdk.getCreator().then(setCreator);
-      sdk.getQuizzes().then(setQuizzes);
-    }
-  });
+    sdk.getCreator().then(setCreator);
+    sdk.getQuizzes().then(setQuizzes);
+  }, [sdk]);
 
   if (!creator || !quizzes) {
     return <span>Loading...</span>

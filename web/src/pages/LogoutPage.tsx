@@ -11,7 +11,7 @@ function LogoutPage({callback}: LogoutPageProps) {
   useEffect(() => {
     callback();
     setLoggedOut(true);
-  })
+  }, [callback])
 
   return loggedOut ? <Navigate to="/"/> : <span>Logging out...</span>;
 }

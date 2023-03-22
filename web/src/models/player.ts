@@ -3,6 +3,7 @@ interface Player {
   nickname: string;
   color: string;
   backgroundColor: string;
+  gameID: string;
 }
 
 export default Player;

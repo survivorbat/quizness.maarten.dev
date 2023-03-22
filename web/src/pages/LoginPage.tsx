@@ -31,7 +31,7 @@ function LoginPage({authenticateFunction, successCallback}: LoginPageProps) {
       .then(successCallback)
       .then(() => navigate('/creator'))
       .catch(() => setInvalid(true));
-  })
+  }, [successCallback, authenticateFunction, navigate, code])
 
   return invalid ? <span>Failed to authenticate you, please try again</span> : <span>Authenticating...</span>;
 }

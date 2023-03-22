@@ -27,6 +27,7 @@ require (
 require (
 	cloud.google.com/go/compute v1.18.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	github.com/AvraamMavridis/randomcolor v0.0.0-20180822172341-208aff70bf2c // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/bytedance/sonic v1.8.5 // indirect

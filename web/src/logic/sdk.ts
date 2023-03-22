@@ -3,6 +3,9 @@ import {Quiz} from "../models/quiz";
 import {baseUrl} from "./constants";
 import CreatorGameClient from "./creator-game-client";
 import PlayerGameClient, {GameCallbacks} from "./player-game-client";
+import Game from "../models/game";
+import CreateGame from "../models/create-game";
+import Player from "../models/player";
 
 class BackendSdk {
   constructor(private readonly sdkToken: string | null) {
@@ -50,8 +53,57 @@ class BackendSdk {
     return result.json();
   }
 
+  async getGamesByQuiz(quiz: string): Promise<Game> {
+    const result = await fetch(`${baseUrl}/api/v1/quizzes/${quiz}/games`, {headers: this.authHeader()});
+    if (!result.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    const games: Game[] = await result.json();
+    if (games.length === 1) {
+      return games[1];
+    }
+
+    throw new Error('Game not found');
+  }
+
+  async getGameByCode(code: string): Promise<Game[]> {
+    const result = await fetch(`${baseUrl}/api/v1/games?code=${code}`);
+    if (!result.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    return result.json();
+  }
+
+  async createGame(quiz: string, game: CreateGame): Promise<void> {
+    const data: RequestInit = {
+      method: 'POST',
+      headers: this.authHeader(),
+      body: JSON.stringify(game),
+    };
+
+    const result = await fetch(`${baseUrl}/api/v1/quizzes/${quiz}/games`, data);
+    if (!result.ok) {
+      throw new Error('Failed to create game');
+    }
+  }
+
+  async createPlayer(game: string): Promise<Player> {
+    const data: RequestInit = {
+      method: 'POST',
+    };
+
+    const result = await fetch(`${baseUrl}/api/v1/games/${game}/players`, data);
+    if (!result.ok) {
+      throw new Error('Failed to create game');
+    }
+
+    return result.json();
+  }
+
   async getQuizByGame(game: string): Promise<Quiz> {
-    const result = await fetch(`${baseUrl}/api/v1/games/${game}/quiz`, {headers: this.authHeader()});
+    const result = await fetch(`${baseUrl}/api/v1/games/${game}/quiz`);
     if (!result.ok) {
       throw new Error('Failed to fetch data');
     }

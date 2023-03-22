@@ -139,15 +139,22 @@ func (c *LocalGameCoordinator) broadcastState(gameID uuid.UUID) {
 
 	creator, ok := c.creators.Load(gameID)
 	if ok {
-		message.StateContent.Creator = &participant{ID: creator.creator.ID, Nickname: creator.creator.Nickname}
+		message.StateContent.Creator = &participant{
+			ID:              creator.creator.ID,
+			Nickname:        creator.creator.Nickname,
+			Color:           creator.creator.Color,
+			BackgroundColor: creator.creator.BackgroundColor,
+		}
 	}
 
 	result, ok := c.clients.Load(gameID)
 	if ok {
 		result.Range(func(player *domain.Player, broadcast BroadcastCallback) bool {
 			message.StateContent.Players = append(message.StateContent.Players, &participant{
-				ID:       player.ID,
-				Nickname: player.Nickname,
+				ID:              player.ID,
+				Nickname:        player.Nickname,
+				Color:           player.Color,
+				BackgroundColor: player.BackgroundColor,
 			})
 			return true
 		})

@@ -34,8 +34,10 @@ type stateContent struct {
 }
 
 type participant struct {
-	ID       uuid.UUID `json:"id"`
-	Nickname string    `json:"nickname"`
+	ID              uuid.UUID `json:"id"`
+	Nickname        string    `json:"nickname"`
+	Color           string    `json:"color"`
+	BackgroundColor string    `json:"backgroundColor"`
 }
 
 type playerAnsweredContent struct {

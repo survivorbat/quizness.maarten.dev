@@ -1,8 +1,8 @@
-interface Creator {
+interface Player {
   id: string;
   nickname: string;
   color: string;
   backgroundColor: string;
 }
 
-export default Creator;
+export default Player;

@@ -4,6 +4,8 @@ import {BroadcastParticipant, BroadcastState} from "../models/broadcast-message"
 import PlayerGameClient, {GameCallbacks} from "../logic/player-game-client";
 import {useParams} from "react-router-dom";
 import {Quiz} from "../models/quiz";
+import PlayerList from "../components/PlayerList";
+import ParticipantDot from "../components/ParticipantDot";
 
 interface PlayerWSTestPageProps {
   sdk: BackendSdk;
@@ -40,7 +42,7 @@ function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
     return () => {
       playerClient.close();
     }
-  }, []);
+  }, [player, game, sdk]);
 
   const pickAnswer = (id: string) => {
     client?.answer(id);
@@ -50,8 +52,8 @@ function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
 
   return <div>
     <p>Quiz: {quiz.name}</p>
-    <p>Players: {players.map((player) => player.nickname).join(', ')}</p>
-    <p>Creator: {creator.nickname}</p>
+    <PlayerList players={players}/>
+    <ParticipantDot participant={creator}/>
     <p>Current question: {question?.title}</p>
     {question?.options.map((o) => <button key={o.id} onClick={() => pickAnswer(o.id)}>{o.textOption}</button>)}
   </div>

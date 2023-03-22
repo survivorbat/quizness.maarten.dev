@@ -5,6 +5,8 @@ import {GameCallbacks} from "../logic/player-game-client";
 import {BroadcastParticipant, BroadcastState} from "../models/broadcast-message";
 import {useParams} from "react-router-dom";
 import {Quiz} from "../models/quiz";
+import PlayerList from "../components/PlayerList";
+import ParticipantDot from "../components/ParticipantDot";
 
 interface CreatorWSTestPageProps {
   sdk: BackendSdk;
@@ -41,14 +43,14 @@ function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
     return () => {
       creatorClient.close();
     }
-  }, []);
+  }, [game, sdk]);
 
   const question = quiz?.multipleChoiceQuestions?.find((q) => q.id === currentQuestion);
 
   return <div>
     <p>Quiz: {quiz.name}</p>
-    <p>Players: {players.map((player) => player.nickname).join(', ')}</p>
-    <p>Creator: {creator.nickname}</p>
+    <PlayerList players={players}/>
+    <ParticipantDot participant={creator}/>
     <p>Current question: {question?.title}</p>
     <button onClick={() => client?.next()}>Next Question</button>
   </div>

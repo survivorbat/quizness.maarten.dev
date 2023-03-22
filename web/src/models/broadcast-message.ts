@@ -1,8 +1,5 @@
 export interface BroadcastMessage {
   type: string;
-  nextQuestionContent: {
-    questionID: string;
-  };
   playerAnsweredContent: {
     playerID: string;
   };
@@ -19,4 +16,6 @@ export interface BroadcastState {
 export interface BroadcastParticipant {
   id: string;
   nickname: string;
+  color: string;
+  backgroundColor: string;
 }

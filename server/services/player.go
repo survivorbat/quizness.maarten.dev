@@ -42,6 +42,7 @@ func (g *DBPlayerService) GetByGame(gameID uuid.UUID) ([]*domain.Player, error) 
 
 func (g *DBPlayerService) Create(player *domain.Player) error {
 	player.GenerateNickname()
+	player.GenerateColors()
 
 	if err := g.Database.Create(&player).Error; err != nil {
 		logrus.WithError(err).Error("Failed to create")

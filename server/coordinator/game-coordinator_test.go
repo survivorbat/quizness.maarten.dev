@@ -42,8 +42,10 @@ func TestLocalGameCoordinator_SubscribePlayer_AddsClientAndBroadcasts(t *testing
 	callbacks := new(callbackCollection)
 
 	player := &domain.Player{
-		BaseObject: domain.BaseObject{ID: playerID},
-		Nickname:   "Test",
+		BaseObject:      domain.BaseObject{ID: playerID},
+		Nickname:        "Test",
+		Color:           "#239501",
+		BackgroundColor: "#FFFFFF",
 	}
 
 	// Act
@@ -65,6 +67,8 @@ func TestLocalGameCoordinator_SubscribePlayer_AddsClientAndBroadcasts(t *testing
 	if assert.Len(t, callbacks.playerCalledWith, 1) {
 		assert.Equal(t, player.ID, callbacks.playerCalledWith[0].StateContent.Players[0].ID)
 		assert.Equal(t, player.Nickname, callbacks.playerCalledWith[0].StateContent.Players[0].Nickname)
+		assert.Equal(t, player.Color, callbacks.playerCalledWith[0].StateContent.Players[0].Color)
+		assert.Equal(t, player.BackgroundColor, callbacks.playerCalledWith[0].StateContent.Players[0].BackgroundColor)
 		assert.Equal(t, game.CurrentQuestion, callbacks.playerCalledWith[0].StateContent.CurrentQuestion)
 		assert.Equal(t, game.CurrentDeadline, callbacks.playerCalledWith[0].StateContent.CurrentDeadline)
 	}
@@ -91,12 +95,16 @@ func TestLocalGameCoordinator_UnsubscribePlayer_RemovesClientAndBroadcasts(t *te
 	callbacks := new(callbackCollection)
 
 	player1 := &domain.Player{
-		BaseObject: domain.BaseObject{ID: player1ID},
-		Nickname:   "def",
+		BaseObject:      domain.BaseObject{ID: player1ID},
+		Nickname:        "def",
+		Color:           "#239501",
+		BackgroundColor: "#FFFFFF",
 	}
 	player2 := &domain.Player{
-		BaseObject: domain.BaseObject{ID: player2ID},
-		Nickname:   "abc",
+		BaseObject:      domain.BaseObject{ID: player2ID},
+		Nickname:        "abc",
+		Color:           "#239500",
+		BackgroundColor: "#FFFF--",
 	}
 
 	coordinator.SubscribePlayer(gameID, player1, callbacks.player)
@@ -140,8 +148,10 @@ func TestLocalGameCoordinator_SubscribeCreator_AddsClient(t *testing.T) {
 	callbacks := new(callbackCollection)
 
 	creator := &domain.Creator{
-		BaseObject: domain.BaseObject{ID: creatorID},
-		Nickname:   "Abc",
+		BaseObject:      domain.BaseObject{ID: creatorID},
+		Nickname:        "Abc",
+		Color:           "#239501",
+		BackgroundColor: "#FFFFFF",
 	}
 
 	// Act
@@ -158,6 +168,8 @@ func TestLocalGameCoordinator_SubscribeCreator_AddsClient(t *testing.T) {
 	if assert.Len(t, callbacks.creatorCalledWith, 1) {
 		assert.Equal(t, creator.ID, callbacks.creatorCalledWith[0].StateContent.Creator.ID)
 		assert.Equal(t, creator.Nickname, callbacks.creatorCalledWith[0].StateContent.Creator.Nickname)
+		assert.Equal(t, creator.Color, callbacks.creatorCalledWith[0].StateContent.Creator.Color)
+		assert.Equal(t, creator.BackgroundColor, callbacks.creatorCalledWith[0].StateContent.Creator.BackgroundColor)
 	}
 }
 
@@ -176,13 +188,17 @@ func TestLocalGameCoordinator_UnsubscribeCreator_RemovesClient(t *testing.T) {
 	callbacks := new(callbackCollection)
 
 	creator := &domain.Creator{
-		BaseObject: domain.BaseObject{ID: creatorID},
-		Nickname:   "Abc",
+		BaseObject:      domain.BaseObject{ID: creatorID},
+		Nickname:        "Abc",
+		Color:           "#239534",
+		BackgroundColor: "#FFFF00",
 	}
 
 	player := &domain.Player{
-		BaseObject: domain.BaseObject{ID: playerID},
-		Nickname:   "Test",
+		BaseObject:      domain.BaseObject{ID: playerID},
+		Nickname:        "Test",
+		Color:           "#239501",
+		BackgroundColor: "#FFFFFF",
 	}
 
 	coordinator.SubscribeCreator(gameID, creator, callbacks.creator)

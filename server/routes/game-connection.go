@@ -111,7 +111,6 @@ func (g *GameConnectionHandler) Get(c *gin.Context) {
 		default:
 			var result *coordinator.PlayerMessage
 			if err := ws.ReadJSON(&result); err != nil {
-				logrus.WithError(err).Error("Failed connection")
 				continue
 			}
 
@@ -226,7 +225,6 @@ func (g *GameConnectionHandler) GetCreator(c *gin.Context) {
 		default:
 			var result *coordinator.CreatorMessage
 			if err := ws.ReadJSON(&result); err != nil {
-				logrus.WithError(err).Error("Failed connection")
 				continue
 			}
 

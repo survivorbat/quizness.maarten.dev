@@ -146,6 +146,8 @@ func TestDBPlayerService_Create_CreatesItem(t *testing.T) {
 	}
 	assert.Equal(t, player.ID, result.ID)
 	assert.NotEmpty(t, result.Nickname)
+	assert.NotEmpty(t, result.Color)
+	assert.NotEmpty(t, result.BackgroundColor)
 }
 
 func TestDBPlayerService_Create_ReturnsAnyError(t *testing.T) {

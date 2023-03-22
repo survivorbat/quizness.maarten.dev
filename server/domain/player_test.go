@@ -39,7 +39,7 @@ func TestPlayers_Contains_ReturnsFalseOnNotContains(t *testing.T) {
 	assert.False(t, result)
 }
 
-func TestPlayer_EnsureHasNickname_SetsARandomName(t *testing.T) {
+func TestPlayer_GenerateNickname_SetsARandomName(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	player := &Player{}
@@ -51,4 +51,17 @@ func TestPlayer_EnsureHasNickname_SetsARandomName(t *testing.T) {
 	split := strings.Split(player.Nickname, " ")
 	assert.Contains(t, namePrefixes, split[0])
 	assert.Contains(t, nameSuffixes, split[1])
+}
+
+func TestPlayer_GenerateColors_SetsARandomColor(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	player := &Player{}
+
+	// Act
+	player.GenerateColors()
+
+	// Assert
+	assert.Len(t, player.Color, 7)
+	assert.Len(t, player.BackgroundColor, 7)
 }

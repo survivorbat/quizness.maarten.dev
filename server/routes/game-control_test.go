@@ -124,6 +124,88 @@ func TestGameHandler_Get_ReturnsData(t *testing.T) {
 	assert.ElementsMatch(t, gameService.getByQuizReturns, result)
 }
 
+func TestGameHandler_GetByID_ReturnsErrorOnInvalidUUID(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	handler := &GameControlHandler{}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "no"}}
+
+	// Act
+	handler.GetByID(context)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
+}
+
+func TestGameHandler_GetByID_ReturnsErrorOnGameNotFound(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{getByIdReturnsError: assert.AnError}
+	handler := &GameControlHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.GetByID(context)
+
+	// Assert
+	assert.Equal(t, http.StatusNotFound, writer.Code)
+}
+
+func TestGameHandler_GetByID_ReturnsErrorOnNotMyQuiz(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("788f12a9-51e8-4c87-9b0c-06bcc9f0691b")}}}
+	handler := &GameControlHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.GetByID(context)
+
+	// Assert
+	assert.Equal(t, http.StatusForbidden, writer.Code)
+}
+
+func TestGameHandler_GetByID_ReturnsData(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	gameService := &MockGameService{getByIdReturns: &domain.Game{Quiz: &domain.Quiz{CreatorID: uuid.MustParse("2f80947c-e724-4b38-8c8d-3823864fef58")}}}
+	handler := &GameControlHandler{GameService: gameService}
+
+	writer := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(writer)
+	context.Set("user", "2f80947c-e724-4b38-8c8d-3823864fef58")
+	context.Request, _ = http.NewRequest(http.MethodGet, "", nil)
+	context.Params = []gin.Param{{Key: "id", Value: "788f12a9-51e8-4c87-9b0c-06bcc9f0691b"}}
+
+	// Act
+	handler.GetByID(context)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, writer.Code)
+
+	var result *domain.Game
+	if err := json.Unmarshal(writer.Body.Bytes(), &result); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	assert.ElementsMatch(t, gameService.getByQuizReturns, result)
+}
+
 func TestGameHandler_Post_ReturnsErrorOnInvalidUUID(t *testing.T) {
 	t.Parallel()
 	// Arrange

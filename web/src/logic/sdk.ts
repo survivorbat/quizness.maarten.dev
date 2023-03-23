@@ -75,6 +75,14 @@ class BackendSdk {
 
     return result.json();
   }
+  async getGameById(id: string): Promise<Game> {
+    const result = await fetch(`${baseUrl}/api/v1/games/${id}`, {headers: this.authHeader()});
+    if (!result.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    return result.json();
+  }
 
   async createGame(quiz: string, game: CreateGame): Promise<void> {
     const data: RequestInit = {

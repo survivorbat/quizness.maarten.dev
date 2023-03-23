@@ -62,6 +62,47 @@ func (g *GameControlHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, games)
 }
 
+// GetByID godoc
+//
+//	@Summary	Fetch this game
+//	@Tags		Quiz
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path	string			true	"ID of the game"
+//	@Success	200	{object}	domain.Game	"This game"
+//	@Failure	400	"Invalid uuid"
+//	@Failure	403	"You can only view your own games"
+//	@Failure	500	"Internal Server Error"
+//	@Router		/api/v1/games/{id} [get]
+//	@Security	JWT
+func (g *GameControlHandler) GetByID(c *gin.Context) {
+	authID := c.GetString("user")
+	id := c.Param("id")
+
+	gameID, err := uuid.Parse(id)
+	if err != nil {
+		logrus.WithError(err).Error("UUID error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	game, err := g.GameService.GetByID(gameID)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to get by quiz")
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	// Prevent users from viewing other people's games
+	if game.Quiz.CreatorID.String() != authID {
+		logrus.Errorf("Creator is %s not %s", game.Quiz.CreatorID, authID)
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+
+	c.JSON(http.StatusOK, game)
+}
+
 // Post godoc
 //
 //	@Summary	Create a new game for this quiz

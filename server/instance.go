@@ -114,6 +114,7 @@ func (s *Server) configureRoutes(router *gin.Engine) {
 	apiRoutes.GET("/quizzes/:id/games", s.gameControlHandler.Get)
 	apiRoutes.GET("/games/:id/players", s.playerHandler.Get)
 	apiRoutes.GET("/games/:id/connection", s.gameConnectionHandler.GetCreator)
+	apiRoutes.GET("/games/:id", s.gameControlHandler.GetByID)
 
 	apiRoutes.POST("/quizzes", s.quizHandler.Post)
 	apiRoutes.POST("/quizzes/:id/games", s.gameControlHandler.Post)

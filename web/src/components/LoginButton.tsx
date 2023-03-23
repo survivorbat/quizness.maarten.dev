@@ -1,3 +1,5 @@
+import {Button} from "@mui/material";
+
 export const getGoogleUrl = () => {
   const rootUrl = `https://accounts.google.com/o/oauth2/v2/auth`;
 
@@ -17,7 +19,7 @@ export const getGoogleUrl = () => {
 };
 
 function LoginButton() {
-  return <a href={getGoogleUrl()}>Login</a>
+  return <Button color="inherit" href={getGoogleUrl()}>Login</Button>
 }
 
 export default LoginButton;

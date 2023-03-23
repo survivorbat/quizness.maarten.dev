@@ -33,7 +33,7 @@ func (c *DBQuizService) GetByID(id uuid.UUID) (*domain.Quiz, error) {
 }
 func (c *DBQuizService) GetByCreator(id uuid.UUID) ([]*domain.Quiz, error) {
 	var result []*domain.Quiz
-	if err := c.Database.Preload("MultipleChoiceQuestions.Options").Where("creator_id = ?", id).Find(&result).Error; err != nil {
+	if err := c.Database.Preload("MultipleChoiceQuestions.Options").Preload("Games").Where("creator_id = ?", id).Find(&result).Error; err != nil {
 		logrus.WithError(err).Error("Failed to get by creator")
 		return nil, err
 	}

@@ -1,8 +1,11 @@
+import Game from "./game";
+
 export interface Quiz {
   id: string;
   name: string;
   description: string;
   multipleChoiceQuestions: MultipleChoiceQuestion[];
+  games: Game[];
 }
 
 export interface MultipleChoiceQuestion {

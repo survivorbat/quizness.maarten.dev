@@ -11,7 +11,7 @@ interface PlayerWSTestPageProps {
   sdk: BackendSdk;
 }
 
-function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
+function PlayerGame({sdk}: PlayerWSTestPageProps) {
   const {player, game} = useParams();
 
   const [client, setClient] = useState(undefined as PlayerGameClient | undefined);
@@ -27,9 +27,7 @@ function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
         setCreator(state.creator || {});
         setCurrentQuestion(state.currentQuestion);
       },
-      close() {
-        alert('disconnected');
-      },
+      close() {},
       error: console.error,
     }
 
@@ -63,4 +61,4 @@ function PlayerWSTestPage({sdk}: PlayerWSTestPageProps) {
   </div>
 }
 
-export default PlayerWSTestPage;
+export default PlayerGame;

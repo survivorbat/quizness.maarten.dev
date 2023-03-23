@@ -17,7 +17,7 @@ function GameCodeInput({callback}: GameCodeInputProps) {
 
   return <form onSubmit={handleSubmit}>
     <InputLabel htmlFor="join-code">Game Code</InputLabel>
-    <TextField id="join-code" error={error} onChange={(e) => setCode(e.target.value)}/>
+    <TextField id="join-code" value={code} error={error} onChange={(e) => setCode(e.target.value.toUpperCase().substr(0, 6))}/>
     <Button type="submit">Join</Button>
   </form>
 }

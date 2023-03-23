@@ -16,7 +16,7 @@ type Quiz struct {
 
 	MultipleChoiceQuestions []*MultipleChoiceQuestion `json:"multipleChoiceQuestions,omitempty" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
 
-	Games []*Game `json:"-" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
+	Games []*Game `json:"games" gorm:"foreignKey:QuizID;constraint:OnDelete:CASCADE"`
 }
 
 func (q *Quiz) CountQuestions() int {

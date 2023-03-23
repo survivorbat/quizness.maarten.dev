@@ -1,15 +1,34 @@
 import React from "react";
-import {Grid} from "@mui/material";
+import {Button, Grid} from "@mui/material";
 import LoginButton from "./LoginButton";
-import LogoutButton from "./LogoutButton";
+import {Link} from "react-router-dom";
 
 interface HeaderProps {
   authenticated: boolean;
 }
 
 function Header({authenticated}: HeaderProps) {
-  return <Grid>
-    {authenticated ? <LogoutButton/> : <LoginButton/>}
+  let menu = [<LoginButton/>]
+
+  if (authenticated) {
+    menu = [
+      <Button key="quizzes">
+        <Link to="/creator">Your Quizzes</Link>
+      </Button>,
+      <Button key="logout">
+        <Link to="/logout">Logout</Link>
+      </Button>
+    ]
+  }
+
+  return <Grid container>
+    <Grid>
+      <Button><Link to="/">Home</Link></Button>
+      <Button><Link to="/about">About</Link></Button>
+    </Grid>
+    <Grid>
+      {menu}
+    </Grid>
   </Grid>
 }
 

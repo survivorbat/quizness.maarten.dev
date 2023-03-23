@@ -12,7 +12,7 @@ interface CreatorWSTestPageProps {
   sdk: BackendSdk;
 }
 
-function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
+function CreatorGame({sdk}: CreatorWSTestPageProps) {
   const {game} = useParams();
 
   const [client, setClient] = useState(undefined as CreatorGameClient | undefined);
@@ -28,9 +28,7 @@ function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
         setCreator(state.creator);
         setCurrentQuestion(state.currentQuestion);
       },
-      close() {
-        alert('disconnected');
-      },
+      close() {},
       error: console.error,
     }
 
@@ -56,4 +54,4 @@ function CreatorWSTestPage({sdk}: CreatorWSTestPageProps) {
   </div>
 }
 
-export default CreatorWSTestPage;
+export default CreatorGame;

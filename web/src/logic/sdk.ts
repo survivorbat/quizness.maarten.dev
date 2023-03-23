@@ -88,6 +88,17 @@ class BackendSdk {
       throw new Error('Failed to create game');
     }
   }
+  async startGame(game: string): Promise<void> {
+    const data: RequestInit = {
+      method: 'PATCH',
+      headers: this.authHeader(),
+    };
+
+    const result = await fetch(`${baseUrl}/api/v1/games/${game}?action=start`, data);
+    if (!result.ok) {
+      throw new Error('Failed to start game');
+    }
+  }
 
   async createPlayer(game: string): Promise<Player> {
     const data: RequestInit = {

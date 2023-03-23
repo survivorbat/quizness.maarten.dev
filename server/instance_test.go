@@ -7,11 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/ing-bank/gormtestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/coordinator"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/routes/outputs"
+	"golang.org/x/oauth2"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"io"
@@ -25,7 +27,6 @@ import (
 
 // Functions
 
-// populateDatabase Populates the database with the given data
 func populateDatabase[T any](t *testing.T, database *gorm.DB, data ...T) {
 	t.Helper()
 	if err := database.Model(new(T)).CreateInBatches(data, 100).Error; err != nil {
@@ -79,13 +80,19 @@ func readAndUnmarshal[T any](t *testing.T, res *http.Response, err error) T {
 	return result
 }
 
+func getCreator(id uuid.UUID) *domain.Creator {
+	result := &domain.Creator{BaseObject: domain.BaseObject{ID: id}, AuthID: id.String()}
+	result.GenerateNickname()
+	result.GenerateColors()
+	return result
+}
+
 // Tests
 
 func TestNewServer_GetQuizzes_ReturnsData(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -96,10 +103,10 @@ func TestNewServer_GetQuizzes_ReturnsData(t *testing.T) {
 	token, _ := instance.jwtService.GenerateToken(userID.String())
 
 	quizzes := []*domain.Quiz{
-		{Name: "def", CreatorID: uuid.MustParse("dc0057c9-553d-40aa-a0bf-6fb98990c634")},
+		{Name: "def", Creator: getCreator(uuid.MustParse("dc0057c9-553d-40aa-a0bf-6fb98990c634"))},
 		{
-			Name:      "abc",
-			CreatorID: userID,
+			Name:    "abc",
+			Creator: getCreator(userID),
 			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
 				{
 					BaseQuestion: domain.BaseQuestion{Title: "a"},
@@ -112,7 +119,7 @@ func TestNewServer_GetQuizzes_ReturnsData(t *testing.T) {
 	}
 
 	// Populate database
-	populateDatabase(t, instance.database, quizzes...)
+	populateDatabase(t, instance.database.Debug(), quizzes...)
 
 	// Close it in the end
 	defer ts.Close()
@@ -221,6 +228,7 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 			databaseOpen = sqlite.Open
 			connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
 			instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+			instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 			// Test http server
 			engine := gin.Default()
@@ -249,9 +257,8 @@ func TestNewServer_PostQuiz_ReturnsValidationErrors(t *testing.T) {
 
 func TestNewServer_PostQuiz_SavesQuiz(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -281,6 +288,8 @@ func TestNewServer_PostQuiz_SavesQuiz(t *testing.T) {
 			},
 		},
 	}
+
+	populateDatabase(t, instance.database, getCreator(userID))
 
 	// Act
 	response, err := performRequest(http.MethodPost, ts.URL, "api/v1/quizzes", token, input)
@@ -310,9 +319,8 @@ func TestNewServer_PostQuiz_SavesQuiz(t *testing.T) {
 
 func TestNewServer_PutQuiz_SavesNewQuiz(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -343,6 +351,8 @@ func TestNewServer_PutQuiz_SavesNewQuiz(t *testing.T) {
 		},
 	}
 
+	populateDatabase(t, instance.database, getCreator(userID))
+
 	// Act
 	response, err := performRequest(http.MethodPut, ts.URL, "api/v1/quizzes/3660def9-bd13-4c94-b9cd-d449eef82503", token, input)
 
@@ -371,9 +381,8 @@ func TestNewServer_PutQuiz_SavesNewQuiz(t *testing.T) {
 
 func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -390,7 +399,7 @@ func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 		BaseObject:  domain.BaseObject{ID: uuid.MustParse("3660def9-bd13-4c94-b9cd-d449eef82503")},
 		Name:        "old",
 		Description: "older",
-		Creator:     &domain.Creator{BaseObject: domain.BaseObject{ID: userID}},
+		Creator:     getCreator(userID),
 		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
 			{
 				BaseQuestion: domain.BaseQuestion{
@@ -455,9 +464,8 @@ func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 
 func TestNewServer_GetGames_ReturnsData(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -471,13 +479,13 @@ func TestNewServer_GetGames_ReturnsData(t *testing.T) {
 		{
 			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:       "def",
-			CreatorID:  userID,
+			Creator:    getCreator(userID),
 			Games:      []*domain.Game{{Code: "abc"}, {Code: "def"}},
 		},
 		{
-			Name:      "abc",
-			CreatorID: userID,
-			Games:     []*domain.Game{{Code: "123"}, {Code: "456"}},
+			Name:    "abc",
+			Creator: getCreator(userID),
+			Games:   []*domain.Game{{Code: "123"}, {Code: "456"}},
 		},
 	}
 
@@ -505,9 +513,8 @@ func TestNewServer_GetGames_ReturnsData(t *testing.T) {
 
 func TestNewServer_PostGame_CreatesGame(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -521,7 +528,7 @@ func TestNewServer_PostGame_CreatesGame(t *testing.T) {
 		{
 			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:       "def",
-			CreatorID:  userID,
+			Creator:    getCreator(userID),
 		},
 	}
 
@@ -551,9 +558,8 @@ func TestNewServer_PostGame_CreatesGame(t *testing.T) {
 
 func TestNewServer_StartGame_StartsGame(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -568,7 +574,7 @@ func TestNewServer_StartGame_StartsGame(t *testing.T) {
 		Quiz: &domain.Quiz{
 			BaseObject:              domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:                    "def",
-			CreatorID:               userID,
+			Creator:                 getCreator(userID),
 			MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{{}, {}},
 		},
 	}
@@ -598,9 +604,8 @@ func TestNewServer_StartGame_StartsGame(t *testing.T) {
 
 func TestNewServer_DeleteGame_DeletesGame(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -618,7 +623,7 @@ func TestNewServer_DeleteGame_DeletesGame(t *testing.T) {
 		Quiz: &domain.Quiz{
 			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:       "def",
-			CreatorID:  userID,
+			Creator:    getCreator(userID),
 		},
 	}
 
@@ -643,9 +648,8 @@ func TestNewServer_DeleteGame_DeletesGame(t *testing.T) {
 
 func TestNewServer_GetPlayers_ReturnsData(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -659,7 +663,7 @@ func TestNewServer_GetPlayers_ReturnsData(t *testing.T) {
 		{
 			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:       "def",
-			CreatorID:  userID,
+			Creator:    getCreator(userID),
 			Games: []*domain.Game{{
 				BaseObject: domain.BaseObject{ID: uuid.MustParse("c37077d7-9922-4bea-af99-1968bfec65e0")},
 				Code:       "abc",
@@ -696,9 +700,8 @@ func TestNewServer_GetPlayers_ReturnsData(t *testing.T) {
 
 func TestNewServer_PostPlayer_AddsPlayerToGame(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -711,7 +714,7 @@ func TestNewServer_PostPlayer_AddsPlayerToGame(t *testing.T) {
 		{
 			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:       "def",
-			CreatorID:  userID,
+			Creator:    getCreator(userID),
 			Games: []*domain.Game{{
 				BaseObject:  domain.BaseObject{ID: uuid.MustParse("c37077d7-9922-4bea-af99-1968bfec65e0")},
 				Code:        "abc",
@@ -745,9 +748,8 @@ func TestNewServer_PostPlayer_AddsPlayerToGame(t *testing.T) {
 
 func TestNewServer_DeletePlayer_RemovesPlayerFromGame(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -760,7 +762,7 @@ func TestNewServer_DeletePlayer_RemovesPlayerFromGame(t *testing.T) {
 		{
 			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:       "def",
-			CreatorID:  userID,
+			Creator:    getCreator(userID),
 			Games: []*domain.Game{{
 				BaseObject:  domain.BaseObject{ID: uuid.MustParse("c37077d7-9922-4bea-af99-1968bfec65e0")},
 				Code:        "abc",
@@ -793,9 +795,8 @@ func TestNewServer_DeletePlayer_RemovesPlayerFromGame(t *testing.T) {
 
 func TestNewServer_GetPublicQuiz_ReturnsExpectedQuiz(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 
 	// Test http server
 	engine := gin.Default()
@@ -808,7 +809,7 @@ func TestNewServer_GetPublicQuiz_ReturnsExpectedQuiz(t *testing.T) {
 		{
 			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 			Name:       "def",
-			CreatorID:  userID,
+			Creator:    getCreator(userID),
 			Games: []*domain.Game{{
 				BaseObject:  domain.BaseObject{ID: uuid.MustParse("c37077d7-9922-4bea-af99-1968bfec65e0")},
 				Code:        "abc",
@@ -855,13 +856,8 @@ func TestNewServer_GetPublicQuiz_ReturnsExpectedQuiz(t *testing.T) {
 // - Finish
 func TestNewServer_GameFlow_Works(t *testing.T) {
 	// Arrange
-	databaseOpen = sqlite.Open
-	connection := fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
-	instance, _ := NewServer(connection, "abc", "abc", "abc", "abc")
-
-	// Make sure we don't get locked errors in sqlite
-	db, _ := instance.database.DB()
-	db.SetMaxOpenConns(1)
+	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
+	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()), gormtestutil.WithSingularConnection())
 
 	// Test http server
 	engine := gin.Default()
@@ -874,7 +870,7 @@ func TestNewServer_GameFlow_Works(t *testing.T) {
 	quiz := &domain.Quiz{
 		BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
 		Name:       "def",
-		CreatorID:  userID,
+		Creator:    getCreator(userID),
 		MultipleChoiceQuestions: []*domain.MultipleChoiceQuestion{
 			{
 				BaseQuestion: domain.BaseQuestion{

@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/ing-bank/gormtestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"testing"
@@ -10,7 +11,7 @@ import (
 func TestDBCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBCreatorService{Database: database}
@@ -34,7 +35,7 @@ func TestDBCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 func TestDBCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBCreatorService{Database: database}
@@ -67,7 +68,7 @@ func TestDBCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 func TestDBCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	//autoMigrate(t, database
@@ -87,7 +88,7 @@ func TestDBCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 func TestDBCreatorService_GetByID_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBCreatorService{Database: database}
@@ -107,7 +108,7 @@ func TestDBCreatorService_GetByID_ReturnsUser(t *testing.T) {
 func TestDBCreatorService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	//autoMigrate(t, database

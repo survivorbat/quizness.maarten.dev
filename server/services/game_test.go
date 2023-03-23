@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/ing-bank/gormtestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"testing"
@@ -11,7 +12,7 @@ import (
 func TestDBGameService_GetByQuiz_ReturnsAnyError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
@@ -33,7 +34,7 @@ func TestDBGameService_GetByQuiz_ReturnsAnyError(t *testing.T) {
 func TestDBGameService_GetByQuiz_ReturnsExpectedGames(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -69,7 +70,7 @@ func TestDBGameService_GetByQuiz_ReturnsExpectedGames(t *testing.T) {
 func TestDBGameService_GetByID_ReturnsExpected(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{Database: database}
@@ -101,7 +102,7 @@ func TestDBGameService_GetByID_ReturnsExpected(t *testing.T) {
 func TestDBGameService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
@@ -119,7 +120,7 @@ func TestDBGameService_GetByID_ReturnsDatabaseError(t *testing.T) {
 func TestDBGameService_GetByCode_ReturnsExpected(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{Database: database}
@@ -150,7 +151,7 @@ func TestDBGameService_GetByCode_ReturnsExpected(t *testing.T) {
 func TestDBGameService_GetByCode_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
@@ -168,7 +169,7 @@ func TestDBGameService_GetByCode_ReturnsDatabaseError(t *testing.T) {
 func TestDBGameService_Create_ReturnsAnyError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
@@ -187,7 +188,7 @@ func TestDBGameService_Create_ReturnsAnyError(t *testing.T) {
 func TestDBGameService_Create_CreatesGame(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -218,7 +219,7 @@ func TestDBGameService_Create_CreatesGame(t *testing.T) {
 func TestDBGameService_Start_ReturnsErrorIfStarted(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -244,7 +245,7 @@ func TestDBGameService_Start_ReturnsErrorIfStarted(t *testing.T) {
 func TestDBGameService_Start_StartsGame(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -276,7 +277,7 @@ func TestDBGameService_Start_StartsGame(t *testing.T) {
 func TestDBGameService_Finish_ReturnsErrorIfAlreadyFinished(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -303,7 +304,7 @@ func TestDBGameService_Finish_ReturnsErrorIfAlreadyFinished(t *testing.T) {
 func TestDBGameService_Finish_FinishesGame(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -335,7 +336,7 @@ func TestDBGameService_Finish_FinishesGame(t *testing.T) {
 func TestDBGameService_Next_StartsNextQuestion(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -382,7 +383,7 @@ func TestDBGameService_Next_StartsNextQuestion(t *testing.T) {
 func TestDBGameService_Next_ReturnsErrorIfNotStarted(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -406,7 +407,7 @@ func TestDBGameService_Next_ReturnsErrorIfNotStarted(t *testing.T) {
 func TestDBGameService_AnswerQuestion_StartsAnswerQuestionQuestion(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	questionId := uuid.MustParse("c275bf4e-c839-495d-af9c-4f95d8dc05a5")
@@ -462,7 +463,7 @@ func TestDBGameService_AnswerQuestion_StartsAnswerQuestionQuestion(t *testing.T)
 func TestDBGameService_AnswerQuestion_ReturnsErrorIfNotTheCurrentQuestion(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	questionId := uuid.MustParse("c275bf4e-c839-495d-af9c-4f95d8dc05a5")
@@ -491,7 +492,7 @@ func TestDBGameService_AnswerQuestion_ReturnsErrorIfNotTheCurrentQuestion(t *tes
 func TestDBGameService_Delete_ReturnsErrorOnInProgress(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{
@@ -517,7 +518,7 @@ func TestDBGameService_Delete_ReturnsErrorOnInProgress(t *testing.T) {
 func TestDBGameService_Delete_DeletesCorrectly(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBGameService{

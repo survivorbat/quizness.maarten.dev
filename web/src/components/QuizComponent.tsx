@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, Card, CardActions, CardContent, CardMedia, Typography } from "@mui/material";
 import { Quiz } from "../models/quiz";
+import { Link } from "react-router-dom";
 
 interface QuizProps {
     quiz : Quiz
@@ -22,7 +23,7 @@ function QuizComponent(quiz : Quiz) {
             </Typography>
         </CardContent>
         <CardActions>
-            <Button size="small">Play</Button>
+            <Button size="small"> <Link to={`/creator/quiz`} state={{ quiz: quiz}}> play </Link></Button>
             <Button size="small">View</Button>
         </CardActions>
     </Card>

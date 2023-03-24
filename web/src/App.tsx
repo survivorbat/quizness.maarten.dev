@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LogoutPage from "./pages/LogoutPage";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import QuizPage from './pages/QuizPage';
 
 const darkTheme = createTheme({
   palette: {
@@ -46,6 +47,7 @@ function App() {
           <Route path="/logout" element={<LogoutPage callback={logoutCallback}/>}/>
           <Route path="/creator"
                  element={<ProtectedRoute authenticated={!!token}><CreatorPage sdk={sdk}/></ProtectedRoute>}/>
+          <Route path="/creator/quiz" element={<QuizPage sdk = {sdk}/>}></Route>
         </Routes>
       </Grid>
     </BrowserRouter>

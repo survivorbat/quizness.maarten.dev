@@ -6,7 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"github.com/zalando/gin-oauth2/google"
 	"golang.org/x/oauth2"
@@ -93,6 +93,11 @@ func (t *TokenHandler) CreateToken(c *gin.Context) {
 func (t *TokenHandler) JwtGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
+
+		if authHeader == "" {
+			authHeader = c.GetHeader("Sec-Websocket-Protocol")
+		}
+
 		if len(authHeader) <= len(bearerSchema) {
 			logrus.Error("Authorization header is wrong")
 			c.AbortWithStatus(http.StatusUnauthorized)

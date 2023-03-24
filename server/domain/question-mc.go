@@ -6,8 +6,11 @@ import "github.com/google/uuid"
 type MultipleChoiceQuestion struct {
 	BaseQuestion
 
-	// Not exposed for obvious reasons
-	AnswerID uuid.UUID `json:"answerID"`
+	AnswerID uuid.UUID `json:"answerID" example:"00000000-0000-0000-0000-000000000000"`
 
 	Options []*QuestionOption `json:"options" gorm:"foreignKey:MultipleChoiceQuestionID;constraint:OnDelete:CASCADE"`
+}
+
+func (m MultipleChoiceQuestion) GetType() QuestionType {
+	return TypeMultipleChoice
 }

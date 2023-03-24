@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/ing-bank/gormtestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ import (
 func TestDBQuizService_GetByID_ReturnsExpected(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBQuizService{Database: database}
@@ -41,7 +42,7 @@ func TestDBQuizService_GetByID_ReturnsExpected(t *testing.T) {
 func TestDBQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
@@ -59,7 +60,7 @@ func TestDBQuizService_GetByID_ReturnsDatabaseError(t *testing.T) {
 func TestDBQuizService_GetByCreator_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBQuizService{Database: database}
@@ -92,7 +93,7 @@ func TestDBQuizService_GetByCreator_ReturnsUser(t *testing.T) {
 func TestDBQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
@@ -110,7 +111,7 @@ func TestDBQuizService_GetByCreator_ReturnsDatabaseError(t *testing.T) {
 func TestDBQuizService_CreateOrUpdate_CreatesNewQuiz(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 	autoMigrate(t, database)
 
 	service := &DBQuizService{Database: database}
@@ -146,7 +147,7 @@ func TestDBQuizService_CreateOrUpdate_CreatesNewQuiz(t *testing.T) {
 func TestDBQuizService_CreateOrUpdate_UpdatesExisting(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
 	autoMigrate(t, database)
 
 	service := &DBQuizService{Database: database}
@@ -204,7 +205,7 @@ func TestDBQuizService_CreateOrUpdate_UpdatesExisting(t *testing.T) {
 func TestDBQuizService_CreateOrUpdate_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)
@@ -221,7 +222,7 @@ func TestDBQuizService_CreateOrUpdate_ReturnsDatabaseError(t *testing.T) {
 func TestDBQuizService_Delete_DeletesQuiz(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBQuizService{Database: database}
@@ -271,7 +272,7 @@ func TestDBQuizService_Delete_DeletesQuiz(t *testing.T) {
 func TestDBQuizService_Delete_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	// autoMigrate(t, database)

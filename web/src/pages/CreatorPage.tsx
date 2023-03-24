@@ -10,16 +10,35 @@ interface CreatorPageProps {
   sdk: BackendSdk;
 }
 
+const getGameButton = (game: Game, startGame: (id: string) => void) => {
+  if (game.code) {
+    return <Button key={game.id}>
+      <Link to={`/games/${game.id}`}>{game.code}</Link>
+    </Button>
+  }
+
+  return <Button onClick={() => startGame(game.id)}>Start Game</Button>
+}
+
 function CreatorPage({sdk}: CreatorPageProps) {
   const [creator, setCreator] = useState(undefined as Creator | undefined);
   const [quizzes, setQuizzes] = useState(undefined as Quiz[] | undefined)
 
-  useEffect(() => {
-    if (!creator || !quizzes) {
-      sdk.getCreator().then(setCreator);
-      sdk.getQuizzes().then(setQuizzes);
-    }
-  });
+  const refresh = () => {
+    sdk.getCreator().then(setCreator);
+    sdk.getQuizzes().then(setQuizzes);
+  }
+
+  useEffect(refresh, [sdk]);
+
+  const createGame = (quiz: string) => {
+    const playerLimit = prompt('Player limit?')!
+    sdk.createGame(quiz, {playerLimit: parseInt(playerLimit, 10)}).then(refresh)
+  }
+
+  const startGame = (game: string) => {
+    sdk.startGame(game).then(refresh);
+  }
 
   if (!creator || !quizzes) {
     return <span>Loading...</span>

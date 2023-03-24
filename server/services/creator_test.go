@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/ing-bank/gormtestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
 	"testing"
@@ -10,7 +11,7 @@ import (
 func TestDBCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBCreatorService{Database: database}
@@ -26,13 +27,15 @@ func TestDBCreatorService_GetOrCreate_CreatesNewUser(t *testing.T) {
 	assert.Equal(t, authID, result.AuthID)
 
 	assert.NotEmpty(t, result.Nickname)
+	assert.NotEmpty(t, result.Color)
+	assert.NotEmpty(t, result.BackgroundColor)
 	assert.NotEmpty(t, result.ID)
 }
 
 func TestDBCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBCreatorService{Database: database}
@@ -40,9 +43,11 @@ func TestDBCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 	authID := "23902349"
 
 	creator := &domain.Creator{
-		BaseObject: domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")},
-		AuthID:     authID,
-		Nickname:   "existing name",
+		BaseObject:      domain.BaseObject{ID: uuid.MustParse("3c97f06b-1078-46ef-a2c3-71fc4d9a3d3d")},
+		AuthID:          authID,
+		Nickname:        "existing name",
+		Color:           "#000011",
+		BackgroundColor: "#002200",
 	}
 
 	database.Create(creator)
@@ -54,6 +59,8 @@ func TestDBCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, creator.Nickname, result.Nickname)
+	assert.Equal(t, creator.Color, result.Color)
+	assert.Equal(t, creator.BackgroundColor, result.BackgroundColor)
 	assert.Equal(t, creator.ID, result.ID)
 	assert.Equal(t, creator.AuthID, result.AuthID)
 }
@@ -61,7 +68,7 @@ func TestDBCreatorService_GetOrCreate_ReturnsExistingUser(t *testing.T) {
 func TestDBCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	//autoMigrate(t, database
@@ -81,7 +88,7 @@ func TestDBCreatorService_GetOrCreate_ReturnsDatabaseError(t *testing.T) {
 func TestDBCreatorService_GetByID_ReturnsUser(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 	autoMigrate(t, database)
 
 	service := &DBCreatorService{Database: database}
@@ -101,7 +108,7 @@ func TestDBCreatorService_GetByID_ReturnsUser(t *testing.T) {
 func TestDBCreatorService_GetByID_ReturnsDatabaseError(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	database := getDb(t)
+	database := gormtestutil.NewMemoryDatabase(t)
 
 	// By not running this, we're sure it will return an error
 	//autoMigrate(t, database

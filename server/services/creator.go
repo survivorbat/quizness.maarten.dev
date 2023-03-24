@@ -22,6 +22,7 @@ type DBCreatorService struct {
 func (c *DBCreatorService) GetOrCreate(authID string) (*domain.Creator, error) {
 	result := &domain.Creator{AuthID: authID}
 	result.GenerateNickname()
+	result.GenerateColors()
 
 	if err := c.Database.FirstOrCreate(&result, map[string]any{"auth_id": authID}).Error; err != nil {
 		logrus.WithError(err).Error("Failed to get or create")

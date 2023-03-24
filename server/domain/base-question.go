@@ -4,6 +4,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type QuestionType string
+
+const (
+	TypeMultipleChoice QuestionType = "mc"
+)
+
+// Question is used to pass around questions without a specific type
+type Question interface {
+	GetBaseQuestion() BaseQuestion
+	GetType() QuestionType
+}
+
 // BaseQuestion contains fields that every question should contain, allows us to embed it in other questions
 type BaseQuestion struct {
 	BaseObject
@@ -15,4 +27,8 @@ type BaseQuestion struct {
 
 	QuizID uuid.UUID `json:"quizID" example:"00000000-0000-0000-0000-000000000000"` // desc: The quiz this question belongs to
 	Quiz   *Quiz     `json:"-" gorm:"foreignKey:QuizID"`
+}
+
+func (b BaseQuestion) GetBaseQuestion() BaseQuestion {
+	return b
 }

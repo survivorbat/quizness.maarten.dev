@@ -1,7 +1,7 @@
 import React from "react";
-import {Grid} from "@mui/material";
+import {Button, Grid} from "@mui/material";
 import LoginButton from "./LoginButton";
-import LogoutButton from "./LogoutButton";
+import {Link} from "react-router-dom";
 import Navbar from "./Navbar";
 
 interface HeaderProps {

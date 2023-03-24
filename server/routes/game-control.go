@@ -5,61 +5,55 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/survivorbat/qq.maarten.dev/server/domain"
-	"github.com/survivorbat/qq.maarten.dev/server/routes/inputs"
+	"github.com/survivorbat/qq.maarten.dev/server/inputs"
 	"github.com/survivorbat/qq.maarten.dev/server/services"
 	"net/http"
 )
 
-type GameHandler struct {
+type GameControlHandler struct {
 	QuizService services.QuizService
 	GameService services.GameService
 }
 
-// Get godoc
+// GetByID godoc
 //
-//	@Summary	Fetch this quiz' games
+//	@Summary	Fetch this game
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path	string			true	"ID of the quiz"
-//	@Success	200	{array}	[]domain.Game	"This quiz' games"
+//	@Param		id	path	string			true	"ID of the game"
+//	@Success	200	{object}	domain.Game	"This game"
 //	@Failure	400	"Invalid uuid"
 //	@Failure	403	"You can only view your own games"
 //	@Failure	500	"Internal Server Error"
-//	@Router		/api/v1/quizzes/{id}/games [get]
+//	@Router		/api/v1/games/{id} [get]
 //	@Security	JWT
-func (g *GameHandler) Get(c *gin.Context) {
+func (g *GameControlHandler) GetByID(c *gin.Context) {
 	authID := c.GetString("user")
 	id := c.Param("id")
 
-	quizID, err := uuid.Parse(id)
+	gameID, err := uuid.Parse(id)
 	if err != nil {
 		logrus.WithError(err).Error("UUID error")
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	quiz, err := g.QuizService.GetByID(quizID)
+	game, err := g.GameService.GetByID(gameID)
 	if err != nil {
+		logrus.WithError(err).Error("Failed to get by quiz")
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
 	// Prevent users from viewing other people's games
-	if quiz.CreatorID.String() != authID {
-		logrus.Errorf("Creator is %s not %s", quiz.CreatorID, authID)
+	if game.Quiz.CreatorID.String() != authID {
+		logrus.Errorf("Creator is %s not %s", game.Quiz.CreatorID, authID)
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 
-	games, err := g.GameService.GetByQuiz(quizID)
-	if err != nil {
-		logrus.WithError(err).Error("Failed to get by quiz")
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(http.StatusOK, games)
+	c.JSON(http.StatusOK, game)
 }
 
 // Post godoc
@@ -76,7 +70,7 @@ func (g *GameHandler) Get(c *gin.Context) {
 //	@Failure	500		"Internal Server Error"
 //	@Router		/api/v1/quizzes/{id}/games [post]
 //	@Security	JWT
-func (g *GameHandler) Post(c *gin.Context) {
+func (g *GameControlHandler) Post(c *gin.Context) {
 	authID := c.GetString("user")
 	id := c.Param("id")
 
@@ -89,6 +83,7 @@ func (g *GameHandler) Post(c *gin.Context) {
 
 	quiz, err := g.QuizService.GetByID(quizID)
 	if err != nil {
+		logrus.WithError(err).Error("Fetch error")
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -128,7 +123,7 @@ func (g *GameHandler) Post(c *gin.Context) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		id		path		string		true	"ID of the game"
-//	@Param		action	query		string		true	"Action to perform"	Enums(start, finish, next)
+//	@Param		action	query		string		true	"Action to perform"	Enums(start)
 //	@Success	200		{object}	domain.Game	"The updated game"
 //	@Failure	400		"Invalid uuid"
 //	@Failure	400		"Game is not in a valid state"
@@ -137,10 +132,9 @@ func (g *GameHandler) Post(c *gin.Context) {
 //	@Failure	404		"Not found"
 //	@Failure	409		"You already have a game started"
 //	@Failure	500		"Internal Server Error"
-//	@Failure	501		"Next is not implemented"
 //	@Router		/api/v1/games/{id} [patch]
 //	@Security	JWT
-func (g *GameHandler) Patch(c *gin.Context) {
+func (g *GameControlHandler) Patch(c *gin.Context) {
 	authID := c.GetString("user")
 	id := c.Param("id")
 	action := c.Query("action")
@@ -154,6 +148,7 @@ func (g *GameHandler) Patch(c *gin.Context) {
 
 	game, err := g.GameService.GetByID(gameID)
 	if err != nil {
+		logrus.WithError(err).Error("Fetch error")
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -168,25 +163,18 @@ func (g *GameHandler) Patch(c *gin.Context) {
 	switch action {
 	case "start":
 		if game.Quiz.HasGameInProgress() {
+			logrus.WithError(err).Error("Another game is already in progress")
 			c.AbortWithStatus(http.StatusConflict)
 			return
 		}
 
 		if err := g.GameService.Start(game); err != nil {
+			logrus.WithError(err).Error("Can not start game")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-
-	case "finish":
-		if err := g.GameService.Finish(game); err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-	case "next":
-		c.AbortWithStatus(http.StatusNotImplemented)
-		return
 	default:
+		logrus.Errorf("Unknown action %s", action)
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -194,9 +182,50 @@ func (g *GameHandler) Patch(c *gin.Context) {
 	c.JSON(http.StatusOK, game)
 }
 
-//	@Failure	409	"A game is already in progress"
-//if quiz.HasGameInProgress() {
-//logrus.Error("There is already a game in progress")
-//c.AbortWithStatus(http.StatusConflict)
-//return
-//}
+// Delete godoc
+//
+//	@Summary	Delete a game
+//	@Tags		Game
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path	string	true	"ID of the game"
+//	@Success	200	"The deleted game"
+//	@Failure	400	"Invalid uuid"
+//	@Failure	403	"You can only delete games in your own quiz"
+//	@Failure	404	"Not found"
+//	@Failure	409	"This game has started"
+//	@Failure	500	"Internal Server Error"
+//	@Router		/api/v1/games/{id} [delete]
+//	@Security	JWT
+func (g *GameControlHandler) Delete(c *gin.Context) {
+	authID := c.GetString("user")
+	id := c.Param("id")
+
+	gameID, err := uuid.Parse(id)
+	if err != nil {
+		logrus.WithError(err).Error("UUID error")
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	game, err := g.GameService.GetByID(gameID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	// Prevent users from deleting other people's games
+	if game.Quiz.CreatorID.String() != authID {
+		logrus.Errorf("Creator is %s not %s", game.Quiz.CreatorID, authID)
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+
+	if err := g.GameService.Delete(game); err != nil {
+		logrus.WithError(err).Error("Failed to delete")
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, game)
+}

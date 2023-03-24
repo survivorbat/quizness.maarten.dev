@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/ing-bank/gintestutil"
 	"github.com/ing-bank/gormtestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/survivorbat/qq.maarten.dev/server/coordinator"
@@ -56,28 +57,13 @@ func performRequest(method string, server string, path string, auth string, body
 func getValue[T any, K any](t *testing.T, res *http.Response, err error, getKey func(T) K) K {
 	t.Helper()
 
-	result := readAndUnmarshal[T](t, res, err)
-	return getKey(result)
-}
-
-func readAndUnmarshal[T any](t *testing.T, res *http.Response, err error) T {
-	t.Helper()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var result T
-	if err := json.Unmarshal(body, &result); err != nil {
-		t.Fatal(err)
-	}
-
-	return result
+	gintestutil.Response(t, &result, http.StatusOK, res)
+	return getKey(result)
 }
 
 func getCreator(id uuid.UUID) *domain.Creator {
@@ -135,9 +121,10 @@ func TestNewServer_GetQuizzes_ReturnsData(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 
-	result := readAndUnmarshal[[]*domain.Quiz](t, response, err)
+	var result []*domain.Quiz
+	ok := gintestutil.Response(t, &result, http.StatusOK, response)
 
-	if assert.Len(t, result, 1) {
+	if ok && assert.Len(t, result, 1) {
 		assert.Equal(t, quizzes[1].CreatorID, result[0].CreatorID)
 		assert.Equal(t, quizzes[1].Name, result[0].Name)
 		assert.Equal(t, quizzes[1].MultipleChoiceQuestions[0].Title, result[0].MultipleChoiceQuestions[0].Title)
@@ -462,55 +449,6 @@ func TestNewServer_PutQuiz_UpdatesExistingQuiz(t *testing.T) {
 	}
 }
 
-func TestNewServer_GetGames_ReturnsData(t *testing.T) {
-	// Arrange
-	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
-	instance.database = gormtestutil.NewMemoryDatabase(t, gormtestutil.WithName(t.Name()))
-
-	// Test http server
-	engine := gin.Default()
-	_ = instance.Configure(engine)
-	ts := httptest.NewServer(engine)
-
-	userID := uuid.MustParse("7d87bab0-cf2d-45ae-bced-1de22db21a77")
-	token, _ := instance.jwtService.GenerateToken(userID.String())
-
-	quizzes := []*domain.Quiz{
-		{
-			BaseObject: domain.BaseObject{ID: uuid.MustParse("25e48148-3225-4ae9-a737-345b099bca72")},
-			Name:       "def",
-			Creator:    getCreator(userID),
-			Games:      []*domain.Game{{Code: "abc"}, {Code: "def"}},
-		},
-		{
-			Name:    "abc",
-			Creator: getCreator(userID),
-			Games:   []*domain.Game{{Code: "123"}, {Code: "456"}},
-		},
-	}
-
-	// Populate database
-	populateDatabase(t, instance.database, quizzes...)
-
-	// Act
-	response, err := performRequest(http.MethodGet, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, nil)
-
-	// Assert
-	assert.NoError(t, err)
-	if !assert.NotNil(t, response) {
-		t.FailNow()
-	}
-
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-
-	result := readAndUnmarshal[[]*domain.Game](t, response, err)
-
-	if assert.Len(t, result, 2) {
-		assert.Equal(t, quizzes[0].Games[0].Code, result[0].Code)
-		assert.Equal(t, quizzes[0].Games[1].Code, result[1].Code)
-	}
-}
-
 func TestNewServer_PostGame_CreatesGame(t *testing.T) {
 	// Arrange
 	instance := &Server{jwtSecret: "abc", oAuthConfig: &oauth2.Config{ClientID: "abc", ClientSecret: "abc", RedirectURL: "abc"}}
@@ -551,9 +489,12 @@ func TestNewServer_PostGame_CreatesGame(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 
-	result := readAndUnmarshal[*domain.Game](t, response, err)
+	var result *domain.Game
+	ok := gintestutil.Response(t, &result, http.StatusOK, response)
 
-	assert.Equal(t, input.PlayerLimit, result.PlayerLimit)
+	if ok {
+		assert.Equal(t, input.PlayerLimit, result.PlayerLimit)
+	}
 }
 
 func TestNewServer_StartGame_StartsGame(t *testing.T) {
@@ -596,10 +537,13 @@ func TestNewServer_StartGame_StartsGame(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 
-	result := readAndUnmarshal[*domain.Game](t, response, err)
+	var result *domain.Game
+	ok := gintestutil.Response(t, &result, http.StatusOK, response)
 
-	assert.Equal(t, game.PlayerLimit, result.PlayerLimit)
-	assert.NotEmpty(t, result.Code)
+	if ok {
+		assert.Equal(t, game.PlayerLimit, result.PlayerLimit)
+		assert.NotEmpty(t, result.Code)
+	}
 }
 
 func TestNewServer_DeleteGame_DeletesGame(t *testing.T) {
@@ -689,9 +633,10 @@ func TestNewServer_GetPlayers_ReturnsData(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 
-	result := readAndUnmarshal[[]*domain.Player](t, response, err)
+	var result []*domain.Player
+	ok := gintestutil.Response(t, &result, http.StatusOK, response)
 
-	if assert.Len(t, result, 3) {
+	if ok && assert.Len(t, result, 3) {
 		assert.Equal(t, quizzes[0].Games[0].Players[0].Nickname, result[0].Nickname)
 		assert.Equal(t, quizzes[0].Games[0].Players[1].Nickname, result[1].Nickname)
 		assert.Equal(t, quizzes[0].Games[0].Players[2].Nickname, result[2].Nickname)
@@ -742,8 +687,11 @@ func TestNewServer_PostPlayer_AddsPlayerToGame(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 
-	result := readAndUnmarshal[*domain.Player](t, response, err)
-	assert.NotEmpty(t, result.Nickname)
+	var result *domain.Player
+	ok := gintestutil.Response(t, &result, http.StatusOK, response)
+	if ok {
+		assert.NotEmpty(t, result.Nickname)
+	}
 }
 
 func TestNewServer_DeletePlayer_RemovesPlayerFromGame(t *testing.T) {
@@ -839,10 +787,13 @@ func TestNewServer_GetPublicQuiz_ReturnsExpectedQuiz(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 
-	result := readAndUnmarshal[*outputs.OutputQuiz](t, response, err)
-	assert.Equal(t, quizzes[0].Name, result.Name)
-	assert.Equal(t, quizzes[0].ID, result.ID)
-	assert.Equal(t, quizzes[0].Description, result.Description)
+	var result *outputs.OutputQuiz
+	ok := gintestutil.Response(t, &result, http.StatusOK, response)
+	if ok {
+		assert.Equal(t, quizzes[0].Name, result.Name)
+		assert.Equal(t, quizzes[0].ID, result.ID)
+		assert.Equal(t, quizzes[0].Description, result.Description)
+	}
 }
 
 // This tests:
@@ -967,18 +918,18 @@ func TestNewServer_GameFlow_Works(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	// Verify
-	res, err := performRequest(http.MethodGet, ts.URL, "api/v1/quizzes/25e48148-3225-4ae9-a737-345b099bca72/games", token, nil)
+	res, err := performRequest(http.MethodGet, ts.URL, fmt.Sprintf("api/v1/games/%s", gameID), token, nil)
 
 	// Assert
 	assert.NoError(t, err)
 
 	// Check final result
-	result := readAndUnmarshal[[]*domain.Game](t, res, err)
+	var result *domain.Game
+	ok := gintestutil.Response(t, &result, http.StatusOK, res)
 
-	// Check if all the required objects are in there
-	if assert.Len(t, result, 1) {
-		assert.False(t, result[0].FinishTime.IsZero())
-		assert.Len(t, result[0].Players, 2)
-		assert.Len(t, result[0].Answers, 4)
+	if ok {
+		assert.False(t, result.FinishTime.IsZero())
+		assert.Len(t, result.Players, 2)
+		assert.Len(t, result.Answers, 4)
 	}
 }

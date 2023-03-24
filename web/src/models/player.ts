@@ -1,9 +1,8 @@
 interface Player {
-  id: string;
-  nickname: string;
-  color: string;
-  backgroundColor: string;
-  gameID: string;
+    id : String
+    game_id : String
+    created_at : Date
+    updated_at : Date
 }
 
-export default Player;
+export default Player

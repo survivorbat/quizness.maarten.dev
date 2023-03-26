@@ -7,36 +7,6 @@ body {
     color: #fff
 }
 
-@media screen and (min-width: 900px) {
-    .Creator {
-        margin-left: 10%;
-        margin-right: 10%;
-        padding-left: 5%;
-        padding-right: 5%;
-        background-color: rgba(5, 1, 26, 0)
-    }
-}
-
-.Creator {
-    padding-left: 5%;
-    padding-right: 5%;
-}
-
-@media screen and (min-width: 900px) {
-    .Quiz {
-        margin-left: 10%;
-        margin-right: 10%;
-        padding-left: 5%;
-        padding-right: 5%;
-        background-color: rgba(5, 1, 26, 0)
-    }
-}
-
-.Quiz {
-    padding-left: 5%;
-    padding-right: 5%;
-}
-
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

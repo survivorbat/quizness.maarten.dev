@@ -3,17 +3,11 @@ import { Button, Card, CardActions, CardContent, CardMedia, Typography } from "@
 import { Quiz } from "../models/quiz";
 import { Link } from "react-router-dom";
 
-interface QuizProps {
-    quiz : Quiz
-}
 
-function QuizComponent(quiz : Quiz) {
+function QuizComponent(quiz: Quiz) {
 
     return(
     <Card>
-        <CardMedia>
-
-        </CardMedia>
         <CardContent>
             <Typography gutterBottom variant="h5" component="div">
                 {quiz.name}

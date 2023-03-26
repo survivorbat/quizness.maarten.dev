@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -14,17 +14,18 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import LoginButton from './LoginButton';
-import LogoutButton from './LogoutButton';
+import { Link } from 'react-router-dom';
+
 
 interface NavbarProps{
-  authenticated : Boolean
+  authenticated: boolean   //can't use just 'bool'
 }
 
-const pages = ['Home', 'Profile', 'Quizes']
+const pages = ['Home', 'Profile', 'Creator']
 
 function Navbar( {authenticated} : NavbarProps){
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-    const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
@@ -95,7 +96,7 @@ function Navbar( {authenticated} : NavbarProps){
           >
             {pages.map((page) => (
               <MenuItem key={page} onClick={handleCloseNavMenu}>
-                <Typography textAlign="center">{page}</Typography>
+                <Link to={`/${page}`}><Typography textAlign="center">{page}</Typography></Link>
               </MenuItem>
             ))}
           </Menu>
@@ -122,9 +123,12 @@ function Navbar( {authenticated} : NavbarProps){
         <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
           {pages.map((page) => (
             <Button
+              component={Link} 
+              to={`/${page}`}
               key={page}
               onClick={handleCloseNavMenu}
               sx={{ my: 2, color: 'white', display: 'block' }}
+
             >
               {page}
             </Button>
@@ -133,7 +137,7 @@ function Navbar( {authenticated} : NavbarProps){
 
         <Box sx={{ flexGrow: 0 }}>
           <Tooltip title="Login">
-          {authenticated ? <LogoutButton/> : <LoginButton/>}
+          <LoginButton/>
           </Tooltip>
         </Box>
       </Toolbar>

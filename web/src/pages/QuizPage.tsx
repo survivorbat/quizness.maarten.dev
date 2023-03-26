@@ -5,6 +5,7 @@ import { MultipleChoiceQuestion, QuestionOption, Quiz } from "../models/quiz";
 import { useLocation } from "react-router-dom";
 import { Grid, Typography } from "@mui/material";
 import OverviewQuestionComponent from "../components/OverviewQuestionComponent";
+import "../styles/QuizPage.css"
 
 interface QuizPageProps{
     sdk : BackendSdk
@@ -14,10 +15,9 @@ function QuizPage({sdk} : QuizPageProps) {
     const location = useLocation();
     const {quiz} = location.state;
     const questions = quiz.multipleChoiceQuestions
-    console.log(questions)
 
     return <Grid item xs={12}>
-            <div className="Quiz">
+            <div className="quiz">
 
             <Typography gutterBottom variant="h4">{quiz.name}</Typography>
             <Typography gutterBottom variant="h6">{quiz.description}</Typography>
@@ -25,12 +25,6 @@ function QuizPage({sdk} : QuizPageProps) {
                 <Typography gutterBottom variant="h6">{multipleChoiceQuestion.title}</Typography>
             })}
             
-
-            {/* {questions.map((multipleChoiceQuestions : MultipleChoiceQuestion) => {
-                <Grid item xs={12}>
-                    <OverviewQuestionComponent {...multipleChoiceQuestions}/>
-                </Grid>
-            })} */}
             </div>
             </Grid>
 

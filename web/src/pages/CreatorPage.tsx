@@ -5,6 +5,7 @@ import {Quiz} from "../models/quiz";
 import QuizComponent from "../components/QuizComponent";
 import { Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
+import "../styles/CreatorPage.css"
 
 interface CreatorPageProps {
   sdk: BackendSdk;
@@ -27,7 +28,7 @@ function CreatorPage({sdk}: CreatorPageProps) {
     return <span>Loading...</span>
   }
 
-  return <div className="Creator">
+  return <div className="creator">
     <h1>Welcome {creator.nickname}</h1>
     <Typography variant="h4"> Your Quizzes</Typography>
 

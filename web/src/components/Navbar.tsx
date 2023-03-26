@@ -19,7 +19,12 @@ interface NavbarProps {
   authenticated: boolean // can't use just 'bool'
 }
 
-const pages = ['Home', 'Profile', 'Creator']
+const pages = [
+  {
+    name: 'Creator',
+    path: 'creator'
+  }
+]
 
 function Navbar({ authenticated }: NavbarProps) {
   const navigate = useNavigate()
@@ -38,15 +43,15 @@ function Navbar({ authenticated }: NavbarProps) {
   }
 
   return (
-    <AppBar position='static'>
-      <Container maxWidth='xl'>
+    <AppBar position="static">
+      <Container maxWidth="xl">
         <Toolbar disableGutters>
           <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
           <Typography
-            variant='h6'
+            variant="h6"
             noWrap
-            component='a'
-            href='/'
+            component="a"
+            to="/"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -54,7 +59,7 @@ function Navbar({ authenticated }: NavbarProps) {
               fontWeight: 700,
               letterSpacing: '.3rem',
               color: 'inherit',
-              textDecoration: 'none',
+              textDecoration: 'none'
             }}
           >
             LOGO
@@ -62,37 +67,27 @@ function Navbar({ authenticated }: NavbarProps) {
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
-              size='large'
-              aria-label='account of current user'
-              aria-controls='menu-appbar'
-              aria-haspopup='true'
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
               onClick={handleOpenNavMenu}
-              color='inherit'
+              color="inherit"
             >
               <MenuIcon />
             </IconButton>
             <Menu
-              id='menu-appbar'
               anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{
-                display: { xs: 'block', md: 'none' },
+                display: { xs: 'block', md: 'none' }
               }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Link to={`/${page}`}>
-                    <Typography textAlign='center'>{page}</Typography>
+              {pages.map(({ path, name }) => (
+                <MenuItem key={name} onClick={handleCloseNavMenu}>
+                  <Link to={`/${path}`}>
+                    <Typography textAlign="center">{name}</Typography>
                   </Link>
                 </MenuItem>
               ))}
@@ -100,10 +95,10 @@ function Navbar({ authenticated }: NavbarProps) {
           </Box>
           <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Typography
-            variant='h5'
+            variant="h5"
             noWrap
-            component='a'
-            href=''
+            component="a"
+            to=""
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -112,27 +107,27 @@ function Navbar({ authenticated }: NavbarProps) {
               fontWeight: 700,
               letterSpacing: '.3rem',
               color: 'inherit',
-              textDecoration: 'none',
+              textDecoration: 'none'
             }}
           >
             LOGO
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
+            {pages.map(({ name, path }) => (
               <Button
                 component={Link}
-                to={`/${page}`}
-                key={page}
+                to={`/${path}`}
+                key={name}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
-                {page}
+                {name}
               </Button>
             ))}
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title='Login'>
+            <Tooltip title="Login">
               {authenticated ? <LoginButton /> : <Button onClick={logout} />}
             </Tooltip>
           </Box>

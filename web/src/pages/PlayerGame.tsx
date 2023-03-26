@@ -32,7 +32,7 @@ function PlayerGame({ sdk }: PlayerWSTestPageProps) {
         setCurrentQuestion(state.currentQuestion)
       },
       close() {},
-      error: console.error,
+      error: console.error
     }
 
     const playerClient = sdk.getPlayerClient(game, player, callbacks)

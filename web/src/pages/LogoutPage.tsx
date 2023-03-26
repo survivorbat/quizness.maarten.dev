@@ -13,7 +13,7 @@ function LogoutPage({ callback }: LogoutPageProps) {
     setLoggedOut(true)
   }, [callback])
 
-  return loggedOut ? <Navigate to='/' /> : <span>Logging out...</span>
+  return loggedOut ? <Navigate to="/" /> : <span>Logging out...</span>
 }
 
 export default LogoutPage

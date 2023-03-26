@@ -4,7 +4,7 @@ import { MultipleChoiceQuestion } from '../models/quiz'
 
 function OverviewQuestionComponent(multipleChoiceQuestion: MultipleChoiceQuestion) {
   return (
-    <Typography gutterBottom variant='h4'>
+    <Typography gutterBottom variant="h4">
       {multipleChoiceQuestion.title}
     </Typography>
   )

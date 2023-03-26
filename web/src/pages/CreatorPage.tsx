@@ -27,9 +27,9 @@ function CreatorPage({ sdk }: CreatorPageProps) {
   }
 
   return (
-    <div className='creator'>
+    <div className="creator">
       <h1>Welcome {creator.nickname}</h1>
-      <Typography variant='h4'> Your Quizzes</Typography>
+      <Typography variant="h4"> Your Quizzes</Typography>
 
       <Grid container spacing={2}>
         {quizzes.map((quiz: Quiz) => (

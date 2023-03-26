@@ -11,7 +11,7 @@ export const getGoogleUrl = () => {
     response_type: 'code',
     prompt: 'consent',
     scope: 'openid',
-    state: 'a',
+    state: 'a'
   }
 
   const qs = new URLSearchParams(options)
@@ -22,7 +22,7 @@ export const getGoogleUrl = () => {
 function LoginButton() {
   return (
     <IconButton href={getGoogleUrl()} sx={{ p: 0 }}>
-      <Avatar alt='Remy Sharp' src='/static/images/avatar/2.jpg' />
+      <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
     </IconButton>
   )
 }

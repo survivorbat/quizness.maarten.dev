@@ -18,7 +18,7 @@ function ParticipantDot({ participant }: PlayerDotProps) {
 
   const style = {
     backgroundColor: participant.backgroundColor,
-    color: participant.color,
+    color: participant.color
   }
 
   return (

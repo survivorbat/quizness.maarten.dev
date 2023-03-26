@@ -18,16 +18,16 @@ function GameCodeInput({ callback }: GameCodeInputProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <InputLabel htmlFor='join-code'>Game Code</InputLabel>
+      <InputLabel htmlFor="join-code">Game Code</InputLabel>
       <TextField
-        id='join-code'
+        id="join-code"
         value={code}
         error={error}
-        onChange={(e) => {
+        onChange={(e: any) => {
           setCode(e.target.value.toUpperCase().substr(0, 6))
         }}
       />
-      <Button type='submit'>Join</Button>
+      <Button type="submit">Join</Button>
     </form>
   )
 }

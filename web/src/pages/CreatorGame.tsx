@@ -35,7 +35,7 @@ function CreatorGame({ sdk }: CreatorWSTestPageProps) {
         setCurrentQuestion(state.currentQuestion)
       },
       close() {},
-      error: console.error,
+      error: console.error
     }
 
     const creatorClient = sdk.getCreatorClient(gameId, callbacks)

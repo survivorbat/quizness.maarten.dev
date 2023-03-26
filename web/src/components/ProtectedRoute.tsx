@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 
 function ProtectedRoute({ authenticated, children }: ProtectedRouteProps) {
   if (!authenticated) {
-    return <Navigate to='/' replace />
+    return <Navigate to="/" replace />
   }
 
   return children

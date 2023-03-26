@@ -26,16 +26,16 @@ function QuizPage({ sdk }: QuizPageProps) {
 
   return (
     <Grid item xs={12}>
-      <div className='quiz'>
-        <Typography gutterBottom variant='h4'>
+      <div className="quiz">
+        <Typography gutterBottom variant="h4">
           {quiz.name}
         </Typography>
-        <Typography gutterBottom variant='h6'>
+        <Typography gutterBottom variant="h6">
           {quiz.description}
         </Typography>
         {quiz.multipleChoiceQuestions.map((multipleChoiceQuestion: MultipleChoiceQuestion) => {
           return (
-            <Typography key={multipleChoiceQuestion.id} gutterBottom variant='h6'>
+            <Typography key={multipleChoiceQuestion.id} gutterBottom variant="h6">
               {multipleChoiceQuestion.title}
             </Typography>
           )

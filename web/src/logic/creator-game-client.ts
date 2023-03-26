@@ -8,7 +8,7 @@ export default class CreatorGameClient {
   constructor(
     private readonly token: string | null,
     private readonly gameID: string,
-    private readonly callbacks: GameCallbacks,
+    private readonly callbacks: GameCallbacks
   ) {}
 
   connect() {
@@ -21,7 +21,7 @@ export default class CreatorGameClient {
     }
 
     this.socket = new WebSocket(`${baseSocketUrl}/api/v1/games/${this.gameID}/connection`, [
-      `Bearer_${this.token}`,
+      `Bearer_${this.token}`
     ])
     this.socket.onmessage = (event: MessageEvent<string>) => {
       const message: BroadcastMessage = JSON.parse(event.data)

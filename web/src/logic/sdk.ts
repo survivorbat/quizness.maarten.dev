@@ -14,7 +14,7 @@ class BackendSdk {
   async authenticate(code: string): Promise<string> {
     const result = await fetch(`${baseUrl}/api/v1/tokens`, {
       method: 'post',
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code })
     })
 
     const token = result.headers.get('token')
@@ -29,7 +29,7 @@ class BackendSdk {
   async refresh(): Promise<string> {
     const result = await fetch(`${baseUrl}/api/v1/tokens`, {
       method: 'put',
-      headers: this.authHeader(),
+      headers: this.authHeader()
     })
     const token = result.headers.get('token')
 
@@ -60,7 +60,7 @@ class BackendSdk {
 
   async getGamesByQuiz(quiz: string): Promise<Game> {
     const result = await fetch(`${baseUrl}/api/v1/quizzes/${quiz}/games`, {
-      headers: this.authHeader(),
+      headers: this.authHeader()
     })
     if (!result.ok) {
       throw new Error('Failed to fetch data')
@@ -96,7 +96,7 @@ class BackendSdk {
     const data: RequestInit = {
       method: 'POST',
       headers: this.authHeader(),
-      body: JSON.stringify(game),
+      body: JSON.stringify(game)
     }
 
     const result = await fetch(`${baseUrl}/api/v1/quizzes/${quiz}/games`, data)
@@ -108,7 +108,7 @@ class BackendSdk {
   async startGame(game: string): Promise<void> {
     const data: RequestInit = {
       method: 'PATCH',
-      headers: this.authHeader(),
+      headers: this.authHeader()
     }
 
     const result = await fetch(`${baseUrl}/api/v1/games/${game}?action=start`, data)
@@ -119,7 +119,7 @@ class BackendSdk {
 
   async createPlayer(game: string): Promise<Player> {
     const data: RequestInit = {
-      method: 'POST',
+      method: 'POST'
     }
 
     const result = await fetch(`${baseUrl}/api/v1/games/${game}/players`, data)

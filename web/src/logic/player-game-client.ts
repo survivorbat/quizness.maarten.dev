@@ -13,7 +13,7 @@ export default class PlayerGameClient {
   constructor(
     private readonly gameID: string,
     private readonly playerID: string,
-    private readonly callbacks: GameCallbacks,
+    private readonly callbacks: GameCallbacks
   ) {}
 
   connect() {
@@ -22,7 +22,7 @@ export default class PlayerGameClient {
     }
 
     this.socket = new WebSocket(
-      `${baseSocketUrl}/api/v1/games/${this.gameID}/players/${this.playerID}/connection`,
+      `${baseSocketUrl}/api/v1/games/${this.gameID}/players/${this.playerID}/connection`
     )
 
     this.socket.onerror = this.callbacks.error

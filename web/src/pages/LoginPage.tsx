@@ -37,11 +37,11 @@ function LoginPage({ authenticateFunction, successCallback }: LoginPageProps) {
       })
   }, [successCallback, authenticateFunction, navigate, code])
 
-  return invalid ? (
-    <span>Failed to authenticate you, please try again</span>
-  ) : (
-    <span>Authenticating...</span>
-  )
+  if (invalid) {
+    return <span>Failed to authenticate you, please try again</span>
+  }
+
+  return <span>Authenticating...</span>
 }
 
 export default LoginPage

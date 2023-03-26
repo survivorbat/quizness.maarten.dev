@@ -50,7 +50,7 @@ function Navbar({ authenticated }: NavbarProps) {
           <Typography
             variant="h6"
             noWrap
-            component="a"
+            component={Link}
             to="/"
             sx={{
               mr: 2,
@@ -97,8 +97,8 @@ function Navbar({ authenticated }: NavbarProps) {
           <Typography
             variant="h5"
             noWrap
-            component="a"
-            to=""
+            component={Link}
+            to="/"
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },

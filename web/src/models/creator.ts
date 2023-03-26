@@ -1,8 +1,8 @@
 interface Creator {
-  id: string;
-  nickname: string;
-  color: string;
-  backgroundColor: string;
+  id: string
+  nickname: string
+  color: string
+  backgroundColor: string
 }
 
-export default Creator;
+export default Creator

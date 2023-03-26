@@ -1,5 +1,5 @@
 interface CreateGame {
-  playerLimit: number;
+  playerLimit: number
 }
 
-export default CreateGame;
+export default CreateGame

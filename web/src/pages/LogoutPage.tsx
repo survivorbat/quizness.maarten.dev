@@ -1,19 +1,19 @@
-import React, {useEffect, useState} from "react";
-import {Navigate} from "react-router-dom";
+import React, { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 
 interface LogoutPageProps {
-  callback: () => void;
+  callback: () => void
 }
 
-function LogoutPage({callback}: LogoutPageProps) {
-  const [loggedOut, setLoggedOut] = useState(false);
+function LogoutPage({ callback }: LogoutPageProps) {
+  const [loggedOut, setLoggedOut] = useState(false)
 
   useEffect(() => {
-    callback();
-    setLoggedOut(true);
+    callback()
+    setLoggedOut(true)
   }, [callback])
 
-  return loggedOut ? <Navigate to="/"/> : <span>Logging out...</span>;
+  return loggedOut ? <Navigate to='/' /> : <span>Logging out...</span>
 }
 
-export default LogoutPage;
+export default LogoutPage

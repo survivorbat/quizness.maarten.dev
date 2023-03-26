@@ -21,14 +21,15 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.2",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5"
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "env-cmd -f prod.env react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx,json}",
+    "fmt": "eslint --fix src/**/*.{js,jsx,ts,tsx,json} && prettier --write src/**/*.{js,jsx,ts,tsx,css,md,json,scss}"
   },
   "eslintConfig": {
     "extends": [
@@ -47,5 +48,15 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "eslint": "^8.36.0",
+    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.32.2",
+    "typescript": "^4.9.5"
   }
 }

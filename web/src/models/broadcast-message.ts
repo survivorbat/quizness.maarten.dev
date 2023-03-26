@@ -1,21 +1,21 @@
 export interface BroadcastMessage {
-  type: string;
+  type: string
   playerAnsweredContent: {
-    playerID: string;
-  };
-  stateContent: BroadcastState;
+    playerID: string
+  }
+  stateContent: BroadcastState
 }
 
 export interface BroadcastState {
-  creator: BroadcastParticipant;
-  players: BroadcastParticipant[];
-  currentQuestion: string;
-  currentDeadline: Date;
+  creator: BroadcastParticipant
+  players: BroadcastParticipant[]
+  currentQuestion: string
+  currentDeadline: Date
 }
 
 export interface BroadcastParticipant {
-  id: string;
-  nickname: string;
-  color: string;
-  backgroundColor: string;
+  id: string
+  nickname: string
+  color: string
+  backgroundColor: string
 }

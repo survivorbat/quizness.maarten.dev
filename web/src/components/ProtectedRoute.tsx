@@ -1,17 +1,17 @@
-import {Navigate} from "react-router-dom";
-import React from "react";
+import { Navigate } from 'react-router-dom'
+import React from 'react'
 
 interface ProtectedRouteProps {
-  authenticated: boolean;
-  children: JSX.Element;
+  authenticated: boolean
+  children: JSX.Element
 }
 
-function ProtectedRoute({authenticated, children}: ProtectedRouteProps) {
+function ProtectedRoute({ authenticated, children }: ProtectedRouteProps) {
   if (!authenticated) {
-    return <Navigate to="/" replace/>
+    return <Navigate to='/' replace />
   }
 
-  return children;
+  return children
 }
 
-export default ProtectedRoute;
+export default ProtectedRoute

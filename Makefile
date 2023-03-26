@@ -12,6 +12,7 @@ fmt: ## Format go code
 	cd server && go mod tidy
 	cd server && go fmt ./...
 	cd server && swag fmt
+	cd web && npm run fmt
 
 dr: ## Run docker containers
 	docker-compose up -d

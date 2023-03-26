@@ -1,21 +1,21 @@
-import Player from "./player";
-import Answer from "./answer";
+import Player from './player'
+import Answer from './answer'
 
 interface Game {
-  id: string;
-  quizID: string;
+  id: string
+  quizID: string
 
-  code: string;
-  playerLimit: string;
+  code: string
+  playerLimit: string
 
-  currentQuestion: string;
-  currentDeadline: string;
+  currentQuestion: string
+  currentDeadline: string
 
-  players: Player[];
-  answers: Answer[];
+  players: Player[]
+  answers: Answer[]
 
-  startTime: string;
-  finishTime: string;
+  startTime: string
+  finishTime: string
 }
 
-export default Game;
+export default Game

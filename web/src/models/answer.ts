@@ -1,15 +1,15 @@
-import Player from "./player";
-import Game from "./game";
+import Player from './player'
+import Game from './game'
 
 interface Answer {
-  playerID: string;
-  player: Player;
+  playerID: string
+  player: Player
 
-  gameID: string;
-  game: Game;
+  gameID: string
+  game: Game
 
-  questionID: string;
-  optionID: string;
+  questionID: string
+  optionID: string
 }
 
-export default Answer;
+export default Answer

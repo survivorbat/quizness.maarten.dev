@@ -1,14 +1,14 @@
 @media screen and (min-width: 900px) {
-    .creator {
-        margin-left: 10%;
-        margin-right: 10%;
-        padding-left: 5%;
-        padding-right: 5%;
-        background-color: rgba(5, 1, 26, 0)
-    }
+  .creator {
+    margin-left: 10%;
+    margin-right: 10%;
+    padding-left: 5%;
+    padding-right: 5%;
+    background-color: rgba(5, 1, 26, 0);
+  }
 }
 
 .creator {
-    padding-left: 5%;
-    padding-right: 5%;
+  padding-left: 5%;
+  padding-right: 5%;
 }

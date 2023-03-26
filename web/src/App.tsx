@@ -6,12 +6,22 @@ import CreatorPage from "./pages/CreatorPage";
 import LoginPage from "./pages/LoginPage";
 import BackendSdk from "./logic/sdk";
 import {Container, Grid} from "@mui/material";
-import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LogoutPage from "./pages/LogoutPage";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import QuizPage from './pages/QuizPage';
 import PlayerGame from "./pages/PlayerGame";
 import CreatorGame from "./pages/CreatorGame";
 import Player from "./models/player";
+import Navbar from './components/Navbar';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
+
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -37,10 +47,11 @@ function App() {
   }
 
   return (
+    <ThemeProvider theme={darkTheme}>
     <BrowserRouter>
       <Container>
         <Grid container>
-          <Header authenticated={!!token}/>
+          <Navbar authenticated={!!token}/>
           <Routes>
             <Route path="/" element={<FrontPage codeSubmitCallback={joinGame}/>}/>
             <Route path="/login" element={<LoginPage successCallback={loginCallback}
@@ -53,10 +64,13 @@ function App() {
 
             <Route path="/games/:game"
                    element={<ProtectedRoute authenticated={!!token}><CreatorGame sdk={sdk}/></ProtectedRoute>}/>
-          </Routes>
+            <Route path="/creator/quiz"
+                   element={<ProtectedRoute authenticated={!!token}><QuizPage sdk = {sdk}/></ProtectedRoute>}/>
+        </Routes>
         </Grid>
       </Container>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

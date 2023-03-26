@@ -6,4 +6,4 @@ interface Player {
   gameID: string;
 }
 
-export default Player;
+export default Player

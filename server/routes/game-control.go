@@ -21,7 +21,7 @@ type GameControlHandler struct {
 //	@Tags		Quiz
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path	string			true	"ID of the game"
+//	@Param		id	path		string		true	"ID of the game"
 //	@Success	200	{object}	domain.Game	"This game"
 //	@Failure	400	"Invalid uuid"
 //	@Failure	403	"You can only view your own games"

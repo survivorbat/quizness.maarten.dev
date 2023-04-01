@@ -15,7 +15,7 @@ fmt: ## Format go code
 	cd web && npm run fmt
 
 dr: ## Run docker containers
-	docker-compose up -d
+	POSTGRES_PASSWORD="rootroot" docker-compose -f docker-compose.yaml up -d
 
 server: ## Run the server
 	cd server && swag init --output swagger -g cmd/qq/main.go

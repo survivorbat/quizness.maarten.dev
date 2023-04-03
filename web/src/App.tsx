@@ -32,7 +32,7 @@ function App() {
   }
   const logoutCallback = () => {
     localStorage.removeItem('token')
-    setToken('')
+    setToken(null)
   }
 
   const joinGame = async (code: string): Promise<Player | null> => {

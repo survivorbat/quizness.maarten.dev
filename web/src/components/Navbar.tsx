@@ -9,11 +9,11 @@ import Menu from '@mui/material/Menu'
 import MenuIcon from '@mui/icons-material/Menu'
 import Container from '@mui/material/Container'
 import Button from '@mui/material/Button'
-import Tooltip from '@mui/material/Tooltip'
 import MenuItem from '@mui/material/MenuItem'
 import AdbIcon from '@mui/icons-material/Adb'
 import LoginButton from './LoginButton'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import UserButton from './UserButton'
 
 interface NavbarProps {
   authenticated: boolean // can't use just 'bool'
@@ -27,7 +27,6 @@ const pages = [
 ]
 
 function Navbar({ authenticated }: NavbarProps) {
-  const navigate = useNavigate()
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -36,10 +35,6 @@ function Navbar({ authenticated }: NavbarProps) {
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null)
-  }
-
-  const logout = () => {
-    navigate('/logout')
   }
 
   return (
@@ -127,9 +122,7 @@ function Navbar({ authenticated }: NavbarProps) {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Login">
-              {authenticated ? <LoginButton /> : <Button onClick={logout} />}
-            </Tooltip>
+              {authenticated ? <UserButton /> : <LoginButton />}
           </Box>
         </Toolbar>
       </Container>

@@ -5,7 +5,14 @@ services:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_DB: qq
-      POSTGRES_PASSWORD: rootroot
+      POSTGRES_DB: quizness
+      POSTGRES_USER: quizness
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
